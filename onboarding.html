@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Welcome to Lokhi</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lokhi">
+<meta name="theme-color" content="#2E5C8A">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+
+<link rel="stylesheet" href="./app-styles.css">
+</head>
+<body>
+
+<div class="onboarding-shell">
+  <div class="onboarding-progress" id="onboarding-progress"></div>
+  <div class="onboarding-step" id="onboarding-step"></div>
+</div>
+
+<script src="./app-data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const PREFECTURES = ["Tokyo","Osaka","Kanagawa","Aichi","Fukuoka","Hokkaido","Kyoto","Saitama","Chiba","Hyogo","Other"];
+  const answers = {
+    name: "", dob: "", prefecture: "", residencyStatus: "resident",
+    employmentStatus: "full_time", income: "",
+    bankUploaded: false, creditUploaded: false, nisaUploaded: false,
+    cashSavings: "", debts: [], hasDebt: null,
+    household: "single", dependents: 0,
+    archetype: "", customArchetype: ""
+  };
+
+  function baseSteps() {
+    const steps = ["name", "dob", "prefecture", "employment", "bank", "credit", "nisa"];
+    if (!answers.bankUploaded) steps.push("cash_savings");
+    steps.push("debts", "household", "archetype", "done");
+    return steps;
+  }
+
+  let stepIndex = 0;
+
+  function goNext() {
+    const steps = baseSteps();
+    if (stepIndex < steps.length - 1) { stepIndex++; render(); }
+  }
+  function goBack() {
+    if (stepIndex > 0) { stepIndex--; render(); }
+  }
+
+  function progressBar(steps) {
+    return steps.map((s, i) => `<div class="seg ${i <= stepIndex ? "is-done" : ""}"></div>`).join("");
+  }
+
+  function stepShell(eyebrow, title, help, bodyHtml, footHtml, showBack) {
+    document.getElementById("onboarding-step").innerHTML = `
+      <div class="onboarding-step-eyebrow">${eyebrow}</div>
+      <h1>${title}</h1>
+      ${help ? `<p class="help">${help}</p>` : ""}
+      ${bodyHtml}
+      <div class="onboarding-foot">
+        ${showBack ? `<button class="btn btn-ghost" id="ob-back">Back</button>` : ""}
+        ${footHtml}
+      </div>
+    `;
+    const back = document.getElementById("ob-back");
+    if (back) back.addEventListener("click", goBack);
+  }
+
+  function uploadStep(key, title, help, required) {
+    const uploaded = answers[key];
+    stepShell(
+      required ? "Accounts · required" : "Accounts · optional",
+      title, help,
+      `<div class="upload-dropzone ${uploaded ? "is-uploaded" : ""}" id="ob-dropzone">
+        <span class="icon">${uploaded ? "✅" : "📄"}</span>
+        <span>${uploaded ? "Uploaded — thanks" : "Tap to upload a PDF"}</span>
+      </div>
+      <input type="file" accept="application/pdf" id="ob-file" class="visually-hidden">`,
+      `<button class="btn btn-primary btn-block" id="ob-continue" ${uploaded ? "" : (required ? "disabled" : "")}>Continue</button>`,
+      stepIndex > 0
+    );
+    document.getElementById("ob-dropzone").addEventListener("click", () => document.getElementById("ob-file").click());
+    document.getElementById("ob-file").addEventListener("change", (e) => {
+      if (e.target.files.length) { answers[key] = true; render(); }
+    });
+    const cont = document.getElementById("ob-continue");
+    if (cont) cont.addEventListener("click", goNext);
+    if (!required) {
+      const foot = document.querySelector(".onboarding-foot");
+      foot.insertAdjacentHTML("beforeend", `<div style="flex-basis:100%;"></div>`);
+      document.getElementById("onboarding-step").insertAdjacentHTML("beforeend", `<span class="skip-link" id="ob-skip">Skip — I don't have one</span>`);
+      document.getElementById("ob-skip").addEventListener("click", goNext);
+    }
+  }
+
+  const RENDERERS = {
+    name: () => {
+      stepShell("Basics", "What should we call you?", "Your full name, or whatever you'd like to see on screen.",
+        `<div class="field"><label for="ob-name">Full name</label><input id="ob-name" type="text" placeholder="e.g. Megha" value="${answers.name}"></div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue" ${answers.name ? "" : "disabled"}>Continue</button>`,
+        false);
+      const input = document.getElementById("ob-name");
+      input.addEventListener("input", (e) => {
+        answers.name = e.target.value.trim();
+        document.getElementById("ob-continue").disabled = !answers.name;
+      });
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    dob: () => {
+      stepShell("Basics", "When's your birthday?", "This helps us frame your goals against a real timeline.",
+        `<div class="field"><label for="ob-dob">Date of birth</label><input id="ob-dob" type="date" value="${answers.dob}"></div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue" ${answers.dob ? "" : "disabled"}>Continue</button>`,
+        true);
+      document.getElementById("ob-dob").addEventListener("input", (e) => {
+        answers.dob = e.target.value;
+        document.getElementById("ob-continue").disabled = !answers.dob;
+      });
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    prefecture: () => {
+      stepShell("Basics", "Where do you live?", "Prefecture and residency status.",
+        `<div class="field"><label for="ob-pref">Prefecture</label>
+          <select id="ob-pref">${PREFECTURES.map((p) => `<option value="${p}" ${answers.prefecture === p ? "selected" : ""}>${p}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label for="ob-res">Residency status</label>
+          <select id="ob-res">
+            <option value="resident" ${answers.residencyStatus === "resident" ? "selected" : ""}>Resident</option>
+            <option value="non_resident" ${answers.residencyStatus === "non_resident" ? "selected" : ""}>Non-resident</option>
+          </select>
+        </div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue">Continue</button>`,
+        true);
+      answers.prefecture = answers.prefecture || PREFECTURES[0];
+      document.getElementById("ob-pref").addEventListener("change", (e) => (answers.prefecture = e.target.value));
+      document.getElementById("ob-res").addEventListener("change", (e) => (answers.residencyStatus = e.target.value));
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    employment: () => {
+      stepShell("Basics", "Work & income", "Your employment status and typical monthly income.",
+        `<div class="field"><label for="ob-emp">Employment status</label>
+          <select id="ob-emp">
+            <option value="full_time" ${answers.employmentStatus === "full_time" ? "selected" : ""}>Full-time employee</option>
+            <option value="part_time" ${answers.employmentStatus === "part_time" ? "selected" : ""}>Part-time</option>
+            <option value="self_employed" ${answers.employmentStatus === "self_employed" ? "selected" : ""}>Self-employed</option>
+            <option value="unemployed" ${answers.employmentStatus === "unemployed" ? "selected" : ""}>Not currently working</option>
+          </select>
+        </div>
+        <div class="field"><label for="ob-income">Monthly income (¥)</label><input id="ob-income" type="number" inputmode="numeric" placeholder="900000" value="${answers.income}"></div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue" ${answers.income ? "" : "disabled"}>Continue</button>`,
+        true);
+      document.getElementById("ob-emp").addEventListener("change", (e) => (answers.employmentStatus = e.target.value));
+      document.getElementById("ob-income").addEventListener("input", (e) => {
+        answers.income = e.target.value;
+        document.getElementById("ob-continue").disabled = !answers.income;
+      });
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    bank: () => uploadStep("bankUploaded", "Your bank statement", "We read balances only — this is never shared with anyone.", true),
+    credit: () => uploadStep("creditUploaded", "Your credit card statement", "Helps us understand recurring spending.", true),
+    nisa: () => uploadStep("nisaUploaded", "Investment or NISA statement", "Skip this if you don't have one yet.", false),
+    cash_savings: () => {
+      stepShell("Accounts", "Current cash savings", "Since you skipped a bank statement, give us a rough total.",
+        `<div class="field"><label for="ob-cash">Cash savings (¥)</label><input id="ob-cash" type="number" inputmode="numeric" placeholder="8000000" value="${answers.cashSavings}"></div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue">Continue</button>`,
+        true);
+      document.getElementById("ob-cash").addEventListener("input", (e) => (answers.cashSavings = e.target.value));
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    debts: () => {
+      stepShell("Accounts", "Any existing loans or debt?", "Type and outstanding amount — add as many as apply.",
+        `<div id="ob-debt-rows"></div>
+         <button class="btn btn-ghost btn-sm" id="ob-add-debt" type="button">+ Add another</button>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue">Continue</button>`,
+        true);
+      if (answers.debts.length === 0) answers.debts.push({ type: "", amount: "" });
+      function renderRows() {
+        document.getElementById("ob-debt-rows").innerHTML = answers.debts.map((d, i) => `
+          <div class="debt-row">
+            <div class="field"><label>Type</label><input data-debt-type="${i}" type="text" placeholder="e.g. Auto loan" value="${d.type}"></div>
+            <div class="field"><label>Outstanding (¥)</label><input data-debt-amt="${i}" type="number" inputmode="numeric" placeholder="1000000" value="${d.amount}"></div>
+          </div>`).join("");
+        document.querySelectorAll("[data-debt-type]").forEach((inp) => inp.addEventListener("input", (e) => (answers.debts[e.target.dataset.debtType].type = e.target.value)));
+        document.querySelectorAll("[data-debt-amt]").forEach((inp) => inp.addEventListener("input", (e) => (answers.debts[e.target.dataset.debtAmt].amount = e.target.value)));
+      }
+      renderRows();
+      document.getElementById("ob-add-debt").addEventListener("click", () => { answers.debts.push({ type: "", amount: "" }); renderRows(); });
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    household: () => {
+      stepShell("Basics", "Your household", "Single, partnered, or with dependents.",
+        `<div class="field"><label for="ob-house">Situation</label>
+          <select id="ob-house">
+            <option value="single" ${answers.household === "single" ? "selected" : ""}>Single</option>
+            <option value="partnered" ${answers.household === "partnered" ? "selected" : ""}>Partnered</option>
+          </select>
+        </div>
+        <div class="field"><label for="ob-dependents">Dependents</label><input id="ob-dependents" type="number" min="0" value="${answers.dependents}"></div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue">Continue</button>`,
+        true);
+      document.getElementById("ob-house").addEventListener("change", (e) => (answers.household = e.target.value));
+      document.getElementById("ob-dependents").addEventListener("input", (e) => (answers.dependents = Number(e.target.value) || 0));
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    archetype: () => {
+      const archetypes = window.APP_DATA.archetypes;
+      stepShell("Your financial personality", "Which one feels like you?", "Pick, or design your own. This can change anytime in Profile.",
+        `<div class="archetype-onboard-grid" id="ob-archetype-grid">
+          ${archetypes.map((a) => `<button class="option-card ${answers.archetype === a.id ? "is-selected" : ""}" data-archetype="${a.id}" type="button"><span class="icon">${a.icon}</span><span class="label">${a.label}</span></button>`).join("")}
+        </div>
+        <div class="field" id="ob-custom-wrap" style="display:${answers.archetype === "custom" ? "" : "none"};">
+          <label for="ob-custom">Describe your own</label>
+          <input id="ob-custom" type="text" placeholder="e.g. Cautious optimist" value="${answers.customArchetype}">
+        </div>`,
+        `<button class="btn btn-primary btn-block" id="ob-continue" ${answers.archetype ? "" : "disabled"}>Continue</button>`,
+        true);
+      document.querySelectorAll("#ob-archetype-grid [data-archetype]").forEach((b) => b.addEventListener("click", () => {
+        answers.archetype = b.dataset.archetype;
+        render();
+      }));
+      const customInput = document.getElementById("ob-custom");
+      if (customInput) customInput.addEventListener("input", (e) => (answers.customArchetype = e.target.value));
+      document.getElementById("ob-continue").addEventListener("click", goNext);
+    },
+    done: () => {
+      stepShell("You're all set", "Welcome to Lokhi, " + (answers.name || "friend"), "We'll walk you through your first financial plan next — it takes about 10 minutes, and you can save and continue anytime.",
+        `<div class="card-flat" style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding:32px 16px;">
+          <span style="font-size:40px;">🪄</span>
+          <p style="font-size:14px;color:var(--ink-soft);">Your Fairy Godmother will ask a few more questions along the way — always optional, always in context.</p>
+        </div>`,
+        `<button class="btn btn-primary btn-block" id="ob-finish">Enter Lokhi</button>`,
+        true);
+      document.getElementById("ob-finish").addEventListener("click", finish);
+    }
+  };
+
+  function finish() {
+    const debtDetails = answers.debts
+      .filter((d) => d.type && d.amount)
+      .map((d) => ({ id: d.type.toLowerCase().replace(/\s+/g, "_"), label: d.type, outstanding: Number(d.amount) || 0, monthlyPayment: 0, interestRate: 0 }));
+    const totalDebt = debtDetails.reduce((s, d) => s + d.outstanding, 0);
+
+    const overrides = {
+      name: answers.name || "Friend",
+      preferredName: answers.name || "Friend",
+      dateOfBirth: answers.dob,
+      prefecture: answers.prefecture,
+      residencyStatus: answers.residencyStatus,
+      employmentStatus: answers.employmentStatus,
+      income: Number(answers.income) || window.APP_DATA.userProfile.income,
+      savings: answers.bankUploaded ? window.APP_DATA.userProfile.savings : (Number(answers.cashSavings) || window.APP_DATA.userProfile.savings),
+      debt: debtDetails.length ? totalDebt : window.APP_DATA.userProfile.debt,
+      debtDetails: debtDetails.length ? debtDetails : window.APP_DATA.userProfile.debtDetails,
+      household: { situation: answers.household, dependents: answers.dependents },
+      archetype: answers.archetype === "custom" ? (answers.customArchetype || "custom") : answers.archetype,
+      avatar: answers.archetype && answers.archetype !== "custom" ? answers.archetype : window.APP_DATA.userProfile.avatar
+    };
+    localStorage.setItem("lokhi_profile_overrides", JSON.stringify(overrides));
+    localStorage.setItem("lokhi_onboarded", "true");
+    location.href = "./index.html";
+  }
+
+  function render() {
+    const steps = baseSteps();
+    if (stepIndex >= steps.length) stepIndex = steps.length - 1;
+    document.getElementById("onboarding-progress").innerHTML = progressBar(steps);
+    RENDERERS[steps[stepIndex]]();
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

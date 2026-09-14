@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lokhi</title>
+<meta name="description" content="Lokhi — turn managing money into a game.">
+
+<!-- PWA / iOS home screen -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lokhi">
+<meta name="theme-color" content="#2E5C8A">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16.png">
+
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+
+<link rel="stylesheet" href="./app-styles.css">
+</head>
+<body>
+
+<div id="app-shell">
+
+  <header class="app-header">
+    <div class="brand-mark">
+      <img src="./lokhi-assets/fairy-mark.svg" alt="">
+      <span>Lokhi</span>
+    </div>
+    <div class="header-status">
+      <span class="level-chip" id="header-level">Lv 1</span>
+      <span class="streak-chip">🔥 <span id="header-streak">0w</span></span>
+    </div>
+  </header>
+
+  <!-- ===================== HOME ===================== -->
+  <main class="screen" data-screen="home" id="screen-home">
+    <h1 class="screen-title">Hi, <span id="greeting-name">there</span></h1>
+
+    <section class="card character-card">
+      <div class="character-head">
+        <div class="character-avatar" id="character-avatar">🧭</div>
+        <div class="character-meta">
+          <div class="name" id="character-level">Level 1</div>
+          <div class="sub" id="character-archetype">Explorer</div>
+        </div>
+      </div>
+      <div class="xp-bar-wrap">
+        <div class="progress-track"><div class="progress-fill gold" id="xp-fill" style="width:0%"></div></div>
+        <span class="xp-label" id="xp-label">0 / 0 XP</span>
+      </div>
+      <div class="card-row">
+        <span class="card-eyebrow">Financial Health</span>
+        <div class="health-score"><span class="value" id="health-value">0</span><span class="max">/100</span></div>
+      </div>
+      <div id="power-bars"></div>
+    </section>
+
+    <section class="card networth-card">
+      <div class="networth-top">
+        <div class="owl-figure" id="owl-figure"><img id="owl-img" src="./lokhi-assets/owl-ontrack.svg" alt=""></div>
+        <div class="networth-value">
+          <div class="label">Net worth</div>
+          <div class="hero-number" id="networth-value">¥0</div>
+          <div class="owl-status-line" id="owl-status-line"></div>
+        </div>
+      </div>
+      <div id="golden-path-wrap"></div>
+      <div class="golden-path-legend">
+        <span><span class="dot actual"></span>Actual</span>
+        <span><span class="dot target"></span>Golden Path (scenario)</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">Your current world</div>
+      <div class="stat-grid" id="stat-grid"></div>
+    </section>
+
+    <section id="insights-list" style="display:flex;flex-direction:column;gap:12px;"></section>
+
+    <div id="continue-plan-wrap"></div>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">Your journey</div>
+      <div class="journey-map" id="journey-map"></div>
+    </section>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">This week</div>
+      <div class="mission-list" id="mission-list"></div>
+    </section>
+  </main>
+
+  <!-- ===================== PLAYGROUND ===================== -->
+  <main class="screen" data-screen="playground" id="screen-playground">
+    <h1 class="screen-title">Playground</h1>
+    <p class="screen-subtitle">Simulate your goals before you commit to them.</p>
+
+    <div class="section-tabs">
+      <button class="section-tab-btn is-active" data-section="quests">Quests</button>
+      <button class="section-tab-btn" data-section="goals">Goals</button>
+    </div>
+
+    <div class="pg-section" data-section="quests">
+      <div class="quest-grid" id="quest-grid"></div>
+    </div>
+
+    <div class="pg-section" data-section="goals" style="display:none;">
+      <div class="card-eyebrow" style="margin-bottom:8px;">Suggested goals</div>
+      <div class="goal-list" id="suggested-goals"></div>
+      <div class="card-eyebrow" style="margin:16px 0 8px;">Personalized for you</div>
+      <div class="goal-list" id="personalized-goals"></div>
+    </div>
+  </main>
+
+  <!-- ===================== OPTIMIZE ===================== -->
+  <main class="screen" data-screen="optimize" id="screen-optimize">
+    <h1 class="screen-title">Optimize</h1>
+    <p class="screen-subtitle">Opportunities, ranked by effort and lifetime value.</p>
+
+    <section class="card hero-intel-card">
+      <span class="card-eyebrow">Found so far</span>
+      <div class="hero-number" id="hero-intel-number">¥0</div>
+      <p class="hero-based-on" id="hero-intel-basis"></p>
+    </section>
+
+    <section id="opportunity-list" style="display:flex;flex-direction:column;gap:12px;"></section>
+  </main>
+
+  <!-- ===================== GROW ===================== -->
+  <main class="screen" data-screen="grow" id="screen-grow">
+    <h1 class="screen-title">Grow</h1>
+    <p class="screen-subtitle">Your wealth garden and how the world is moving.</p>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">Wealth Garden</div>
+      <div class="garden-plot" id="garden-plot"></div>
+    </section>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">Investment explorer</div>
+      <div class="explorer-list" id="investment-explorer"></div>
+    </section>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">The world is moving</div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </section>
+
+    <section>
+      <div class="card-eyebrow" style="margin-bottom:8px;">Investment quests</div>
+      <div class="mission-list" id="investment-quests"></div>
+    </section>
+  </main>
+
+  <!-- ===================== PROFILE ===================== -->
+  <main class="screen" data-screen="profile" id="screen-profile">
+    <div class="profile-header">
+      <div class="profile-avatar"><span id="profile-avatar-icon">🧭</span></div>
+      <h1 class="screen-title" style="padding-top:0;" id="profile-name">You</h1>
+      <span class="chip chip-neutral" id="profile-archetype-label">Explorer</span>
+    </div>
+
+    <div class="profile-subtabs">
+      <button class="profile-subtab-btn is-active" data-profile-tab="info">My Info</button>
+      <button class="profile-subtab-btn" data-profile-tab="archetype">Archetype</button>
+      <button class="profile-subtab-btn" data-profile-tab="badges">Badges</button>
+      <button class="profile-subtab-btn" data-profile-tab="dreamlab">Dream Lab</button>
+      <button class="profile-subtab-btn" data-profile-tab="grow2">Grow</button>
+      <button class="profile-subtab-btn" data-profile-tab="explore">Explore</button>
+    </div>
+
+    <div class="profile-section" data-profile-section="info">
+      <div class="card-eyebrow" style="margin-bottom:8px;">Your info</div>
+      <div class="checklist" id="info-checklist"></div>
+      <div class="card-eyebrow" style="margin:16px 0 8px;">A few more questions, whenever you're ready</div>
+      <div id="later-prompts" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <div class="profile-section" data-profile-section="archetype" style="display:none;">
+      <p class="screen-subtitle" style="margin-top:0;">Pick the personality that feels most like you — this can change anytime.</p>
+      <div class="archetype-grid" id="archetype-grid"></div>
+      <p id="archetype-description" style="font-size:13px;color:var(--ink-soft);margin-top:12px;"></p>
+    </div>
+
+    <div class="profile-section" data-profile-section="badges" style="display:none;">
+      <div class="badge-grid" id="badge-grid"></div>
+    </div>
+
+    <div class="profile-section coming-soon" data-profile-section="dreamlab" style="display:none;">
+      <span class="icon">🌈</span><span class="text">Coming soon</span>
+    </div>
+    <div class="profile-section coming-soon" data-profile-section="grow2" style="display:none;">
+      <span class="icon">🌳</span><span class="text">Coming soon</span>
+    </div>
+    <div class="profile-section coming-soon" data-profile-section="explore" style="display:none;">
+      <span class="icon">🗺️</span><span class="text">Coming soon</span>
+    </div>
+  </main>
+
+  <!-- ===================== Bottom tab bar ===================== -->
+  <nav class="tab-bar">
+    <button class="tab-bar-btn is-active" data-tab="home"><span class="tab-icon">🏠</span><span class="tab-label">Home</span></button>
+    <button class="tab-bar-btn" data-tab="playground"><span class="tab-icon">🎮</span><span class="tab-label">Playground</span></button>
+    <button class="tab-bar-btn" data-tab="optimize"><span class="tab-icon">✨</span><span class="tab-label">Optimize</span></button>
+    <button class="tab-bar-btn" data-tab="grow"><span class="tab-icon">🌱</span><span class="tab-label">Grow</span></button>
+    <button class="tab-bar-btn" data-tab="profile"><span class="tab-icon">👤</span><span class="tab-label">Profile</span></button>
+  </nav>
+
+  <!-- ===================== Fairy Godmother ===================== -->
+  <button class="fairy-fab" id="fairy-fab"><img src="./lokhi-assets/fairy-mark.svg" alt="Ask your Fairy Godmother"></button>
+  <div class="fairy-popover" id="fairy-popover">
+    <div class="fairy-popover-head"><img src="./lokhi-assets/fairy-mark.svg" alt=""><span>Your Fairy Godmother</span></div>
+    <p id="fairy-message"></p>
+    <div class="fairy-popover-actions">
+      <button class="btn btn-secondary btn-sm btn-block" id="fairy-dismiss">Got it</button>
+    </div>
+  </div>
+
+  <!-- ===================== Simulator overlay ===================== -->
+  <div class="overlay-scrim" id="simulator-overlay">
+    <div class="sheet-modal">
+      <div class="sheet-modal-handle"></div>
+      <div class="sheet-modal-head">
+        <span class="title" id="sim-title">Quest</span>
+        <button class="close-btn" data-close-overlay="simulator-overlay">✕</button>
+      </div>
+      <p id="sim-description" style="font-size:13px;color:var(--ink-soft);margin-top:-8px;"></p>
+      <span id="sim-is-investing" class="visually-hidden"></span>
+      <div id="simulator-body" style="display:flex;flex-direction:column;gap:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== Theme detail overlay ===================== -->
+  <div class="overlay-scrim" id="theme-detail-overlay">
+    <div class="sheet-modal" id="theme-detail-body"></div>
+  </div>
+
+  <!-- ===================== Level up overlay ===================== -->
+  <div class="overlay-scrim is-centered" id="levelup-overlay">
+    <div class="sheet-modal levelup-modal" style="border-radius: 24px;">
+      <div class="levelup-badge">🎉</div>
+      <h2 id="levelup-value">Level up</h2>
+      <p>New powers unlocked. Keep going.</p>
+      <button class="btn btn-primary btn-block" data-close-overlay="levelup-overlay" style="margin-top:16px;">Keep going</button>
+    </div>
+  </div>
+
+  <!-- ===================== Guided Financial Plan Journey ===================== -->
+  <div class="journey-overlay" id="journey-overlay">
+    <div class="journey-overlay-head">
+      <img src="./lokhi-assets/fairy-mark.svg" alt="" style="width:28px;height:28px;">
+      <div class="journey-overlay-progress"><div class="progress-track"><div class="progress-fill" id="journey-progress-fill" style="width:0%"></div></div></div>
+    </div>
+    <div class="journey-overlay-body">
+      <div class="journey-overlay-phase" id="journey-phase">Understand</div>
+      <div class="journey-overlay-title" id="journey-title"></div>
+      <p class="journey-overlay-text" id="journey-text"></p>
+      <div class="journey-choice-list" id="journey-choices"></div>
+    </div>
+    <div class="journey-overlay-foot">
+      <button class="btn btn-ghost" id="journey-back-btn">Back</button>
+      <button class="btn btn-ghost btn-sm" id="journey-save-later-btn" style="flex:0;white-space:nowrap;">Save &amp; continue later</button>
+      <button class="btn btn-primary" id="journey-next-btn" style="flex:1;">Continue</button>
+    </div>
+  </div>
+
+  <div class="xp-toast" id="xp-toast">+0 XP</div>
+
+</div>
+
+<script src="./app-data.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
