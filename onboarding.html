@@ -4,21 +4,35 @@
 <meta charset="UTF-8">
 <title>Welcome to Lokhi</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#2E5C8A">
+<meta name="theme-color" content="#F5EEE1">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="./icons/splash/splash-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)">
 
 <link rel="stylesheet" href="./app-styles.css">
 </head>
 <body>
 
 <div class="onboarding-shell">
-  <div class="onboarding-progress" id="onboarding-progress"></div>
+  <div class="onboarding-top">
+    <div class="onboarding-progress" id="onboarding-progress"></div>
+    <button class="onboarding-skip-all" id="onboarding-skip-all" type="button">Skip</button>
+  </div>
   <div class="onboarding-step" id="onboarding-step"></div>
 </div>
 
@@ -162,8 +176,8 @@
       });
       document.getElementById("ob-continue").addEventListener("click", goNext);
     },
-    bank: () => uploadStep("bankUploaded", "Your bank statement", "We read balances only — this is never shared with anyone.", true),
-    credit: () => uploadStep("creditUploaded", "Your credit card statement", "Helps us understand recurring spending.", true),
+    bank: () => uploadStep("bankUploaded", "Your bank statement", "We read balances only — this is never shared with anyone.", false),
+    credit: () => uploadStep("creditUploaded", "Your credit card statement", "Helps us understand recurring spending.", false),
     nisa: () => uploadStep("nisaUploaded", "Investment or NISA statement", "Skip this if you don't have one yet.", false),
     cash_savings: () => {
       stepShell("Accounts", "Current cash savings", "Since you skipped a bank statement, give us a rough total.",
@@ -246,30 +260,34 @@
       .map((d) => ({ id: d.type.toLowerCase().replace(/\s+/g, "_"), label: d.type, outstanding: Number(d.amount) || 0, monthlyPayment: 0, interestRate: 0 }));
     const totalDebt = debtDetails.reduce((s, d) => s + d.outstanding, 0);
 
+    const defaults = window.APP_DATA.userProfile;
     const overrides = {
-      name: answers.name || "Friend",
-      preferredName: answers.name || "Friend",
-      dateOfBirth: answers.dob,
-      prefecture: answers.prefecture,
-      residencyStatus: answers.residencyStatus,
-      employmentStatus: answers.employmentStatus,
-      income: Number(answers.income) || window.APP_DATA.userProfile.income,
-      savings: answers.bankUploaded ? window.APP_DATA.userProfile.savings : (Number(answers.cashSavings) || window.APP_DATA.userProfile.savings),
-      debt: debtDetails.length ? totalDebt : window.APP_DATA.userProfile.debt,
-      debtDetails: debtDetails.length ? debtDetails : window.APP_DATA.userProfile.debtDetails,
-      household: { situation: answers.household, dependents: answers.dependents },
-      archetype: answers.archetype === "custom" ? (answers.customArchetype || "custom") : answers.archetype,
-      avatar: answers.archetype && answers.archetype !== "custom" ? answers.archetype : window.APP_DATA.userProfile.avatar
+      name: answers.name || defaults.name,
+      preferredName: answers.name || defaults.preferredName,
+      dateOfBirth: answers.dob || defaults.dateOfBirth,
+      prefecture: answers.prefecture || defaults.prefecture,
+      residencyStatus: answers.residencyStatus || defaults.residencyStatus,
+      employmentStatus: answers.employmentStatus || defaults.employmentStatus,
+      income: Number(answers.income) || defaults.income,
+      savings: answers.bankUploaded ? defaults.savings : (Number(answers.cashSavings) || defaults.savings),
+      debt: debtDetails.length ? totalDebt : defaults.debt,
+      debtDetails: debtDetails.length ? debtDetails : defaults.debtDetails,
+      household: { situation: answers.household || defaults.household.situation, dependents: answers.dependents || defaults.household.dependents },
+      archetype: answers.archetype === "custom" ? (answers.customArchetype || "custom") : (answers.archetype || defaults.archetype),
+      avatar: answers.archetype && answers.archetype !== "custom" ? answers.archetype : defaults.avatar
     };
     localStorage.setItem("lokhi_profile_overrides", JSON.stringify(overrides));
     localStorage.setItem("lokhi_onboarded", "true");
     location.href = "./index.html";
   }
 
+  document.getElementById("onboarding-skip-all").addEventListener("click", finish);
+
   function render() {
     const steps = baseSteps();
     if (stepIndex >= steps.length) stepIndex = steps.length - 1;
     document.getElementById("onboarding-progress").innerHTML = progressBar(steps);
+    document.getElementById("onboarding-skip-all").style.visibility = steps[stepIndex] === "done" ? "hidden" : "visible";
     RENDERERS[steps[stepIndex]]();
     window.scrollTo(0, 0);
   }

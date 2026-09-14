@@ -219,7 +219,11 @@ def make_icon_set(master_size=1024):
 
 def make_splash_screens(master_size=1024):
     os.makedirs(SPLASH_DIR, exist_ok=True)
-    sizes = [(750, 1334), (1170, 2532), (1284, 2778)]
+    sizes = [
+        (750, 1334), (828, 1792), (1125, 2436), (1242, 2688),
+        (1170, 2532), (1284, 2778), (1179, 2556), (1290, 2796),
+        (1206, 2622), (1320, 2868),
+    ]
     mark_master = render_icon_master(master_size, BEIGE, BLUE, CREAM, GOLD, fit=0.70)
     for w, h in sizes:
         canvas = bytearray(w * h * 4)
