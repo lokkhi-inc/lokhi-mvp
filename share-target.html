@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shared to Lokhi</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lokhi">
+<meta name="theme-color" content="#F5EEE1">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+
+<link rel="stylesheet" href="./app-styles.css">
+<style>
+  .share-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; padding: 24px 20px 32px; display: flex; flex-direction: column; }
+  .share-file-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .share-file-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface-alt); }
+  .share-file-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; }
+  .share-file-item .name { font-size: 13px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .share-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="share-shell">
+  <div class="brand-mark" style="margin-bottom: 24px;">
+    <img src="./lokhi-assets/fairy-mark.svg" alt="" style="width:28px;height:28px;">
+    <span style="font-weight:700;">Lokhi</span>
+  </div>
+
+  <div id="share-content">
+    <h1 class="screen-title" style="padding-top:0;">Loading…</h1>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var SHARE_CACHE_NAME = "lokhi-share-v1";
+  var content = document.getElementById("share-content");
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+
+  function renderEmpty() {
+    content.innerHTML =
+      '<h1 class="screen-title" style="padding-top:0;">Nothing shared yet</h1>' +
+      '<p class="screen-subtitle">Share a link, note, or screenshot to Lokhi from another app to see it here.</p>' +
+      '<div class="share-actions"><a class="btn btn-primary btn-block" href="./index.html">Back to Lokhi</a></div>';
+  }
+
+  function renderShare(meta, fileBlobs) {
+    var rows = "";
+    if (meta.title) rows += "<p><strong>" + escapeHtml(meta.title) + "</strong></p>";
+    if (meta.text) rows += "<p style=\"color:var(--ink-soft);\">" + escapeHtml(meta.text) + "</p>";
+    if (meta.url) rows += "<p><a href=\"" + escapeHtml(meta.url) + "\" target=\"_blank\" rel=\"noopener\">" + escapeHtml(meta.url) + "</a></p>";
+
+    var fileRows = fileBlobs.map(function (f) {
+      var thumb = f.type.indexOf("image/") === 0
+        ? '<img src="' + f.objectUrl + '" alt="">'
+        : '<span style="font-size:20px;">📄</span>';
+      return '<div class="share-file-item">' + thumb + '<span class="name">' + escapeHtml(f.name || "Attachment") + "</span></div>";
+    }).join("");
+
+    content.innerHTML =
+      '<h1 class="screen-title" style="padding-top:0;">Shared to Lokhi</h1>' +
+      '<div class="card" style="margin-top:12px;">' + (rows || "<p style=\"color:var(--ink-soft);\">No text — see attachments below.</p>") + "</div>" +
+      (fileRows ? '<div class="share-file-list">' + fileRows + "</div>" : "") +
+      '<div class="share-actions">' +
+      '<button class="btn btn-primary btn-block" id="share-save-btn">Add to Lokhi</button>' +
+      '<a class="btn btn-secondary btn-block" href="./index.html" id="share-discard-btn">Discard</a>' +
+      "</div>";
+
+    document.getElementById("share-save-btn").addEventListener("click", function () {
+      try {
+        localStorage.setItem("lokhi_pending_share", JSON.stringify({
+          title: meta.title || "",
+          text: meta.text || "",
+          url: meta.url || "",
+          fileCount: fileBlobs.length,
+          receivedAt: Date.now()
+        }));
+      } catch (e) {}
+      clearShareCache().then(function () { location.replace("./index.html"); });
+    });
+  }
+
+  function clearShareCache() {
+    if (!("caches" in window)) return Promise.resolve();
+    return caches.delete(SHARE_CACHE_NAME);
+  }
+
+  var params = new URLSearchParams(location.search);
+  if (params.get("shared") !== "1" || !("caches" in window)) {
+    renderEmpty();
+    return;
+  }
+
+  caches.open(SHARE_CACHE_NAME).then(function (cache) {
+    return cache.match("/shared-meta").then(function (res) {
+      if (!res) { renderEmpty(); return; }
+      return res.json().then(function (meta) {
+        return Promise.all((meta.files || []).map(function (f) {
+          return cache.match(f.key).then(function (fileRes) {
+            if (!fileRes) return null;
+            return fileRes.blob().then(function (blob) {
+              return { name: f.name, type: f.type, objectUrl: URL.createObjectURL(blob) };
+            });
+          });
+        })).then(function (fileBlobs) {
+          renderShare(meta, fileBlobs.filter(Boolean));
+        });
+      });
+    });
+  }).catch(renderEmpty);
+})();
+</script>
+</body>
+</html>

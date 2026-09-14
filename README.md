@@ -38,6 +38,22 @@ type on the manifest) — no build command is needed.
    chrome, using the icon and name from `manifest.webmanifest` and the
    `apple-touch-icon` link in `<head>`.
 
+## Web Share Target
+
+`manifest.webmanifest` declares a `share_target` so Lokhi can appear in the
+OS share sheet as a destination for text, links, and images/PDFs from other
+apps — handled entirely client-side by `sw.js` intercepting the share POST
+(no backend needed).
+
+**iOS caveat:** WebKit/Safari has not implemented `share_target` — an
+installed iOS home-screen web app cannot appear in the native iOS Share
+Sheet as a target. This is a platform limitation, not a config issue, and
+there's no web-standards workaround today. The feature works today on
+Android/Chrome; the manifest entry is otherwise harmless and forward-
+compatible if WebKit ever adds support. If a real iOS Share Sheet entry is
+required, that needs a native Share Extension (e.g. wrapping the app with
+Capacitor/Xcode), which is outside the scope of a static web app.
+
 ## Structure
 
 - `index.html` — the main app shell: all five tabs (Home, Playground,
@@ -54,7 +70,12 @@ type on the manifest) — no build command is needed.
 - `app-styles.css` — the design system (colors, type, cards, buttons,
   charts) and every screen's layout.
 - `manifest.webmanifest`, `sw.js` — PWA manifest and a minimal cache-first
-  service worker for offline support.
+  service worker for offline support, plus Web Share Target handling.
+- `share-target.html` — landing page for content shared into Lokhi from
+  other apps (text, links, images/PDFs). The service worker intercepts the
+  share POST, stashes the payload in Cache Storage, and this page renders
+  it with "Add to Lokhi" / "Discard". Once added, it surfaces as a
+  dismissible banner on the Home screen.
 - `icons/` — app icons (regular + maskable, 192/512), the iOS
   `apple-touch-icon`, favicons, and optional splash screens, all generated
   by `scripts/gen_assets.py`.

@@ -1,9 +1,13 @@
-/* Lokhi service worker — minimal cache-first offline support for the app shell. */
-const CACHE_NAME = "lokhi-v1";
+/* Lokhi service worker — minimal cache-first offline support for the app shell,
+   plus Web Share Target handling (Android/Chrome; iOS Safari does not support
+   share_target, see README). */
+const CACHE_NAME = "lokhi-v2";
+const SHARE_CACHE_NAME = "lokhi-share-v1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./onboarding.html",
+  "./share-target.html",
   "./app-data.js",
   "./app-styles.css",
   "./app.js",
@@ -26,16 +30,27 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  const keep = [CACHE_NAME, SHARE_CACHE_NAME];
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.filter((key) => !keep.includes(key)).map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  // Web Share Target: iOS Safari doesn't support share_target at all, but on
+  // Android/Chrome the installed PWA can be launched with this POST. We
+  // intercept it here (no server involved) so it works on a static host.
+  if (event.request.method === "POST" && url.pathname.endsWith("/share-target.html")) {
+    event.respondWith(handleShareTarget(event));
+    return;
+  }
+
   if (event.request.method !== "GET") return;
 
   event.respondWith(
@@ -53,3 +68,27 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+async function handleShareTarget(event) {
+  const formData = await event.request.formData();
+  const meta = {
+    title: formData.get("title") || "",
+    text: formData.get("text") || "",
+    url: formData.get("url") || "",
+    files: []
+  };
+
+  const cache = await caches.open(SHARE_CACHE_NAME);
+  const files = formData.getAll("files").filter((f) => f && f.size > 0);
+  files.forEach((file, i) => {
+    const key = "/shared-file-" + i;
+    meta.files.push({ key, name: file.name, type: file.type });
+    cache.put(key, new Response(file, { headers: { "Content-Type": file.type || "application/octet-stream" } }));
+  });
+
+  await cache.put("/shared-meta", new Response(JSON.stringify(meta), {
+    headers: { "Content-Type": "application/json" }
+  }));
+
+  return Response.redirect("./share-target.html?shared=1", 303);
+}

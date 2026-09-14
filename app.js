@@ -11,6 +11,7 @@
   const JOURNEY_KEY = "lokhi_guided_journey";
   const ONBOARD_KEY = "lokhi_onboarded";
   const PROFILE_KEY = "lokhi_profile_overrides";
+  const SHARE_KEY = "lokhi_pending_share";
 
   // ---------------------------------------------------------------------
   // Boot guard: no profile yet → send to onboarding.
@@ -86,6 +87,25 @@
     const t = document.createElement("template");
     t.innerHTML = html.trim();
     return t.content.firstElementChild;
+  }
+  function escapeHtml(s) {
+    const d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+
+  // ---------------------------------------------------------------------
+  // Web Share Target: content received via share-target.html
+  // ---------------------------------------------------------------------
+  function getPendingShare() {
+    try {
+      return JSON.parse(localStorage.getItem(SHARE_KEY) || "null");
+    } catch (e) {
+      return null;
+    }
+  }
+  function clearPendingShare() {
+    localStorage.removeItem(SHARE_KEY);
   }
 
   // ---------------------------------------------------------------------
@@ -277,8 +297,24 @@
     if (getJourneyState().status === "completed") {
       insights.push({ id: "hi_plan", icon: "🌟", text: "Your personalized financial plan is live — check your journey below." });
     }
+    const shared = getPendingShare();
+    if (shared) {
+      const label = shared.title || shared.text || shared.url || (shared.fileCount ? shared.fileCount + " file(s)" : "content");
+      insights.unshift({
+        id: "hi_shared",
+        icon: "📎",
+        text: "Received from Share Sheet: “" + escapeHtml(label) + "”",
+        dismissable: true
+      });
+    }
     root.querySelector("#insights-list").innerHTML = insights.map((i) => `
-      <div class="insight-banner"><span class="icon">${i.icon}</span><p>${i.text}</p></div>`).join("");
+      <div class="insight-banner"><span class="icon">${i.icon}</span><p>${i.text}</p>${i.dismissable ? '<button class="close-btn" data-dismiss-insight="' + i.id + '">✕</button>' : ""}</div>`).join("");
+    root.querySelectorAll("[data-dismiss-insight]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.dismissInsight === "hi_shared") clearPendingShare();
+        renderHome();
+      });
+    });
 
     // continue plan card
     const journey = getJourneyState();
