@@ -37,8 +37,7 @@
       laterPrompts: Object.assign({}, autoMap(DATA.laterPrompts, "status"), saved.laterPrompts || {}),
       investmentQuests: Object.assign({}, autoMap(DATA.investmentQuests, "completed"), saved.investmentQuests || {}),
       activeTab: "home",
-      activeProfileTab: "info",
-      activeDreamLabTab: "quests"
+      activeProfileTab: "info"
     };
   }
 
@@ -399,50 +398,9 @@
   }
 
   // ---------------------------------------------------------------------
-  // DREAM LAB
+  // DREAM LAB — owned entirely by dreamlab.js (screen-dreamlab is just a
+  // mount point). See dreamlab.js, dream-engine.js, dream-calculations.js.
   // ---------------------------------------------------------------------
-  function renderDreamLab() {
-    const root = document.getElementById("screen-dreamlab");
-    root.querySelectorAll(".section-tab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.section === state.activeDreamLabTab));
-    root.querySelectorAll(".pg-section").forEach((s) => s.style.display = s.dataset.section === state.activeDreamLabTab ? "" : "none");
-
-    root.querySelector("#quest-grid").innerHTML = DATA.quests.map((q) => {
-      const qs = state.quests[q.id];
-      const progress = Math.min(1, qs.currentAmount / q.goalAmount);
-      const locked = qs.status === "locked";
-      return `
-      <button class="quest-card ${locked ? "is-locked" : ""}" data-quest="${q.id}" ${locked ? "disabled" : ""}>
-        <span class="icon">${comicIcon(q.icon)}</span>
-        <span class="title">${q.title}</span>
-        <div class="progress-track"><div class="progress-fill" style="width:${pct(progress)}"></div></div>
-        <span class="progress-label">${yen(qs.currentAmount)} / ${yen(q.goalAmount)}</span>
-        <div class="quest-card-foot">
-          <span class="chip chip-${q.difficulty.toLowerCase()}">${q.difficulty}</span>
-          <span class="xp-reward">+${q.xpReward} XP</span>
-        </div>
-      </button>`;
-    }).join("");
-    root.querySelectorAll("#quest-grid [data-quest]").forEach((b) => b.addEventListener("click", () => openQuestSimulator(b.dataset.quest)));
-
-    root.querySelector("#suggested-goals").innerHTML = DATA.suggestedGoals.map((g) => `
-      <div class="card goal-card">
-        <div class="card-row"><span class="icon">${comicIcon(g.icon)}</span><span class="card-title">${g.title}</span></div>
-        <span class="chip chip-neutral">${g.category}</span>
-      </div>`).join("");
-
-    root.querySelector("#personalized-goals").innerHTML = DATA.personalizedGoals.map((g) => `
-      <div class="card goal-card">
-        <div class="card-row"><span class="icon">${comicIcon(g.icon)}</span><span class="card-title">${g.title}</span></div>
-        <p class="why">${g.why}</p>
-        <div class="card-row">
-          <span class="chip chip-neutral">${g.recommendedAction}</span>
-        </div>
-      </div>`).join("");
-  }
-
-  document.querySelectorAll("#screen-dreamlab .section-tab-btn").forEach((b) => {
-    b.addEventListener("click", () => { state.activeDreamLabTab = b.dataset.section; renderDreamLab(); });
-  });
 
   // ---- Simulator modal ---------------------------------------------------
   let simState = null;
@@ -817,7 +775,6 @@
   function init() {
     document.getElementById("levelup-value").textContent = "";
     renderHome();
-    renderDreamLab();
     renderOptimize();
     renderGrow();
     renderProfile();

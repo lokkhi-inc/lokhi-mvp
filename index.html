@@ -28,6 +28,7 @@
 <link rel="apple-touch-startup-image" href="./icons/splash/splash-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)">
 
 <link rel="stylesheet" href="./app-styles.css">
+<link rel="stylesheet" href="./dreamlab-styles.css">
 </head>
 <body>
 
@@ -106,24 +107,7 @@
 
   <!-- ===================== DREAM LAB ===================== -->
   <main class="screen" data-screen="dreamlab" id="screen-dreamlab">
-    <h1 class="screen-title">Dream Lab</h1>
-    <p class="screen-subtitle">Simulate your goals before you commit to them.</p>
-
-    <div class="section-tabs">
-      <button class="section-tab-btn is-active" data-section="quests">Quests</button>
-      <button class="section-tab-btn" data-section="goals">Goals</button>
-    </div>
-
-    <div class="pg-section" data-section="quests">
-      <div class="quest-grid" id="quest-grid"></div>
-    </div>
-
-    <div class="pg-section" data-section="goals" style="display:none;">
-      <div class="card-eyebrow" style="margin-bottom:8px;">Suggested goals</div>
-      <div class="goal-list" id="suggested-goals"></div>
-      <div class="card-eyebrow" style="margin:16px 0 8px;">Personalized for you</div>
-      <div class="goal-list" id="personalized-goals"></div>
-    </div>
+    <div id="dreamlab-root"></div>
   </main>
 
   <!-- ===================== OPTIMIZE ===================== -->
@@ -279,9 +263,27 @@
 
   <div class="xp-toast" id="xp-toast">+0 XP</div>
 
+  <!-- ===================== Dream Lab: full-screen flows ===================== -->
+  <div class="journey-overlay" id="dreamlab-create-overlay"></div>
+  <div class="journey-overlay" id="dreamlab-detail-overlay"></div>
+
+  <!-- ===================== Dream Lab: Fairy Godmother conversation ===================== -->
+  <div class="overlay-scrim" id="fairy-convo-overlay">
+    <div class="sheet-modal" id="fairy-convo-body"></div>
+  </div>
+
+  <!-- ===================== Dream Lab: generic detail sheet (variables, forms) ===================== -->
+  <div class="overlay-scrim" id="dl-sheet-overlay">
+    <div class="sheet-modal" id="dl-sheet-body"></div>
+  </div>
+
 </div>
 
 <script src="./app-data.js"></script>
+<script src="./dreamlab-data.js"></script>
+<script src="./dream-calculations.js"></script>
+<script src="./dream-engine.js"></script>
 <script src="./app.js"></script>
+<script src="./dreamlab.js"></script>
 </body>
 </html>

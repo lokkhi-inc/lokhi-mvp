@@ -1,7 +1,7 @@
 /* Lokhi service worker — minimal cache-first offline support for the app shell,
    plus Web Share Target handling (Android/Chrome; iOS Safari does not support
    share_target, see README). */
-const CACHE_NAME = "lokhi-v2";
+const CACHE_NAME = "lokhi-v3";
 const SHARE_CACHE_NAME = "lokhi-share-v1";
 const CORE_ASSETS = [
   "./",
@@ -11,6 +11,11 @@ const CORE_ASSETS = [
   "./app-data.js",
   "./app-styles.css",
   "./app.js",
+  "./dreamlab-data.js",
+  "./dream-calculations.js",
+  "./dream-engine.js",
+  "./dreamlab.js",
+  "./dreamlab-styles.css",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

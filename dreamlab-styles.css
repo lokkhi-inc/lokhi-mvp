@@ -1,0 +1,257 @@
+/* ==========================================================================
+   Dream Lab — styles
+   Builds on the tokens and primitives in app-styles.css (cards, chips,
+   buttons, sheet-modal, journey-overlay). Everything below is scoped to the
+   `dl-` / `dreamscape-` prefixes so it never collides with the rest of the
+   app.
+   ========================================================================== */
+
+/* ---- Toolbar: view toggle + new dream -------------------------------- */
+
+.dl-toolbar { display: flex; align-items: center; gap: var(--space-3); }
+.dl-view-toggle {
+  flex: 1; display: flex; gap: 4px;
+  background: var(--surface-alt); border-radius: var(--radius-pill); padding: 4px;
+}
+.dl-view-btn {
+  flex: 1; padding: 9px 10px; border-radius: var(--radius-pill);
+  background: transparent; border: none; font-size: 13px; font-weight: 700;
+  color: var(--ink-soft); cursor: pointer;
+}
+.dl-view-btn.is-active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+.dl-empty-state { text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-7) var(--space-5); }
+.dl-empty-state .title { font-size: 17px; font-weight: 700; }
+.dl-empty-state .sub { font-size: 13px; color: var(--ink-soft); max-width: 260px; }
+.dl-empty-state .btn { margin-top: var(--space-2); }
+
+/* ---- Dreamscape ------------------------------------------------------- */
+
+.dreamscape-canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.dreamscape-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dreamscape-lines line { stroke: var(--border-strong); stroke-width: 0.4; stroke-dasharray: 1.4 1.4; }
+
+.dreamscape-avatar {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  z-index: 2;
+}
+.dreamscape-avatar-badge {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--primary); display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-lg);
+  border: 3px solid var(--surface);
+}
+.dreamscape-avatar-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+
+.dreamscape-node {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: none; cursor: pointer; padding: 4px;
+  width: 84px;
+}
+.dreamscape-node-badge {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface);
+  border: 2px solid var(--border-strong);
+  position: relative;
+}
+.dreamscape-node.is-super .dreamscape-node-badge { width: 60px; height: 60px; }
+.dreamscape-node.is-micro .dreamscape-node-badge { width: 44px; height: 44px; }
+.dreamscape-node-badge::before {
+  content: "";
+  position: absolute; inset: -4px; border-radius: 50%;
+  background: conic-gradient(var(--moss) var(--ring, 0deg), var(--surface-alt) 0);
+  z-index: -1;
+}
+.dreamscape-node.status-active .dreamscape-node-badge::before { background: conic-gradient(var(--primary) var(--ring, 0deg), var(--surface-alt) 0); }
+.dreamscape-node.status-exploring .dreamscape-node-badge { border-style: dashed; opacity: 0.75; }
+.dreamscape-node.status-exploring .dreamscape-node-badge::before { background: var(--surface-alt); }
+.dreamscape-node.status-completed .dreamscape-node-badge { border-color: var(--moss); box-shadow: 0 0 0 3px var(--moss-tint); }
+.dreamscape-node-label { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.2; }
+.dreamscape-node-meta { font-size: 10px; color: var(--ink-faint); font-weight: 600; }
+
+.dl-canvas-caption { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: var(--space-4); }
+
+/* ---- Plan view ---------------------------------------------------------- */
+
+.dl-plan-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.dl-plan-card { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
+.dl-plan-card-head { display: flex; align-items: center; gap: var(--space-3); }
+.dl-plan-card-title-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.dl-plan-card-title { font-size: 15px; font-weight: 700; }
+.dl-plan-card-meta { font-size: 12px; color: var(--ink-soft); }
+
+/* ---- Dream detail shell ------------------------------------------------- */
+
+.dl-detail-body { gap: var(--space-4); }
+.dl-type-row { display: flex; gap: var(--space-2); }
+.dl-section { display: flex; flex-direction: column; gap: var(--space-2); }
+.dl-dream-statement { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.dl-back-arrow { font-size: 18px; font-weight: 700; }
+
+.dl-children-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* ---- Editable lists (WHY, memory, review step) -------------------------- */
+
+.dl-editable-list { display: flex; flex-direction: column; gap: 6px; }
+.dl-editable-row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+  background: var(--surface-alt); border-radius: var(--radius-sm); padding: 8px 10px;
+  font-size: 13px;
+}
+.dl-add-input {
+  padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px dashed var(--border-strong);
+  background: transparent; font-size: 13px;
+}
+.dl-add-input:focus { outline: none; border-color: var(--primary); border-style: solid; }
+.dl-chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.dl-removable-chip { display: inline-flex; align-items: center; gap: 4px; }
+.dl-removable-chip button { background: none; border: none; color: inherit; cursor: pointer; display: flex; }
+
+/* ---- Baseline ------------------------------------------------------------ */
+
+.dl-baseline-card { align-items: flex-start; }
+.dl-baseline-value { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.dl-baseline-caption { font-size: 12px; color: var(--ink-soft); }
+.dl-inline-form { display: flex; gap: var(--space-2); align-items: center; margin-top: 6px; }
+.dl-inline-form input {
+  flex: 1; padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  font-size: 14px;
+}
+.dl-inline-form input:focus { outline: none; border-color: var(--primary); }
+
+/* ---- Quests ---------------------------------------------------------- */
+
+.dl-next-quest { background: var(--primary-tint); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: 4px; }
+.dl-next-quest-done { font-size: 13px; color: var(--moss); font-weight: 600; }
+.dl-quest-row { display: flex; align-items: center; gap: var(--space-2); font-size: 14px; padding: 6px 2px; cursor: pointer; }
+.dl-quest-row.is-done span { text-decoration: line-through; color: var(--ink-faint); }
+.dl-quest-list { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+
+/* ---- Variable visualization -------------------------------------------- */
+
+.dl-var-groups { display: flex; flex-direction: column; gap: var(--space-3); }
+.dl-var-group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.dl-var-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.dl-var-chip {
+  display: flex; flex-direction: column; gap: 2px; align-items: flex-start;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 12px; cursor: pointer; text-align: left;
+}
+.dl-var-chip .name { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+.dl-var-chip .value { font-size: 14px; font-weight: 700; }
+
+.dl-var-tree { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.dl-var-tree-row { display: flex; justify-content: center; gap: var(--space-3); flex-wrap: wrap; width: 100%; }
+.dl-var-tree-row.dl-var-tree-single { justify-content: center; }
+.dl-var-tree-connector { width: 2px; height: 16px; background: var(--border-strong); }
+
+.dl-var-detail-value { font-size: 26px; font-weight: 700; }
+.dl-var-source-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+/* ---- Simulation sliders + consequences --------------------------------- */
+
+.dl-slider-groups { display: flex; flex-direction: column; gap: var(--space-4); }
+.dl-consequence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+
+/* ---- Sensitivity --------------------------------------------------------- */
+
+.dl-sensitivity-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.dl-sensitivity-row { display: grid; grid-template-columns: 18px 1fr 2fr; align-items: center; gap: var(--space-2); font-size: 13px; }
+.dl-sensitivity-row .rank { font-weight: 700; color: var(--ink-faint); }
+.dl-sensitivity-row .name { font-weight: 600; }
+.dl-sensitivity-bar-track { height: 8px; border-radius: var(--radius-pill); background: var(--surface-alt); overflow: hidden; }
+.dl-sensitivity-bar { height: 100%; border-radius: var(--radius-pill); background: var(--gold); }
+
+/* ---- Scenarios ----------------------------------------------------------- */
+
+.dl-scenario-presets { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.dl-scenario-chip {
+  padding: 9px 14px; border-radius: var(--radius-pill); background: var(--surface-alt);
+  border: 1.5px solid var(--border); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.dl-scenario-list { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
+.dl-scenario-card { display: flex; flex-direction: column; gap: 6px; }
+.dl-scenario-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.dl-scenario-card-head .name { font-size: 14px; font-weight: 700; }
+.dl-compare-check { font-size: 12px; color: var(--ink-soft); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.dl-scenario-actions { display: flex; gap: var(--space-3); }
+
+/* ---- Considerations -------------------------------------------------- */
+
+.dl-consideration-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.dl-consideration-row {
+  background: var(--surface-alt); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.dl-consideration-row.is-considered { opacity: 0.7; }
+.dl-consideration-head { display: flex; align-items: center; justify-content: space-between; }
+.dl-consideration-head .title { font-size: 14px; font-weight: 700; }
+.dl-consideration-row .desc { font-size: 12px; color: var(--ink-soft); }
+.dl-star-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--gold); }
+.dl-consideration-actions { display: flex; align-items: center; gap: var(--space-4); font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; margin-top: 2px; }
+.dl-consideration-actions label { display: flex; align-items: center; gap: 4px; }
+.dl-note-form { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.dl-note-form textarea {
+  padding: 8px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  font: inherit; font-size: 13px; resize: vertical;
+}
+
+/* ---- Decision journal --------------------------------------------------- */
+
+.dl-decision-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.dl-decision-card { display: flex; flex-direction: column; gap: 6px; }
+.dl-decision-card .decision { font-size: 14px; font-weight: 700; }
+.dl-decision-card .why { font-size: 13px; color: var(--ink-soft); }
+.dl-decision-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.dl-decision-form input {
+  padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); font-size: 13px;
+}
+.dl-decision-form input:focus { outline: none; border-color: var(--primary); }
+
+/* ---- Saved items ---------------------------------------------------------- */
+
+.dl-saved-list { display: flex; flex-direction: column; gap: 6px; }
+.dl-saved-row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+  background: var(--surface-alt); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 13px;
+}
+
+/* ---- Memory panel ----------------------------------------------------- */
+
+.dl-memory-grid { display: flex; flex-direction: column; gap: var(--space-4); }
+.dl-memory-category { display: flex; flex-direction: column; gap: 6px; }
+
+/* ---- Fairy Godmother: dream-context card + chat --------------------- */
+
+.dl-fairy-card { flex-direction: row; align-items: center; gap: var(--space-3); background: var(--primary-tint); border: none; }
+.dl-fairy-card .icon { font-size: 24px; }
+.dl-fairy-card p { flex: 1; font-size: 13px; line-height: 1.4; color: var(--primary-dark); }
+
+.fairy-convo-messages { display: flex; flex-direction: column; gap: 8px; max-height: 40vh; overflow-y: auto; padding: 4px 2px; }
+.fairy-msg { max-width: 82%; padding: 10px 14px; border-radius: var(--radius-md); font-size: 14px; line-height: 1.4; }
+.fairy-msg.is-fairy { align-self: flex-start; background: var(--primary-tint); color: var(--primary-dark); border-bottom-left-radius: 4px; }
+.fairy-msg.is-user { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 4px; }
+.dl-fc-input-row { display: flex; gap: var(--space-2); }
+.dl-fc-input-row input {
+  flex: 1; padding: 12px 14px; border-radius: var(--radius-pill); border: 1.5px solid var(--border); font-size: 14px;
+}
+.dl-fc-input-row input:focus { outline: none; border-color: var(--primary); }
+
+/* ---- Create Dream flow: free-text answer step -------------------------- */
+
+.dl-answer-textarea {
+  width: 100%; padding: 14px 16px; border-radius: var(--radius-md); border: 1.5px solid var(--border);
+  font: inherit; font-size: 16px; resize: vertical; min-height: 100px;
+  background: var(--surface);
+}
+.dl-answer-textarea:focus { outline: none; border-color: var(--primary); }
+.dl-review-block { display: flex; flex-direction: column; gap: 4px; }
