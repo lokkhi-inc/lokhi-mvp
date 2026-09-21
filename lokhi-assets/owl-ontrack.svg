@@ -1,16 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Owl on track">
-  <ellipse cx="82" cy="182" rx="10" ry="6" fill="#D8A83E"/>
-  <ellipse cx="118" cy="182" rx="10" ry="6" fill="#D8A83E"/>
-  <ellipse cx="100" cy="125" rx="52" ry="62" fill="#6B8F5C"/>
-  <ellipse cx="55" cy="128" rx="17" ry="30" fill="#557548"/>
-  <ellipse cx="145" cy="128" rx="17" ry="30" fill="#557548"/>
-  <ellipse cx="100" cy="144" rx="30" ry="38" fill="#F5EEE1"/>
-  <path d="M84,34 L78,48 L93,46 Z" fill="#557548"/>
-  <path d="M116,34 L122,48 L107,46 Z" fill="#557548"/>
-  <circle cx="100" cy="68" r="40" fill="#6B8F5C"/>
-  <circle cx="84" cy="65" r="15" fill="#F5EEE1"/>
-  <circle cx="116" cy="65" r="15" fill="#F5EEE1"/>
-  <circle cx="86" cy="67" r="6" fill="#2B2620"/>
-  <circle cx="114" cy="67" r="6" fill="#2B2620"/>
-  <path d="M100,78 L93,89 L107,89 Z" fill="#D8A83E"/>
+  <defs>
+    <linearGradient id="bodyGrad-ontrack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7CA26B"/>
+      <stop offset="1" stop-color="#557548"/>
+    </linearGradient>
+    <linearGradient id="wingGrad-ontrack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5C7D4F"/>
+      <stop offset="1" stop-color="#456238"/>
+    </linearGradient>
+    <linearGradient id="bellyGrad-ontrack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFDF8"/>
+      <stop offset="1" stop-color="#F0E7D6"/>
+    </linearGradient>
+    <linearGradient id="beakGrad-ontrack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E3B657"/>
+      <stop offset="1" stop-color="#C6912E"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="100" cy="190" rx="46" ry="7" fill="#2B2620" opacity="0.08"/>
+
+  <!-- feet -->
+  <ellipse cx="80" cy="182" rx="9" ry="6" fill="url(#beakGrad-ontrack)"/>
+  <ellipse cx="120" cy="182" rx="9" ry="6" fill="url(#beakGrad-ontrack)"/>
+
+  <!-- wings -->
+  <path d="M58,92 C42,100 34,128 46,158 C58,144 64,116 58,92 Z" fill="url(#wingGrad-ontrack)"/>
+  <path d="M142,92 C158,100 166,128 154,158 C142,144 136,116 142,92 Z" fill="url(#wingGrad-ontrack)"/>
+
+  <!-- body + head, one soft blob -->
+  <path d="M100,40
+           C90,40 82,45 76,52
+           C68,49 61,53 62,62
+           C48,74 40,94 40,116
+           C40,154 66,182 100,182
+           C134,182 160,154 160,116
+           C160,94 152,74 138,62
+           C139,53 132,49 124,52
+           C118,45 110,40 100,40 Z"
+        fill="url(#bodyGrad-ontrack)"/>
+
+  <!-- belly -->
+  <path d="M100,96
+           C118,96 129,112 128,134
+           C127,158 116,174 100,174
+           C84,174 73,158 72,134
+           C71,112 82,96 100,96 Z"
+        fill="url(#bellyGrad-ontrack)"/>
+
+  <!-- eyes -->
+  <ellipse cx="82" cy="92" rx="15" ry="16" fill="#FFFDF8"/>
+  <ellipse cx="118" cy="92" rx="15" ry="16" fill="#FFFDF8"/>
+  <circle cx="85" cy="94" r="6" fill="#2B2620"/>
+  <circle cx="115" cy="94" r="6" fill="#2B2620"/>
+  <circle cx="87.5" cy="91.5" r="1.8" fill="#FFFDF8"/>
+  <circle cx="117.5" cy="91.5" r="1.8" fill="#FFFDF8"/>
+
+  <!-- beak -->
+  <path d="M100,104 C95,104 91,108 92,113 C93,117 96,120 100,120 C104,120 107,117 108,113 C109,108 105,104 100,104 Z"
+        fill="url(#beakGrad-ontrack)"/>
 </svg>

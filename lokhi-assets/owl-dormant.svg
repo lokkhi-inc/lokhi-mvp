@@ -1,4 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Dormant owl egg">
-  <ellipse cx="100" cy="118" rx="46" ry="58" fill="#C9BFA8"/>
-  <path d="M78,80 L92,92 L84,100 L104,112" fill="none" stroke="#A99C82" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="eggGrad-dormant" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DCD3BC"/>
+      <stop offset="1" stop-color="#C2B79C"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="100" cy="176" rx="40" ry="6" fill="#2B2620" opacity="0.07"/>
+
+  <path d="M100,44
+           C130,44 150,86 150,120
+           C150,155 128,178 100,178
+           C72,178 50,155 50,120
+           C50,86 70,44 100,44 Z"
+        fill="url(#eggGrad-dormant)"/>
+
+  <!-- sleepy closed eyes -->
+  <path d="M78,108 C82,112 88,112 92,108" fill="none" stroke="#8B7F65" stroke-width="3" stroke-linecap="round"/>
+  <path d="M108,108 C112,112 118,112 122,108" fill="none" stroke="#8B7F65" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- zzz -->
+  <text x="128" y="76" font-family="sans-serif" font-size="16" font-weight="600" fill="#A99C82" opacity="0.8">z</text>
+  <text x="138" y="64" font-family="sans-serif" font-size="12" font-weight="600" fill="#A99C82" opacity="0.6">z</text>
 </svg>
