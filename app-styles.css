@@ -255,6 +255,19 @@ input, select, textarea { font: inherit; color: inherit; }
 .tab-bar-btn.is-active { color: var(--primary); }
 .tab-bar-btn.is-active .tab-icon { transform: translateY(-1px); }
 
+.header-profile-btn {
+  flex-direction: row;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: var(--primary-tint);
+  color: var(--primary-dark);
+}
+.header-profile-btn .tab-icon { font-size: 17px; }
+.header-profile-btn.is-active { background: var(--primary); color: #FFFFFF; }
+.header-profile-btn.is-active .tab-icon { transform: none; }
+
 /* ==========================================================================
    Cards & primitives
    ========================================================================== */
