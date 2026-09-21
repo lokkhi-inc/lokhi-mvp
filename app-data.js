@@ -108,7 +108,7 @@ window.APP_DATA = {
     { id: "outside_brokerage", icon: "chart-increasing", question: "Any brokerage accounts outside NISA?", category: "Investing", status: "pending" }
   ],
 
-  // ---- Playground: quests ----------------------------------------------
+  // ---- Dream Lab: quests ----------------------------------------------
   quests: [
     {
       id: "emergency_fund", title: "Emergency Fund", icon: "ring-buoy", category: "saving",
@@ -364,7 +364,7 @@ window.APP_DATA = {
       "You have about ¥430,000/month unassigned. Want to see where it could go?",
       "Your streak is 26 weeks. Consistency is doing more than any single big move would."
     ],
-    playground: [
+    dreamlab: [
       "Try dragging the sliders on NISA Ninja — small monthly changes add up more than you'd expect.",
       "Not sure where to start? Emergency Fund is the lowest-risk quest to make progress on this week."
     ],

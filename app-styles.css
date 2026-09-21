@@ -493,7 +493,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .mission-xp { font-size: 12px; font-weight: 700; color: var(--gold); white-space: nowrap; }
 
 /* ==========================================================================
-   Quest grid (Playground)
+   Quest grid (Dream Lab)
    ========================================================================== */
 
 .quest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }

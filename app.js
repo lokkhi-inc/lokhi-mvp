@@ -38,7 +38,7 @@
       investmentQuests: Object.assign({}, autoMap(DATA.investmentQuests, "completed"), saved.investmentQuests || {}),
       activeTab: "home",
       activeProfileTab: "info",
-      activePlaygroundTab: "quests"
+      activeDreamLabTab: "quests"
     };
   }
 
@@ -399,12 +399,12 @@
   }
 
   // ---------------------------------------------------------------------
-  // PLAYGROUND
+  // DREAM LAB
   // ---------------------------------------------------------------------
-  function renderPlayground() {
-    const root = document.getElementById("screen-playground");
-    root.querySelectorAll(".section-tab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.section === state.activePlaygroundTab));
-    root.querySelectorAll(".pg-section").forEach((s) => s.style.display = s.dataset.section === state.activePlaygroundTab ? "" : "none");
+  function renderDreamLab() {
+    const root = document.getElementById("screen-dreamlab");
+    root.querySelectorAll(".section-tab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.section === state.activeDreamLabTab));
+    root.querySelectorAll(".pg-section").forEach((s) => s.style.display = s.dataset.section === state.activeDreamLabTab ? "" : "none");
 
     root.querySelector("#quest-grid").innerHTML = DATA.quests.map((q) => {
       const qs = state.quests[q.id];
@@ -440,8 +440,8 @@
       </div>`).join("");
   }
 
-  document.querySelectorAll("#screen-playground .section-tab-btn").forEach((b) => {
-    b.addEventListener("click", () => { state.activePlaygroundTab = b.dataset.section; renderPlayground(); });
+  document.querySelectorAll("#screen-dreamlab .section-tab-btn").forEach((b) => {
+    b.addEventListener("click", () => { state.activeDreamLabTab = b.dataset.section; renderDreamLab(); });
   });
 
   // ---- Simulator modal ---------------------------------------------------
@@ -768,7 +768,7 @@
       }));
     } else if (step.actionType === "simulate") {
       choiceWrap.style.display = "";
-      choiceWrap.innerHTML = `<div class="insight-banner"><span class="icon">${comicIcon("video-game")}</span><p>Try this in the Playground simulator anytime — for now, tap Continue to keep your plan moving.</p></div>`;
+      choiceWrap.innerHTML = `<div class="insight-banner"><span class="icon">${comicIcon("video-game")}</span><p>Try this in the Dream Lab simulator anytime — for now, tap Continue to keep your plan moving.</p></div>`;
     } else {
       choiceWrap.style.display = "none";
       choiceWrap.innerHTML = "";
@@ -817,7 +817,7 @@
   function init() {
     document.getElementById("levelup-value").textContent = "";
     renderHome();
-    renderPlayground();
+    renderDreamLab();
     renderOptimize();
     renderGrow();
     renderProfile();
