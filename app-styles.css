@@ -5,31 +5,31 @@
 
 :root {
   /* --- palette -------------------------------------------------------- */
-  --bg: #F5EEE1;
-  --surface: #FFFDF8;
-  --surface-alt: #EDE3D0;
-  --surface-sunken: #E9DFCB;
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --surface-alt: #F4F4F5;
+  --surface-sunken: #EEEEEF;
 
   --primary: #2E5C8A;
   --primary-light: #5D8FC4;
   --primary-dark: #1F4266;
-  --primary-tint: #E4ECF4;
+  --primary-tint: #E9F0F8;
 
-  --ink: #2B2620;
-  --ink-soft: #6B6255;
-  --ink-faint: #9A9182;
+  --ink: #22252A;
+  --ink-soft: #70747B;
+  --ink-faint: #A8ADB5;
 
   --coral: #C9502F;
-  --coral-tint: #F6E4DD;
-  --moss: #4E7A44;
-  --moss-tint: #E5EEDF;
+  --coral-tint: #FBEAE4;
+  --moss: #3F8A4C;
+  --moss-tint: #E9F5EA;
   --gold: #B8842A;
-  --gold-tint: #F5E9D2;
+  --gold-tint: #FBF1DE;
   --terracotta: #A85A3D;
-  --terracotta-tint: #F1E1D6;
+  --terracotta-tint: #F5E9E1;
 
-  --border: #E4D9C4;
-  --border-strong: #D8C9AE;
+  --border: #E9E9EB;
+  --border-strong: #DADADD;
 
   /* --- shape / elevation ------------------------------------------------ */
   --radius-lg: 20px;
@@ -37,9 +37,9 @@
   --radius-sm: 10px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 2px rgba(90, 70, 40, 0.06), 0 1px 1px rgba(90, 70, 40, 0.04);
-  --shadow-md: 0 6px 20px rgba(90, 70, 40, 0.10), 0 2px 6px rgba(90, 70, 40, 0.06);
-  --shadow-lg: 0 16px 40px rgba(90, 70, 40, 0.16), 0 4px 12px rgba(90, 70, 40, 0.08);
+  --shadow-sm: 0 1px 2px rgba(20, 20, 25, 0.05), 0 1px 1px rgba(20, 20, 25, 0.04);
+  --shadow-md: 0 6px 20px rgba(20, 20, 25, 0.08), 0 2px 6px rgba(20, 20, 25, 0.05);
+  --shadow-lg: 0 16px 40px rgba(20, 20, 25, 0.14), 0 4px 12px rgba(20, 20, 25, 0.07);
 
   /* --- spacing ----------------------------------------------------------- */
   --space-1: 4px;
@@ -92,6 +92,44 @@ input, select, textarea { font: inherit; color: inherit; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+
+/* ==========================================================================
+   Icons — comic (Fluent Emoji Flat, colorful, gamified content) and
+   line (Feather, monochrome, inherits currentColor, UI chrome)
+   ========================================================================== */
+
+.icon-comic {
+  width: 1em; height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
+.icon-line {
+  width: 1em; height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+.icon-line-home { -webkit-mask-image: url('./lokhi-assets/icons/line/home.svg'); mask-image: url('./lokhi-assets/icons/line/home.svg'); }
+.icon-line-play-circle { -webkit-mask-image: url('./lokhi-assets/icons/line/play-circle.svg'); mask-image: url('./lokhi-assets/icons/line/play-circle.svg'); }
+.icon-line-zap { -webkit-mask-image: url('./lokhi-assets/icons/line/zap.svg'); mask-image: url('./lokhi-assets/icons/line/zap.svg'); }
+.icon-line-trending-up { -webkit-mask-image: url('./lokhi-assets/icons/line/trending-up.svg'); mask-image: url('./lokhi-assets/icons/line/trending-up.svg'); }
+.icon-line-user { -webkit-mask-image: url('./lokhi-assets/icons/line/user.svg'); mask-image: url('./lokhi-assets/icons/line/user.svg'); }
+.icon-line-x { -webkit-mask-image: url('./lokhi-assets/icons/line/x.svg'); mask-image: url('./lokhi-assets/icons/line/x.svg'); }
+.icon-line-check { -webkit-mask-image: url('./lokhi-assets/icons/line/check.svg'); mask-image: url('./lokhi-assets/icons/line/check.svg'); }
+.icon-line-check-circle { -webkit-mask-image: url('./lokhi-assets/icons/line/check-circle.svg'); mask-image: url('./lokhi-assets/icons/line/check-circle.svg'); }
+.icon-line-arrow-right { -webkit-mask-image: url('./lokhi-assets/icons/line/arrow-right.svg'); mask-image: url('./lokhi-assets/icons/line/arrow-right.svg'); }
+.icon-line-lock { -webkit-mask-image: url('./lokhi-assets/icons/line/lock.svg'); mask-image: url('./lokhi-assets/icons/line/lock.svg'); }
+.icon-line-file-text { -webkit-mask-image: url('./lokhi-assets/icons/line/file-text.svg'); mask-image: url('./lokhi-assets/icons/line/file-text.svg'); }
+
 
 /* ==========================================================================
    App shell
@@ -196,7 +234,7 @@ input, select, textarea { font: inherit; color: inherit; }
   background: var(--surface);
   border-top: 1px solid var(--border);
   padding: 8px var(--space-2) calc(8px + var(--safe-bottom));
-  box-shadow: 0 -2px 16px rgba(90, 70, 40, 0.08);
+  box-shadow: 0 -2px 16px rgba(20, 20, 25, 0.06);
 }
 .tab-bar-btn {
   flex: 1;
@@ -652,7 +690,7 @@ input, select, textarea { font: inherit; color: inherit; }
 
 .overlay-scrim {
   position: fixed; inset: 0; z-index: 50;
-  background: rgba(43, 38, 32, 0.4);
+  background: rgba(20, 20, 25, 0.45);
   display: none;
   align-items: flex-end;
   justify-content: center;

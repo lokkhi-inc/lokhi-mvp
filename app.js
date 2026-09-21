@@ -95,6 +95,21 @@
   }
 
   // ---------------------------------------------------------------------
+  // Icons — comic (Fluent Emoji Flat, colorful, for gamified content) and
+  // line (Feather, monochrome, inherits text color, for UI chrome)
+  // ---------------------------------------------------------------------
+  function comicIcon(key, opts) {
+    opts = opts || {};
+    const size = opts.size ? `width:${opts.size}px;height:${opts.size}px;` : "";
+    return `<img class="icon-comic ${opts.cls || ""}" style="${size}" src="./lokhi-assets/icons/comic/${key}.svg" alt="">`;
+  }
+  function lineIcon(name, opts) {
+    opts = opts || {};
+    const size = opts.size ? `width:${opts.size}px;height:${opts.size}px;` : "";
+    return `<span class="icon-line icon-line-${name} ${opts.cls || ""}" style="${size}"></span>`;
+  }
+
+  // ---------------------------------------------------------------------
   // Web Share Target: content received via share-target.html
   // ---------------------------------------------------------------------
   function getPendingShare() {
@@ -251,8 +266,8 @@
     document.getElementById("header-streak").textContent = p.streakWeeks + "w";
 
     // character card
-    const avatarIcon = (DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "🧭";
-    root.querySelector("#character-avatar").textContent = avatarIcon;
+    const avatarIcon = (DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "compass";
+    root.querySelector("#character-avatar").innerHTML = comicIcon(avatarIcon);
     root.querySelector("#character-level").textContent = "Level " + p.level;
     root.querySelector("#character-archetype").textContent = capitalize(p.archetype) + " · " + p.streakWeeks + "-week streak";
     root.querySelector("#xp-fill").style.width = pct(p.xp / p.xpForNextLevel);
@@ -295,20 +310,20 @@
     // insights
     const insights = DATA.homeInsights.slice();
     if (getJourneyState().status === "completed") {
-      insights.push({ id: "hi_plan", icon: "🌟", text: "Your personalized financial plan is live — check your journey below." });
+      insights.push({ id: "hi_plan", icon: "star", text: "Your personalized financial plan is live — check your journey below." });
     }
     const shared = getPendingShare();
     if (shared) {
       const label = shared.title || shared.text || shared.url || (shared.fileCount ? shared.fileCount + " file(s)" : "content");
       insights.unshift({
         id: "hi_shared",
-        icon: "📎",
+        icon: "paperclip",
         text: "Received from Share Sheet: “" + escapeHtml(label) + "”",
         dismissable: true
       });
     }
     root.querySelector("#insights-list").innerHTML = insights.map((i) => `
-      <div class="insight-banner"><span class="icon">${i.icon}</span><p>${i.text}</p>${i.dismissable ? '<button class="close-btn" data-dismiss-insight="' + i.id + '">✕</button>' : ""}</div>`).join("");
+      <div class="insight-banner"><span class="icon">${comicIcon(i.icon)}</span><p>${i.text}</p>${i.dismissable ? '<button class="close-btn" data-dismiss-insight="' + i.id + '">' + lineIcon("x") + "</button>" : ""}</div>`).join("");
     root.querySelectorAll("[data-dismiss-insight]").forEach((btn) => {
       btn.addEventListener("click", () => {
         if (btn.dataset.dismissInsight === "hi_shared") clearPendingShare();
@@ -323,12 +338,12 @@
       continueWrap.style.display = "";
       continueWrap.innerHTML = `
         <button class="card continue-plan-card" id="continue-plan-btn" style="border:none;width:100%;cursor:pointer;">
-          <span class="icon">🧭</span>
+          <span class="icon">${comicIcon("compass")}</span>
           <span class="body">
             <span class="title">Continue building your plan</span>
             <span class="meta">Step ${journey.currentStep + 1} of ${DATA.guidedPlanJourney.steps.length}</span>
           </span>
-          <span>→</span>
+          <span>${lineIcon("arrow-right")}</span>
         </button>`;
       continueWrap.querySelector("#continue-plan-btn").addEventListener("click", () => openGuidedJourney(journey.currentStep));
     } else {
@@ -344,9 +359,9 @@
       const status = qs.status;
       return `
       <div class="journey-item is-${status === "active" && progress >= 1 ? "completed" : status}">
-        <div class="journey-node">${status === "locked" ? "🔒" : (progress >= 1 ? "✓" : "")}</div>
+        <div class="journey-node">${status === "locked" ? lineIcon("lock") : (progress >= 1 ? lineIcon("check") : "")}</div>
         <button class="card journey-card" data-quest="${q.id}" style="border:none;width:100%;cursor:pointer;">
-          <span class="icon">${q.icon}</span>
+          <span class="icon">${comicIcon(q.icon)}</span>
           <span class="body">
             <span class="title">${q.title}</span>
             <span class="meta">${yen(qs.currentAmount)} of ${yen(q.goalAmount)}</span>
@@ -361,7 +376,7 @@
       const done = state.missions[m.id].completed;
       return `
       <button class="mission-item ${done ? "is-done" : ""}" data-mission="${m.id}" style="border:none;">
-        <span class="mission-check">✓</span>
+        <span class="mission-check">${done ? lineIcon("check") : ""}</span>
         <span class="mission-title">${m.title}</span>
         <span class="mission-xp">+${m.xpReward} XP</span>
       </button>`;
@@ -397,7 +412,7 @@
       const locked = qs.status === "locked";
       return `
       <button class="quest-card ${locked ? "is-locked" : ""}" data-quest="${q.id}" ${locked ? "disabled" : ""}>
-        <span class="icon">${q.icon}</span>
+        <span class="icon">${comicIcon(q.icon)}</span>
         <span class="title">${q.title}</span>
         <div class="progress-track"><div class="progress-fill" style="width:${pct(progress)}"></div></div>
         <span class="progress-label">${yen(qs.currentAmount)} / ${yen(q.goalAmount)}</span>
@@ -411,13 +426,13 @@
 
     root.querySelector("#suggested-goals").innerHTML = DATA.suggestedGoals.map((g) => `
       <div class="card goal-card">
-        <div class="card-row"><span class="icon">${g.icon}</span><span class="card-title">${g.title}</span></div>
+        <div class="card-row"><span class="icon">${comicIcon(g.icon)}</span><span class="card-title">${g.title}</span></div>
         <span class="chip chip-neutral">${g.category}</span>
       </div>`).join("");
 
     root.querySelector("#personalized-goals").innerHTML = DATA.personalizedGoals.map((g) => `
       <div class="card goal-card">
-        <div class="card-row"><span class="icon">${g.icon}</span><span class="card-title">${g.title}</span></div>
+        <div class="card-row"><span class="icon">${comicIcon(g.icon)}</span><span class="card-title">${g.title}</span></div>
         <p class="why">${g.why}</p>
         <div class="card-row">
           <span class="chip chip-neutral">${g.recommendedAction}</span>
@@ -480,7 +495,7 @@
           <div class="value" id="sim-optimized-val"></div>
         </div>
       </div>
-      ${showReturn ? `<div class="insight-banner"><span class="icon">🥷</span><p id="sim-tax-note"></p></div>` : ""}
+      ${showReturn ? `<div class="insight-banner"><span class="icon">${comicIcon("ninja")}</span><p id="sim-tax-note"></p></div>` : ""}
       <div>
         <div class="card-eyebrow" style="margin-bottom:8px;">What if</div>
         <div class="quick-question-row">
@@ -552,7 +567,7 @@
     root.querySelector("#opportunity-list").innerHTML = DATA.opportunities.map((o) => `
       <div class="card opportunity-card">
         <div class="opportunity-head">
-          <span class="icon">${o.icon}</span>
+          <span class="icon">${comicIcon(o.icon)}</span>
           <span class="title">${o.title}</span>
         </div>
         <div class="opportunity-badges">
@@ -572,26 +587,26 @@
   // ---------------------------------------------------------------------
   // GROW
   // ---------------------------------------------------------------------
-  const PLANT_EMOJI = { seed: "🌱", sprout: "🌿", bloom: "🌸", tree: "🌳" };
+  const PLANT_EMOJI = { seed: "seedling", sprout: "herb", bloom: "cherry-blossom", tree: "deciduous-tree" };
   function renderGrow() {
     const root = document.getElementById("screen-grow");
     root.querySelector("#garden-plot").innerHTML = DATA.investmentCategories.map((c) => `
       <div class="plant-tile">
-        <span class="plant-emoji" style="font-size:${18 + c.allocationPct * 40}px;">${PLANT_EMOJI[c.plantStage]}</span>
+        <span class="plant-emoji">${comicIcon(PLANT_EMOJI[c.plantStage], { size: 18 + c.allocationPct * 40 })}</span>
         <span class="plant-name">${c.name}</span>
         <span class="plant-pct">${pct(c.allocationPct)} · ${yen(c.currentValue)}</span>
       </div>`).join("");
 
     root.querySelector("#investment-explorer").innerHTML = DATA.investmentExplorer.map((i) => `
       <div class="explorer-item">
-        <span class="icon">${i.icon}</span>
+        <span class="icon">${comicIcon(i.icon)}</span>
         <span class="body"><span class="name">${i.name}</span><span class="desc">${i.description}</span></span>
         <span class="meta">${i.risk}<br>${i.horizon}</span>
       </div>`).join("");
 
     root.querySelector("#theme-grid").innerHTML = DATA.marketThemes.map((t) => `
       <button class="theme-card" data-theme="${t.id}" style="border:none;">
-        <span class="icon">${t.icon}</span>
+        <span class="icon">${comicIcon(t.icon)}</span>
         <span class="body"><span class="title">${t.title}</span><span class="summary">${t.summary}</span></span>
         <span class="exposure">${pct(t.userExposurePct)}<br><span style="font-weight:600;color:var(--ink-faint);">exposure</span></span>
       </button>`).join("");
@@ -601,8 +616,8 @@
       const done = state.investmentQuests[q.id].completed;
       return `
       <button class="mission-item ${done ? "is-done" : ""}" data-iquest="${q.id}" style="border:none;">
-        <span class="mission-check">✓</span>
-        <span class="mission-title">${q.icon} ${q.title} · ${q.estMinutes} min</span>
+        <span class="mission-check">${done ? lineIcon("check") : ""}</span>
+        <span class="mission-title">${comicIcon(q.icon)} ${q.title} · ${q.estMinutes} min</span>
         <span class="mission-xp">+${q.xpReward} XP</span>
       </button>`;
     }).join("");
@@ -620,7 +635,7 @@
     const t = DATA.marketThemes.find((x) => x.id === themeId);
     document.getElementById("theme-detail-body").innerHTML = `
       <div class="sheet-modal-handle"></div>
-      <div class="sheet-modal-head"><span class="title">${t.icon} ${t.title}</span><button class="close-btn" data-close-overlay="theme-detail-overlay">✕</button></div>
+      <div class="sheet-modal-head"><span class="title">${comicIcon(t.icon)} ${t.title}</span><button class="close-btn" data-close-overlay="theme-detail-overlay">${lineIcon("x")}</button></div>
       <p style="font-size:14px;line-height:1.6;">${t.summary}</p>
       <div class="card-flat">
         <div class="card-eyebrow">Why it matters</div>
@@ -644,7 +659,7 @@
     const p = state.profile;
     root.querySelector("#profile-name").textContent = p.name;
     root.querySelector("#profile-archetype-label").textContent = capitalize(p.archetype);
-    root.querySelector("#profile-avatar-icon").textContent = (DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "🧭";
+    root.querySelector("#profile-avatar-icon").innerHTML = comicIcon((DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "compass");
 
     root.querySelectorAll(".profile-subtab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.profileTab === state.activeProfileTab));
     root.querySelectorAll(".profile-section").forEach((s) => s.style.display = s.dataset.profileSection === state.activeProfileTab ? "" : "none");
@@ -657,7 +672,7 @@
       const complete = !!filled[f.id] || (f.id === "nisa_statement" && p.nisaUsage > 0);
       return `
       <div class="checklist-item ${complete ? "is-complete" : "is-incomplete"}">
-        <span class="status-dot">${complete ? "✓" : ""}</span>
+        <span class="status-dot">${complete ? lineIcon("check") : ""}</span>
         <span class="body">
           <span class="field-label">${f.label}</span>
           ${f.helpText ? `<span class="field-help">${f.helpText}</span>` : ""}
@@ -671,7 +686,7 @@
       if (status !== "pending") return "";
       return `
       <div class="card later-prompt-card">
-        <span class="icon">${lp.icon}</span>
+        <span class="icon">${comicIcon(lp.icon)}</span>
         <span class="question">${lp.question}</span>
         <button class="btn btn-secondary btn-sm" data-answer="${lp.id}">Add</button>
         <button class="btn btn-ghost btn-sm" data-skip="${lp.id}">Skip</button>
@@ -683,7 +698,7 @@
     // archetype
     root.querySelector("#archetype-grid").innerHTML = DATA.archetypes.map((a) => `
       <button class="archetype-card ${p.archetype === a.id ? "is-selected" : ""}" data-archetype="${a.id}">
-        <span class="icon">${a.icon}</span>
+        <span class="icon">${comicIcon(a.icon)}</span>
         <span class="name">${a.label}</span>
       </button>`).join("");
     root.querySelectorAll("[data-archetype]").forEach((b) => b.addEventListener("click", () => {
@@ -700,7 +715,7 @@
       const earned = state.badges[b.id].earned;
       return `
       <div class="badge-tile ${earned ? "" : "is-locked"}">
-        <div class="badge-circle">${b.icon}</div>
+        <div class="badge-circle">${comicIcon(b.icon)}</div>
         <span class="badge-name">${b.name}</span>
       </div>`;
     }).join("");
@@ -753,7 +768,7 @@
       }));
     } else if (step.actionType === "simulate") {
       choiceWrap.style.display = "";
-      choiceWrap.innerHTML = `<div class="insight-banner"><span class="icon">🎮</span><p>Try this in the Playground simulator anytime — for now, tap Continue to keep your plan moving.</p></div>`;
+      choiceWrap.innerHTML = `<div class="insight-banner"><span class="icon">${comicIcon("video-game")}</span><p>Try this in the Playground simulator anytime — for now, tap Continue to keep your plan moving.</p></div>`;
     } else {
       choiceWrap.style.display = "none";
       choiceWrap.innerHTML = "";

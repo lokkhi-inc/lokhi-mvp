@@ -159,8 +159,8 @@ def downsample(src, src_size, dst_size):
 # Fairy godmother mark — defined in a 0..100 viewBox, 3 shapes.
 # ---------------------------------------------------------------------------
 
-BEIGE = (0xF5, 0xEE, 0xE1, 255)
-CREAM = (0xF5, 0xEE, 0xE1, 255)
+BEIGE = (0xFA, 0xFA, 0xFA, 255)
+CREAM = (0xFA, 0xFA, 0xFA, 255)
 BLUE = (0x2E, 0x5C, 0x8A, 255)
 GOLD = (0xD8, 0xA8, 0x3E, 255)
 

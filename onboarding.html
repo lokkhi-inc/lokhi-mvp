@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#F5EEE1">
+<meta name="theme-color" content="#FAFAFA">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
@@ -60,6 +60,10 @@
 
   let stepIndex = 0;
 
+  function comicIcon(key) {
+    return `<img class="icon-comic" src="./lokhi-assets/icons/comic/${key}.svg" alt="">`;
+  }
+
   function goNext() {
     const steps = baseSteps();
     if (stepIndex < steps.length - 1) { stepIndex++; render(); }
@@ -93,7 +97,7 @@
       required ? "Accounts · required" : "Accounts · optional",
       title, help,
       `<div class="upload-dropzone ${uploaded ? "is-uploaded" : ""}" id="ob-dropzone">
-        <span class="icon">${uploaded ? "✅" : "📄"}</span>
+        <span class="icon">${uploaded ? '<span class="icon-line icon-line-check-circle"></span>' : '<span class="icon-line icon-line-file-text"></span>'}</span>
         <span>${uploaded ? "Uploaded — thanks" : "Tap to upload a PDF"}</span>
       </div>
       <input type="file" accept="application/pdf" id="ob-file" class="visually-hidden">`,
@@ -226,7 +230,7 @@
       const archetypes = window.APP_DATA.archetypes;
       stepShell("Your financial personality", "Which one feels like you?", "Pick, or design your own. This can change anytime in Profile.",
         `<div class="archetype-onboard-grid" id="ob-archetype-grid">
-          ${archetypes.map((a) => `<button class="option-card ${answers.archetype === a.id ? "is-selected" : ""}" data-archetype="${a.id}" type="button"><span class="icon">${a.icon}</span><span class="label">${a.label}</span></button>`).join("")}
+          ${archetypes.map((a) => `<button class="option-card ${answers.archetype === a.id ? "is-selected" : ""}" data-archetype="${a.id}" type="button"><span class="icon">${comicIcon(a.icon)}</span><span class="label">${a.label}</span></button>`).join("")}
         </div>
         <div class="field" id="ob-custom-wrap" style="display:${answers.archetype === "custom" ? "" : "none"};">
           <label for="ob-custom">Describe your own</label>
@@ -245,7 +249,7 @@
     done: () => {
       stepShell("You're all set", "Welcome to Lokhi, " + (answers.name || "friend"), "We'll walk you through your first financial plan next — it takes about 10 minutes, and you can save and continue anytime.",
         `<div class="card-flat" style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding:32px 16px;">
-          <span style="font-size:40px;">🪄</span>
+          <img class="icon-comic" src="./lokhi-assets/icons/comic/magic-wand.svg" alt="" style="width:40px;height:40px;">
           <p style="font-size:14px;color:var(--ink-soft);">Your Fairy Godmother will ask a few more questions along the way — always optional, always in context.</p>
         </div>`,
         `<button class="btn btn-primary btn-block" id="ob-finish">Enter Lokhi</button>`,

@@ -65,24 +65,24 @@ window.APP_DATA = {
 
   // ---- Flow 2: financial archetypes -----------------------------------
   archetypes: [
-    { id: "explorer", label: "Explorer", icon: "🧭", description: "You like to understand the whole map before picking a direction.", evolvesTo: "Strategist" },
-    { id: "strategist", label: "Strategist", icon: "♟️", description: "You think in moves ahead — every yen has a job to do.", evolvesTo: "Investor" },
-    { id: "builder", label: "Builder", icon: "🏗️", description: "You'd rather construct something durable than chase a quick win.", evolvesTo: "Investor" },
-    { id: "dreamer", label: "Dreamer", icon: "🌙", description: "Money is a means to the life you're imagining, not a spreadsheet.", evolvesTo: "Adventurer" },
-    { id: "adventurer", label: "Adventurer", icon: "🗺️", description: "You want your money to fund experiences, not just balances.", evolvesTo: "Explorer" },
-    { id: "investor", label: "Investor", icon: "📈", description: "You're comfortable letting time and markets do the work.", evolvesTo: "Strategist" },
-    { id: "creator", label: "Creator", icon: "🎨", description: "You build your own income streams and think outside a salary.", evolvesTo: "Builder" },
-    { id: "custom", label: "Design your own", icon: "✨", description: "None of these quite fit — write your own in a few words.", evolvesTo: null }
+    { id: "explorer", label: "Explorer", icon: "compass", description: "You like to understand the whole map before picking a direction.", evolvesTo: "Strategist" },
+    { id: "strategist", label: "Strategist", icon: "chess-pawn", description: "You think in moves ahead — every yen has a job to do.", evolvesTo: "Investor" },
+    { id: "builder", label: "Builder", icon: "building-construction", description: "You'd rather construct something durable than chase a quick win.", evolvesTo: "Investor" },
+    { id: "dreamer", label: "Dreamer", icon: "crescent-moon", description: "Money is a means to the life you're imagining, not a spreadsheet.", evolvesTo: "Adventurer" },
+    { id: "adventurer", label: "Adventurer", icon: "world-map", description: "You want your money to fund experiences, not just balances.", evolvesTo: "Explorer" },
+    { id: "investor", label: "Investor", icon: "chart-increasing", description: "You're comfortable letting time and markets do the work.", evolvesTo: "Strategist" },
+    { id: "creator", label: "Creator", icon: "artist-palette", description: "You build your own income streams and think outside a salary.", evolvesTo: "Builder" },
+    { id: "custom", label: "Design your own", icon: "sparkles", description: "None of these quite fit — write your own in a few words.", evolvesTo: null }
   ],
 
   avatars: [
-    { id: "explorer", label: "Explorer", icon: "🧭" },
-    { id: "strategist", label: "Strategist", icon: "♟️" },
-    { id: "builder", label: "Builder", icon: "🏗️" },
-    { id: "dreamer", label: "Dreamer", icon: "🌙" },
-    { id: "adventurer", label: "Adventurer", icon: "🗺️" },
-    { id: "investor", label: "Investor", icon: "📈" },
-    { id: "creator", label: "Creator", icon: "🎨" }
+    { id: "explorer", label: "Explorer", icon: "compass" },
+    { id: "strategist", label: "Strategist", icon: "chess-pawn" },
+    { id: "builder", label: "Builder", icon: "building-construction" },
+    { id: "dreamer", label: "Dreamer", icon: "crescent-moon" },
+    { id: "adventurer", label: "Adventurer", icon: "world-map" },
+    { id: "investor", label: "Investor", icon: "chart-increasing" },
+    { id: "creator", label: "Creator", icon: "artist-palette" }
   ],
 
   // ---- Flow 1: minimal onboarding checklist ----------------------------
@@ -101,59 +101,59 @@ window.APP_DATA = {
 
   // ---- Flow 3: progressive enrichment, asked in context ---------------
   laterPrompts: [
-    { id: "ideco", icon: "🌱", question: "Do you have an iDeCo account you'd like to add?", category: "Retirement", status: "pending" },
-    { id: "insurance", icon: "🛡️", question: "Do you currently have life or income insurance?", category: "Protection", status: "pending" },
-    { id: "real_estate", icon: "🏠", question: "Do you own any real estate, in Japan or abroad?", category: "Assets", status: "pending" },
-    { id: "extra_cards", icon: "💳", question: "Any other credit cards you'd like us to include?", category: "Accounts", status: "pending" },
-    { id: "outside_brokerage", icon: "📈", question: "Any brokerage accounts outside NISA?", category: "Investing", status: "pending" }
+    { id: "ideco", icon: "seedling", question: "Do you have an iDeCo account you'd like to add?", category: "Retirement", status: "pending" },
+    { id: "insurance", icon: "shield", question: "Do you currently have life or income insurance?", category: "Protection", status: "pending" },
+    { id: "real_estate", icon: "house", question: "Do you own any real estate, in Japan or abroad?", category: "Assets", status: "pending" },
+    { id: "extra_cards", icon: "credit-card", question: "Any other credit cards you'd like us to include?", category: "Accounts", status: "pending" },
+    { id: "outside_brokerage", icon: "chart-increasing", question: "Any brokerage accounts outside NISA?", category: "Investing", status: "pending" }
   ],
 
   // ---- Playground: quests ----------------------------------------------
   quests: [
     {
-      id: "emergency_fund", title: "Emergency Fund", icon: "🛟", category: "saving",
+      id: "emergency_fund", title: "Emergency Fund", icon: "ring-buoy", category: "saving",
       description: "Build a cushion worth 6 months of expenses.",
       goalAmount: 2820000, currentAmount: 1400000, monthlyContribution: 80000,
       difficulty: "Easy", timeHorizonMonths: 18, xpReward: 150, status: "active", order: 1
     },
     {
-      id: "nisa_ninja", title: "NISA Ninja", icon: "🥷", category: "investing",
+      id: "nisa_ninja", title: "NISA Ninja", icon: "ninja", category: "investing",
       description: "Use more of your annual NISA allowance before it resets.",
       goalAmount: 3600000, currentAmount: 1620000, monthlyContribution: 150000, expectedReturn: 0.05,
       difficulty: "Medium", timeHorizonMonths: 14, xpReward: 300, status: "active", order: 2
     },
     {
-      id: "savings_builder", title: "Savings Builder", icon: "🧱", category: "saving",
+      id: "savings_builder", title: "Savings Builder", icon: "brick", category: "saving",
       description: "Grow everyday cash savings on autopilot.",
       goalAmount: 10000000, currentAmount: 8000000, monthlyContribution: 100000,
       difficulty: "Easy", timeHorizonMonths: 20, xpReward: 120, status: "active", order: 3
     },
     {
-      id: "travel", title: "Travel Fund", icon: "✈️", category: "saving",
+      id: "travel", title: "Travel Fund", icon: "airplane", category: "saving",
       description: "A trip to Kyoto and Okinawa, fully funded, no credit card hangover.",
       goalAmount: 600000, currentAmount: 210000, monthlyContribution: 40000,
       difficulty: "Easy", timeHorizonMonths: 10, xpReward: 100, status: "active", order: 4
     },
     {
-      id: "jimny_quest", title: "Jimny Quest", icon: "🚙", category: "saving",
+      id: "jimny_quest", title: "Jimny Quest", icon: "suv", category: "saving",
       description: "Save for a Suzuki Jimny in cash, no auto loan needed.",
       goalAmount: 2800000, currentAmount: 300000, monthlyContribution: 90000,
       difficulty: "Medium", timeHorizonMonths: 28, xpReward: 180, status: "locked", order: 5
     },
     {
-      id: "future_family", title: "Future Family", icon: "👶", category: "saving",
+      id: "future_family", title: "Future Family", icon: "baby", category: "saving",
       description: "Start a dedicated fund ahead of a growing household.",
       goalAmount: 4000000, currentAmount: 0, monthlyContribution: 60000,
       difficulty: "Medium", timeHorizonMonths: 48, xpReward: 220, status: "locked", order: 6
     },
     {
-      id: "retirement_freedom", title: "Retirement Freedom", icon: "🕊️", category: "investing",
+      id: "retirement_freedom", title: "Retirement Freedom", icon: "dove", category: "investing",
       description: "Reach a retirement number that lets you stop optionally, not out of necessity.",
       goalAmount: 88000000, currentAmount: 11200000, monthlyContribution: 180000, expectedReturn: 0.06,
       difficulty: "Hard", timeHorizonMonths: 276, xpReward: 500, status: "active", order: 7
     },
     {
-      id: "wealth_builder", title: "Wealth Builder", icon: "🌳", category: "investing",
+      id: "wealth_builder", title: "Wealth Builder", icon: "deciduous-tree", category: "investing",
       description: "Grow a taxable brokerage account alongside your NISA.",
       goalAmount: 15000000, currentAmount: 1580000, monthlyContribution: 70000, expectedReturn: 0.055,
       difficulty: "Hard", timeHorizonMonths: 120, xpReward: 350, status: "active", order: 8
@@ -161,28 +161,28 @@ window.APP_DATA = {
   ],
 
   suggestedGoals: [
-    { id: "sg_emergency", icon: "🛟", title: "3-6 months of expenses saved", category: "Safety", defaultTargetAmount: 2820000, defaultHorizonYears: 2 },
-    { id: "sg_debt_free", icon: "🎯", title: "Become debt-free", category: "Debt", defaultTargetAmount: 0, defaultHorizonYears: 3 },
-    { id: "sg_home", icon: "🏡", title: "Save a home down payment", category: "Home", defaultTargetAmount: 8000000, defaultHorizonYears: 6 },
-    { id: "sg_retire_early", icon: "🌴", title: "Retire earlier than 65", category: "Retirement", defaultTargetAmount: 80000000, defaultHorizonYears: 25 },
-    { id: "sg_education", icon: "🎓", title: "Fund further education", category: "Education", defaultTargetAmount: 3000000, defaultHorizonYears: 4 }
+    { id: "sg_emergency", icon: "ring-buoy", title: "3-6 months of expenses saved", category: "Safety", defaultTargetAmount: 2820000, defaultHorizonYears: 2 },
+    { id: "sg_debt_free", icon: "bullseye", title: "Become debt-free", category: "Debt", defaultTargetAmount: 0, defaultHorizonYears: 3 },
+    { id: "sg_home", icon: "house-with-garden", title: "Save a home down payment", category: "Home", defaultTargetAmount: 8000000, defaultHorizonYears: 6 },
+    { id: "sg_retire_early", icon: "palm-tree", title: "Retire earlier than 65", category: "Retirement", defaultTargetAmount: 80000000, defaultHorizonYears: 25 },
+    { id: "sg_education", icon: "graduation-cap", title: "Fund further education", category: "Education", defaultTargetAmount: 3000000, defaultHorizonYears: 4 }
   ],
 
   personalizedGoals: [
     {
-      id: "pg_unassigned_cash", icon: "💤", title: "Put your idle cash to work",
+      id: "pg_unassigned_cash", icon: "zzz", title: "Put your idle cash to work",
       why: "Your savings (¥8,000,000) are well past a 6-month emergency cushion (¥2,820,000). The extra ¥5,180,000 is sitting in low-yield cash.",
       recommendedAction: "Move a portion into your NISA account over the next 12 months.",
       targetAmount: 3600000, horizonMonths: 12
     },
     {
-      id: "pg_nisa_gap", icon: "🥷", title: "Close your NISA gap before it resets",
+      id: "pg_nisa_gap", icon: "ninja", title: "Close your NISA gap before it resets",
       why: "You've used 45% of this year's ¥3,600,000 NISA allowance. At your current pace you'll leave roughly ¥1,980,000 of tax-free room unused.",
       recommendedAction: "Increase your monthly NISA contribution from ¥150,000 to ¥210,000.",
       targetAmount: 1980000, horizonMonths: 8
     },
     {
-      id: "pg_debt_payoff", icon: "🏁", title: "Clear your auto loan ahead of schedule",
+      id: "pg_debt_payoff", icon: "chequered-flag", title: "Clear your auto loan ahead of schedule",
       why: "Your auto loan carries a 2.1% rate — lower than your expected investment return, but clearing it still frees up ¥28,000/month of cash flow.",
       recommendedAction: "Add ¥15,000/month toward the loan to close it 14 months early.",
       targetAmount: 1000000, horizonMonths: 22
@@ -190,17 +190,17 @@ window.APP_DATA = {
   ],
 
   weeklyMissions: [
-    { id: "wm_review_budget", icon: "🧾", title: "Review this month's spending", xpReward: 20, completed: true },
-    { id: "wm_nisa_topup", icon: "🥷", title: "Top up your NISA contribution", xpReward: 40, completed: false },
-    { id: "wm_read_theme", icon: "📚", title: "Read one market theme in Grow", xpReward: 15, completed: false },
-    { id: "wm_check_goal", icon: "🎯", title: "Check progress on one active quest", xpReward: 15, completed: true },
-    { id: "wm_answer_prompt", icon: "💬", title: "Answer a question from your Fairy Godmother", xpReward: 10, completed: false }
+    { id: "wm_review_budget", icon: "receipt", title: "Review this month's spending", xpReward: 20, completed: true },
+    { id: "wm_nisa_topup", icon: "ninja", title: "Top up your NISA contribution", xpReward: 40, completed: false },
+    { id: "wm_read_theme", icon: "open-book", title: "Read one market theme in Grow", xpReward: 15, completed: false },
+    { id: "wm_check_goal", icon: "bullseye", title: "Check progress on one active quest", xpReward: 15, completed: true },
+    { id: "wm_answer_prompt", icon: "speech-balloon", title: "Answer a question from your Fairy Godmother", xpReward: 10, completed: false }
   ],
 
   // ---- Optimize ----------------------------------------------------------
   opportunities: [
     {
-      id: "op_nisa_room", icon: "🥷", title: "Unused NISA allowance",
+      id: "op_nisa_room", icon: "ninja", title: "Unused NISA allowance",
       effort: "Low", lifetimeValue: 4100000, monthlyImpact: 60000,
       why: "You've used ¥1,620,000 of your ¥3,600,000 annual NISA limit. Gains inside NISA are never taxed.",
       benefit: "Sheltering an extra ¥1,980,000 from the standard ~20% capital gains tax could be worth roughly ¥4,100,000 over 25 years, assuming a 5% average return.",
@@ -208,7 +208,7 @@ window.APP_DATA = {
       confidence: "High", downside: "Contributions are less liquid — treat this as long-term money."
     },
     {
-      id: "op_idle_cash", icon: "💤", title: "Cash earning near-zero interest",
+      id: "op_idle_cash", icon: "zzz", title: "Cash earning near-zero interest",
       effort: "Low", lifetimeValue: 6200000, monthlyImpact: 0,
       why: "¥5,180,000 of your savings sits above a healthy emergency cushion, in an account paying close to 0% interest.",
       benefit: "Investing the surplus at a moderate 5% average return instead of holding cash could be worth roughly ¥6,200,000 over 20 years.",
@@ -216,7 +216,7 @@ window.APP_DATA = {
       confidence: "Medium", downside: "Markets fluctuate — this is a scenario, not a guarantee."
     },
     {
-      id: "op_auto_loan", icon: "🚗", title: "Auto loan interest vs. investing",
+      id: "op_auto_loan", icon: "automobile", title: "Auto loan interest vs. investing",
       effort: "Medium", lifetimeValue: 90000, monthlyImpact: 28000,
       why: "Your auto loan rate (2.1%) is below typical long-term market returns, so paying it off early has a small opportunity cost.",
       benefit: "Paying it off 14 months early frees ¥28,000/month of cash flow sooner, worth about ¥90,000 in saved interest.",
@@ -224,7 +224,7 @@ window.APP_DATA = {
       confidence: "High", downside: "This is optional — investing the same amount could out-earn the interest saved."
     },
     {
-      id: "op_furusato", icon: "🎁", title: "Furusato Nozei not yet used this year",
+      id: "op_furusato", icon: "wrapped-gift", title: "Furusato Nozei not yet used this year",
       effort: "Low", lifetimeValue: 55000, monthlyImpact: 0,
       why: "Based on your income, your estimated furusato nozei donation ceiling is around ¥110,000 before the deadline.",
       benefit: "Donating up to your limit returns local goods worth roughly 30% of the donation, worth about ¥33,000 in goods, for a net cost of about ¥2,000.",
@@ -232,7 +232,7 @@ window.APP_DATA = {
       confidence: "High", downside: "You must file the paperwork (or use One-Stop Exception) correctly to receive the deduction."
     },
     {
-      id: "op_ideco", icon: "🌱", title: "iDeCo not yet opened",
+      id: "op_ideco", icon: "seedling", title: "iDeCo not yet opened",
       effort: "Medium", lifetimeValue: 2600000, monthlyImpact: -23000,
       why: "As a full-time employee, you likely qualify for iDeCo contributions that reduce taxable income today.",
       benefit: "Contributing ¥23,000/month could lower your annual tax bill while compounding toward retirement, worth roughly ¥2,600,000 in combined tax savings and growth by 55.",
@@ -240,7 +240,7 @@ window.APP_DATA = {
       confidence: "Medium", downside: "Funds are locked until age 60 — only use money you won't need sooner."
     },
     {
-      id: "op_insurance_review", icon: "🛡️", title: "Insurance coverage unconfirmed",
+      id: "op_insurance_review", icon: "shield", title: "Insurance coverage unconfirmed",
       effort: "Low", lifetimeValue: 0, monthlyImpact: 0,
       why: "We don't yet have a record of life or income insurance on your profile.",
       benefit: "Confirming your coverage (or lack of it) helps us tell you whether your emergency fund and goals are actually protected.",
@@ -259,40 +259,40 @@ window.APP_DATA = {
   ],
 
   investmentExplorer: [
-    { id: "ie_index", name: "Index funds", icon: "📊", description: "Broad, low-cost baskets that track an entire market.", risk: "Low–Medium", horizon: "5+ years" },
-    { id: "ie_etf", name: "ETFs", icon: "🧺", description: "Traded like a stock, but holding a diversified basket inside.", risk: "Low–Medium", horizon: "3+ years" },
-    { id: "ie_stocks", name: "Individual stocks", icon: "🏢", description: "Ownership in a single company — higher risk, higher dispersion.", risk: "High", horizon: "5+ years" },
-    { id: "ie_bonds", name: "Bonds", icon: "📜", description: "Loans to governments or companies, generally steadier.", risk: "Low", horizon: "1+ years" },
-    { id: "ie_reits", name: "REITs", icon: "🏙️", description: "Real estate exposure without buying property directly.", risk: "Medium", horizon: "5+ years" }
+    { id: "ie_index", name: "Index funds", icon: "bar-chart", description: "Broad, low-cost baskets that track an entire market.", risk: "Low–Medium", horizon: "5+ years" },
+    { id: "ie_etf", name: "ETFs", icon: "basket", description: "Traded like a stock, but holding a diversified basket inside.", risk: "Low–Medium", horizon: "3+ years" },
+    { id: "ie_stocks", name: "Individual stocks", icon: "office-building", description: "Ownership in a single company — higher risk, higher dispersion.", risk: "High", horizon: "5+ years" },
+    { id: "ie_bonds", name: "Bonds", icon: "scroll", description: "Loans to governments or companies, generally steadier.", risk: "Low", horizon: "1+ years" },
+    { id: "ie_reits", name: "REITs", icon: "cityscape", description: "Real estate exposure without buying property directly.", risk: "Medium", horizon: "5+ years" }
   ],
 
   marketThemes: [
     {
-      id: "mt_ai_infra", title: "AI Infrastructure", icon: "🖥️",
+      id: "mt_ai_infra", title: "AI Infrastructure", icon: "desktop-computer",
       summary: "The physical build-out of chips, data centers, and power behind AI systems.",
       whyItMatters: "Spending on AI infrastructure has grown faster than most other sectors over the past two years, reshaping several major indexes.",
       userExposurePct: 0.18, riskLevel: "Medium-High"
     },
     {
-      id: "mt_japan", title: "Japan", icon: "🗾",
+      id: "mt_japan", title: "Japan", icon: "map-of-japan",
       summary: "Corporate governance reform and a weaker yen have renewed interest in Japanese equities.",
       whyItMatters: "As a Japan resident, your income and expenses are already yen-denominated — this theme is about equity exposure, not currency risk.",
       userExposurePct: 0.22, riskLevel: "Medium"
     },
     {
-      id: "mt_us_tech", title: "US Technology", icon: "💡",
+      id: "mt_us_tech", title: "US Technology", icon: "light-bulb",
       summary: "A small number of large technology companies now make up a large share of US indexes.",
       whyItMatters: "Many broad 'global' index funds are more concentrated in this theme than investors expect.",
       userExposurePct: 0.31, riskLevel: "Medium-High"
     },
     {
-      id: "mt_demographics", title: "Aging Demographics", icon: "👴",
+      id: "mt_demographics", title: "Aging Demographics", icon: "old-man",
       summary: "Healthcare, robotics, and automation tied to aging populations across developed markets.",
       whyItMatters: "This is a slower, structural theme rather than a short-term trade.",
       userExposurePct: 0.06, riskLevel: "Low-Medium"
     },
     {
-      id: "mt_clean_energy", title: "Clean Energy Transition", icon: "🔋",
+      id: "mt_clean_energy", title: "Clean Energy Transition", icon: "battery",
       summary: "The multi-decade shift toward renewables, grid upgrades, and storage.",
       whyItMatters: "Policy-sensitive — returns can swing with subsidy and regulation changes.",
       userExposurePct: 0.03, riskLevel: "High"
@@ -300,31 +300,31 @@ window.APP_DATA = {
   ],
 
   investmentQuests: [
-    { id: "iq_index_basics", title: "How index funds actually work", icon: "📊", xpReward: 40, completed: true, estMinutes: 4 },
-    { id: "iq_nisa_rules", title: "NISA rules in plain language", icon: "🥷", xpReward: 60, completed: true, estMinutes: 6 },
-    { id: "iq_risk_tolerance", title: "What 'risk tolerance' really means", icon: "🌡️", xpReward: 40, completed: false, estMinutes: 5 },
-    { id: "iq_diversification", title: "Why diversification isn't about owning more things", icon: "🧺", xpReward: 50, completed: false, estMinutes: 5 },
-    { id: "iq_compounding", title: "Compounding, visualized", icon: "🌀", xpReward: 30, completed: false, estMinutes: 3 },
-    { id: "iq_dollar_cost", title: "Investing on a schedule vs. timing the market", icon: "📅", xpReward: 45, completed: false, estMinutes: 5 }
+    { id: "iq_index_basics", title: "How index funds actually work", icon: "bar-chart", xpReward: 40, completed: true, estMinutes: 4 },
+    { id: "iq_nisa_rules", title: "NISA rules in plain language", icon: "ninja", xpReward: 60, completed: true, estMinutes: 6 },
+    { id: "iq_risk_tolerance", title: "What 'risk tolerance' really means", icon: "thermometer", xpReward: 40, completed: false, estMinutes: 5 },
+    { id: "iq_diversification", title: "Why diversification isn't about owning more things", icon: "basket", xpReward: 50, completed: false, estMinutes: 5 },
+    { id: "iq_compounding", title: "Compounding, visualized", icon: "cyclone", xpReward: 30, completed: false, estMinutes: 3 },
+    { id: "iq_dollar_cost", title: "Investing on a schedule vs. timing the market", icon: "calendar", xpReward: 45, completed: false, estMinutes: 5 }
   ],
 
   // ---- Gamification ---------------------------------------------------
   badges: [
-    { id: "b_streak_26", name: "Half-Year Streak", icon: "🔥", description: "26 consecutive weeks of checking in.", earned: true, earnedDate: "2026-08-30", category: "streak" },
-    { id: "b_nisa_starter", name: "NISA Starter", icon: "🥷", description: "Opened and funded a NISA account.", earned: true, earnedDate: "2025-11-12", category: "investing" },
-    { id: "b_emergency_half", name: "Halfway to Safety", icon: "🛟", description: "Reached 50% of your emergency fund goal.", earned: true, earnedDate: "2026-04-02", category: "saving" },
-    { id: "b_first_optimization", name: "First Optimization", icon: "✨", description: "Acted on your first Optimize opportunity.", earned: true, earnedDate: "2026-02-18", category: "optimization" },
-    { id: "b_level_10", name: "Level 10", icon: "🎖️", description: "Reached level 10 on your journey.", earned: true, earnedDate: "2026-06-01", category: "milestone" },
-    { id: "b_debt_free", name: "Debt Free", icon: "🎯", description: "Paid off all outstanding debt.", earned: false, category: "saving" },
-    { id: "b_nisa_maxed", name: "NISA Maxed", icon: "🏆", description: "Used your full annual NISA allowance.", earned: false, category: "investing" },
-    { id: "b_year_streak", name: "One-Year Streak", icon: "🕯️", description: "52 consecutive weeks of checking in.", earned: false, category: "streak" }
+    { id: "b_streak_26", name: "Half-Year Streak", icon: "fire", description: "26 consecutive weeks of checking in.", earned: true, earnedDate: "2026-08-30", category: "streak" },
+    { id: "b_nisa_starter", name: "NISA Starter", icon: "ninja", description: "Opened and funded a NISA account.", earned: true, earnedDate: "2025-11-12", category: "investing" },
+    { id: "b_emergency_half", name: "Halfway to Safety", icon: "ring-buoy", description: "Reached 50% of your emergency fund goal.", earned: true, earnedDate: "2026-04-02", category: "saving" },
+    { id: "b_first_optimization", name: "First Optimization", icon: "sparkles", description: "Acted on your first Optimize opportunity.", earned: true, earnedDate: "2026-02-18", category: "optimization" },
+    { id: "b_level_10", name: "Level 10", icon: "military-medal", description: "Reached level 10 on your journey.", earned: true, earnedDate: "2026-06-01", category: "milestone" },
+    { id: "b_debt_free", name: "Debt Free", icon: "bullseye", description: "Paid off all outstanding debt.", earned: false, category: "saving" },
+    { id: "b_nisa_maxed", name: "NISA Maxed", icon: "trophy", description: "Used your full annual NISA allowance.", earned: false, category: "investing" },
+    { id: "b_year_streak", name: "One-Year Streak", icon: "candle", description: "52 consecutive weeks of checking in.", earned: false, category: "streak" }
   ],
 
   // ---- Home insights & journey -----------------------------------------
   homeInsights: [
-    { id: "hi_unassigned", icon: "💤", text: "You have about ¥430,000/month unassigned after expenses and current contributions." },
-    { id: "hi_nisa_pace", icon: "🥷", text: "At your current pace, you'll use 68% of this year's NISA allowance." },
-    { id: "hi_streak", icon: "🔥", text: "You're on a 26-week streak — your longest yet." }
+    { id: "hi_unassigned", icon: "zzz", text: "You have about ¥430,000/month unassigned after expenses and current contributions." },
+    { id: "hi_nisa_pace", icon: "ninja", text: "At your current pace, you'll use 68% of this year's NISA allowance." },
+    { id: "hi_streak", icon: "fire", text: "You're on a 26-week streak — your longest yet." }
   ],
 
   // ---- Guided Financial Plan Journey (~20 steps) ------------------------

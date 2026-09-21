@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#F5EEE1">
+<meta name="theme-color" content="#FAFAFA">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
@@ -64,7 +64,7 @@
     var fileRows = fileBlobs.map(function (f) {
       var thumb = f.type.indexOf("image/") === 0
         ? '<img src="' + f.objectUrl + '" alt="">'
-        : '<span style="font-size:20px;">📄</span>';
+        : '<span class="icon-line icon-line-file-text" style="width:20px;height:20px;"></span>';
       return '<div class="share-file-item">' + thumb + '<span class="name">' + escapeHtml(f.name || "Attachment") + "</span></div>";
     }).join("");
 

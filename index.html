@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#F5EEE1">
+<meta name="theme-color" content="#FAFAFA">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
@@ -40,7 +40,7 @@
     </div>
     <div class="header-status">
       <span class="level-chip" id="header-level">Lv 1</span>
-      <span class="streak-chip">🔥 <span id="header-streak">0w</span></span>
+      <span class="streak-chip"><img class="icon-comic" src="./lokhi-assets/icons/comic/fire.svg" alt=""> <span id="header-streak">0w</span></span>
     </div>
   </header>
 
@@ -50,7 +50,7 @@
 
     <section class="card character-card">
       <div class="character-head">
-        <div class="character-avatar" id="character-avatar">🧭</div>
+        <div class="character-avatar" id="character-avatar"><img class="icon-comic" src="./lokhi-assets/icons/comic/compass.svg" alt=""></div>
         <div class="character-meta">
           <div class="name" id="character-level">Level 1</div>
           <div class="sub" id="character-archetype">Explorer</div>
@@ -168,7 +168,7 @@
   <!-- ===================== PROFILE ===================== -->
   <main class="screen" data-screen="profile" id="screen-profile">
     <div class="profile-header">
-      <div class="profile-avatar"><span id="profile-avatar-icon">🧭</span></div>
+      <div class="profile-avatar"><span id="profile-avatar-icon"><img class="icon-comic" src="./lokhi-assets/icons/comic/compass.svg" alt=""></span></div>
       <h1 class="screen-title" style="padding-top:0;" id="profile-name">You</h1>
       <span class="chip chip-neutral" id="profile-archetype-label">Explorer</span>
     </div>
@@ -200,23 +200,23 @@
     </div>
 
     <div class="profile-section coming-soon" data-profile-section="dreamlab" style="display:none;">
-      <span class="icon">🌈</span><span class="text">Coming soon</span>
+      <span class="icon"><img class="icon-comic" src="./lokhi-assets/icons/comic/rainbow.svg" alt=""></span><span class="text">Coming soon</span>
     </div>
     <div class="profile-section coming-soon" data-profile-section="grow2" style="display:none;">
-      <span class="icon">🌳</span><span class="text">Coming soon</span>
+      <span class="icon"><img class="icon-comic" src="./lokhi-assets/icons/comic/deciduous-tree.svg" alt=""></span><span class="text">Coming soon</span>
     </div>
     <div class="profile-section coming-soon" data-profile-section="explore" style="display:none;">
-      <span class="icon">🗺️</span><span class="text">Coming soon</span>
+      <span class="icon"><img class="icon-comic" src="./lokhi-assets/icons/comic/world-map.svg" alt=""></span><span class="text">Coming soon</span>
     </div>
   </main>
 
   <!-- ===================== Bottom tab bar ===================== -->
   <nav class="tab-bar">
-    <button class="tab-bar-btn is-active" data-tab="home"><span class="tab-icon">🏠</span><span class="tab-label">Home</span></button>
-    <button class="tab-bar-btn" data-tab="playground"><span class="tab-icon">🎮</span><span class="tab-label">Playground</span></button>
-    <button class="tab-bar-btn" data-tab="optimize"><span class="tab-icon">✨</span><span class="tab-label">Optimize</span></button>
-    <button class="tab-bar-btn" data-tab="grow"><span class="tab-icon">🌱</span><span class="tab-label">Grow</span></button>
-    <button class="tab-bar-btn" data-tab="profile"><span class="tab-icon">👤</span><span class="tab-label">Profile</span></button>
+    <button class="tab-bar-btn is-active" data-tab="home"><span class="tab-icon icon-line icon-line-home"></span><span class="tab-label">Home</span></button>
+    <button class="tab-bar-btn" data-tab="playground"><span class="tab-icon icon-line icon-line-play-circle"></span><span class="tab-label">Playground</span></button>
+    <button class="tab-bar-btn" data-tab="optimize"><span class="tab-icon icon-line icon-line-zap"></span><span class="tab-label">Optimize</span></button>
+    <button class="tab-bar-btn" data-tab="grow"><span class="tab-icon icon-line icon-line-trending-up"></span><span class="tab-label">Grow</span></button>
+    <button class="tab-bar-btn" data-tab="profile"><span class="tab-icon icon-line icon-line-user"></span><span class="tab-label">Profile</span></button>
   </nav>
 
   <!-- ===================== Fairy Godmother ===================== -->
@@ -235,7 +235,7 @@
       <div class="sheet-modal-handle"></div>
       <div class="sheet-modal-head">
         <span class="title" id="sim-title">Quest</span>
-        <button class="close-btn" data-close-overlay="simulator-overlay">✕</button>
+        <button class="close-btn" data-close-overlay="simulator-overlay"><span class="icon-line icon-line-x"></span></button>
       </div>
       <p id="sim-description" style="font-size:13px;color:var(--ink-soft);margin-top:-8px;"></p>
       <span id="sim-is-investing" class="visually-hidden"></span>
@@ -251,7 +251,7 @@
   <!-- ===================== Level up overlay ===================== -->
   <div class="overlay-scrim is-centered" id="levelup-overlay">
     <div class="sheet-modal levelup-modal" style="border-radius: 24px;">
-      <div class="levelup-badge">🎉</div>
+      <div class="levelup-badge"><img class="icon-comic" src="./lokhi-assets/icons/comic/party-popper.svg" alt="" style="width:56px;height:56px;"></div>
       <h2 id="levelup-value">Level up</h2>
       <p>New powers unlocked. Keep going.</p>
       <button class="btn btn-primary btn-block" data-close-overlay="levelup-overlay" style="margin-top:16px;">Keep going</button>
