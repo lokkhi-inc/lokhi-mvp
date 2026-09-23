@@ -291,10 +291,18 @@
   const AVATAR_R = 40;
   const NODE_R_LIFE = 65;
   const NODE_R_MICRO = 56;
-  const MIN_GAP = 16;
+  const MIN_GAP = 16; // avatar clearance, and life-goal ring spacing
+  const MIN_GAP_MICRO = 8; // micro dreams are allowed to sit closer together
   const CANVAS_PADDING = 24;
 
+  // Pan/zoom is a plain transform on .dreamscape-canvas, driven entirely by
+  // touch/pointer gestures (pinch to zoom, drag to pan) — no buttons. The
+  // avatar is rendered as a sibling, pinned to the viewport's own center, so
+  // it never moves regardless of pan/zoom; the world moves around it.
   let dreamscapeZoom = 1;
+  let dreamscapePanX = 0;
+  let dreamscapePanY = 0;
+  let dreamscapeWasGesture = false;
 
   function renderDreamscape(container) {
     // Every dream that isn't a super goal gets a full-size slot, regardless
@@ -309,8 +317,8 @@
     const outerItems = orbitable.filter((d) => d.type === "life_goal").map((d) => ({ dream: d }));
     const innerItems = orbitable.filter((d) => d.type === "micro").map((d) => ({ dream: d }));
 
-    let innerRadius = ringRadiusPx(innerItems.length, NODE_R_MICRO);
-    let outerRadius = ringRadiusPx(outerItems.length, NODE_R_LIFE);
+    let innerRadius = ringRadiusPx(innerItems.length, NODE_R_MICRO, MIN_GAP_MICRO);
+    let outerRadius = ringRadiusPx(outerItems.length, NODE_R_LIFE, MIN_GAP);
     if (outerItems.length && innerItems.length) {
       // Keep the two rings from crowding each other, not just their own members.
       outerRadius = Math.max(outerRadius, innerRadius + NODE_R_MICRO + NODE_R_LIFE + MIN_GAP);
@@ -324,48 +332,109 @@
       .concat(layoutStatic(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0)));
 
     const avatarId = getAvatarId();
-    const zoomedSize = Math.round(canvasSize * dreamscapeZoom);
 
     container.innerHTML = `
       <div class="dreamscape-viewport">
-        <div class="dreamscape-zoom-frame" style="width:${zoomedSize}px;height:${zoomedSize}px;">
-          <div class="dreamscape-canvas" style="width:${canvasSize}px;height:${canvasSize}px;transform:scale(${dreamscapeZoom});">
-            <div class="dreamscape-orbit-track" style="width:${outerRadius * 2}px;height:${outerRadius * 2}px;"></div>
-            <div class="dreamscape-orbit-track" style="width:${innerRadius * 2}px;height:${innerRadius * 2}px;"></div>
-            <div class="dreamscape-avatar">
-              <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
-              <span class="dreamscape-avatar-label">You</span>
-            </div>
-            ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
-          </div>
+        <div class="dreamscape-canvas" style="width:${canvasSize}px;height:${canvasSize}px;transform:translate(calc(-50% + ${dreamscapePanX}px), calc(-50% + ${dreamscapePanY}px)) scale(${dreamscapeZoom});">
+          <div class="dreamscape-orbit-track" style="width:${outerRadius * 2}px;height:${outerRadius * 2}px;"></div>
+          <div class="dreamscape-orbit-track" style="width:${innerRadius * 2}px;height:${innerRadius * 2}px;"></div>
+          ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
         </div>
-        <div class="dreamscape-zoom-controls">
-          <button class="dreamscape-zoom-btn" data-zoom="out" aria-label="Zoom out">−</button>
-          <button class="dreamscape-zoom-btn" data-zoom="in" aria-label="Zoom in">+</button>
+        <div class="dreamscape-avatar">
+          <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
+          <span class="dreamscape-avatar-label">You</span>
         </div>
       </div>
-      <p class="dl-canvas-caption">This is the life you're imagining, gently floating around you — tap anything to look closer.</p>
+      <p class="dl-canvas-caption">This is the life you're imagining — drag to look around, pinch to zoom, tap anything to look closer.</p>
     `;
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
-      el.addEventListener("click", () => openDreamDetail(el.dataset.dreamNode));
-    });
-    container.querySelectorAll("[data-zoom]").forEach((el) => {
-      el.addEventListener("click", () => {
-        dreamscapeZoom = Math.max(0.6, Math.min(1.8, dreamscapeZoom + (el.dataset.zoom === "in" ? 0.15 : -0.15)));
-        renderDreamscape(container);
+      el.addEventListener("click", (e) => {
+        if (dreamscapeWasGesture) { dreamscapeWasGesture = false; return; }
+        openDreamDetail(el.dataset.dreamNode);
       });
     });
+    wireDreamscapeGestures(container.querySelector(".dreamscape-viewport"), container.querySelector(".dreamscape-canvas"));
+  }
+
+  // Pinch-to-zoom (two fingers) and drag-to-pan (one finger), via Pointer
+  // Events so it works the same for touch, mouse, and pen. Purely visual —
+  // it just rewrites the canvas's own transform directly for smoothness,
+  // and only writes the committed pan/zoom values back on release.
+  function wireDreamscapeGestures(viewport, canvasEl) {
+    const pointers = new Map();
+    let dragStart = null;
+    let pinchStart = null;
+    let moved = 0;
+
+    function dist(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    function applyTransform() {
+      canvasEl.style.transform = `translate(calc(-50% + ${dreamscapePanX}px), calc(-50% + ${dreamscapePanY}px)) scale(${dreamscapeZoom})`;
+    }
+
+    viewport.addEventListener("pointerdown", (e) => {
+      if (viewport.setPointerCapture) viewport.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      moved = 0;
+      if (pointers.size === 1) {
+        dragStart = { x: e.clientX, y: e.clientY, panX: dreamscapePanX, panY: dreamscapePanY };
+      } else if (pointers.size === 2) {
+        const [a, b] = Array.from(pointers.values());
+        pinchStart = { dist: dist(a, b), zoom: dreamscapeZoom };
+        dragStart = null;
+      }
+    });
+
+    viewport.addEventListener("pointermove", (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2 && pinchStart) {
+        const [a, b] = Array.from(pointers.values());
+        dreamscapeZoom = Math.max(0.5, Math.min(2.2, pinchStart.zoom * (dist(a, b) / pinchStart.dist)));
+        applyTransform();
+        moved++;
+        e.preventDefault();
+      } else if (pointers.size === 1 && dragStart) {
+        const dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+        if (moved > 0 || Math.abs(dx) + Math.abs(dy) > 4) {
+          dreamscapePanX = dragStart.panX + dx;
+          dreamscapePanY = dragStart.panY + dy;
+          applyTransform();
+          moved++;
+          e.preventDefault();
+        }
+      }
+    });
+
+    function endPointer(e) {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinchStart = null;
+      if (pointers.size === 0) {
+        dragStart = null;
+        if (moved > 0) dreamscapeWasGesture = true;
+      }
+    }
+    viewport.addEventListener("pointerup", endPointer);
+    viewport.addEventListener("pointercancel", endPointer);
+    // Trackpad pinch on desktop browsers fires as a ctrl+wheel event.
+    viewport.addEventListener("wheel", (e) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      dreamscapeZoom = Math.max(0.5, Math.min(2.2, dreamscapeZoom - e.deltaY * 0.01));
+      applyTransform();
+    }, { passive: false });
   }
 
   // The minimum radius that guarantees no overlap: large enough that
-  // adjacent nodes' bounding circles clear each other by MIN_GAP, AND large
+  // adjacent nodes' bounding circles clear each other by `gap`, AND large
   // enough that the ring itself clears the avatar. Grows with n — however
   // many dreams there are, they always get their own room; the canvas
   // grows to fit instead of the spacing shrinking to fit the canvas.
-  function ringRadiusPx(n, nodeR) {
+  function ringRadiusPx(n, nodeR, gap) {
     if (n === 0) return 0;
     const avatarConstraint = AVATAR_R + nodeR + MIN_GAP;
-    const interNodeConstraint = n > 1 ? (nodeR + MIN_GAP / 2) / Math.sin(Math.PI / n) : 0;
+    const interNodeConstraint = n > 1 ? (nodeR + gap / 2) / Math.sin(Math.PI / n) : 0;
     return Math.max(avatarConstraint, interNodeConstraint);
   }
 
