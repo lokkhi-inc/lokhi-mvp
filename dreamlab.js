@@ -301,8 +301,8 @@
     // well below 50% so a node's own height/width (it's a fixed pixel size,
     // not relative) can never poke past the canvas's own edges into the
     // toolbar above or the caption below.
-    const outerRadius = ringRadiusCqw(outerItems.length, 26, 38, 18, 4);
-    const innerRadius = ringRadiusCqw(innerItems.length, 16, 28, 8, 3);
+    const outerRadius = ringRadiusCqw(outerItems.length, 30, 38, 22, 4);
+    const innerRadius = ringRadiusCqw(innerItems.length, 24, 30, 16, 3);
 
     const nodes = []
       .concat(layoutStatic(outerItems, outerRadius, -90))
@@ -679,7 +679,7 @@
     return `
       <div class="dl-category ${enterCls}" data-category="${key}">
         <div class="dl-category-head">
-          <span class="dl-category-title">${def.emoji} ${def.label}</span>
+          <span class="dl-category-title" aria-hidden="true">${def.emoji}</span>
           <button class="dl-category-remove" data-remove-category="${key}" aria-label="Hide ${def.label} section">${lineIcon("x")}</button>
         </div>
         <div class="dl-category-body">${innerHtml}</div>
@@ -691,7 +691,7 @@
     const hiddenOnes = CATEGORY_DEFS.filter((c) => hidden[c.key]);
     if (!hiddenOnes.length) return "";
     return `<div class="dl-hidden-tabs">${hiddenOnes.map((c) => `
-      <button class="dl-hidden-tab" data-restore-category="${c.key}">${c.emoji} ${c.label} <span class="dl-hidden-tab-plus">+</span></button>`).join("")}</div>`;
+      <button class="dl-hidden-tab" data-restore-category="${c.key}" aria-label="Bring back ${c.label} section">${c.emoji} <span class="dl-hidden-tab-plus">+</span></button>`).join("")}</div>`;
   }
 
   function removeCategorySection(overlay, dreamId, key) {
@@ -776,7 +776,7 @@
         </div>
         ` : `
         ${hiddenCategoryTabsHtml(id)}
-        ${categoryBlockHtml(id, "psychological", psychologicalSectionHtml(id, dream))}
+        ${categoryBlockHtml(id, "psychological", psychologicalSectionHtml(id, dream, variables))}
         ${categoryBlockHtml(id, "logistical", logisticalSectionHtml(id, dream, variables))}
         ${categoryBlockHtml(id, "financial", financialSectionHtml(id, dream, variables))}
         `}
@@ -838,7 +838,7 @@
   }
 
   // ---- Psychological: the why, the emotional context, the Fairy's memory --
-  function psychologicalSectionHtml(id, dream) {
+  function psychologicalSectionHtml(id, dream, variables) {
     return `
       <div class="card dl-section">
         <div class="card-eyebrow">Dream</div>
@@ -854,6 +854,10 @@
       <div class="card dl-section">
         <div class="card-eyebrow">What your Fairy Godmother knows</div>
         ${memoryPanelHtml(id)}
+      </div>
+      <div class="card dl-section">
+        <div class="card-eyebrow">What matters most?</div>
+        <div id="dl-sensitivity-region">${sensitivityHtml(dream, variables)}</div>
       </div>`;
   }
 
@@ -880,7 +884,7 @@
       </div>`;
   }
 
-  // ---- Financial: baseline, simulation, sensitivity, scenarios ------------
+  // ---- Financial: baseline, simulation, scenarios --------------------------
   function financialSectionHtml(id, dream, variables) {
     return `
       ${baselineHtml(id, dream)}
@@ -889,10 +893,6 @@
         ${simulationSlidersHtml(id, variables)}
         <div class="card-eyebrow" style="margin-top:16px;">What this means</div>
         <div id="dl-consequences-region">${consequencesHtml(dream, variables)}</div>
-      </div>
-      <div class="card dl-section">
-        <div class="card-eyebrow">What matters most?</div>
-        <div id="dl-sensitivity-region">${sensitivityHtml(dream, variables)}</div>
       </div>
       <div class="card dl-section">
         <div class="card-eyebrow">Scenarios</div>

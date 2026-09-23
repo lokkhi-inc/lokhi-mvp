@@ -321,11 +321,11 @@
 .dl-answer-textarea:focus { outline: none; border-color: var(--primary); }
 .dl-review-block { display: flex; flex-direction: column; gap: 4px; }
 
-/* ---- Dream Detail categories: Psychological / Logistical / Financial --- */
+/* ---- Dream Detail categories: no visible label, just an icon + remove -- */
 
 .dl-category { position: relative; display: flex; flex-direction: column; gap: var(--space-3); }
 .dl-category-head { display: flex; align-items: center; justify-content: space-between; }
-.dl-category-title { font-size: 13px; font-weight: 800; letter-spacing: 0.02em; color: var(--ink-soft); }
+.dl-category-title { font-size: 18px; line-height: 1; }
 .dl-category-remove {
   width: 26px; height: 26px; border-radius: 50%; background: var(--surface-alt);
   border: none; display: flex; align-items: center; justify-content: center;
@@ -337,10 +337,10 @@
 .dl-hidden-tabs { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; }
 .dl-hidden-tab {
   padding: 6px 10px; border-radius: var(--radius-pill); background: var(--surface-alt);
-  border: 1.5px dashed var(--border-strong); font-size: 11px; font-weight: 700;
-  color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  border: 1.5px dashed var(--border-strong); font-size: 14px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
 }
-.dl-hidden-tab-plus { color: var(--primary); font-weight: 800; }
+.dl-hidden-tab-plus { color: var(--primary); font-weight: 800; font-size: 11px; }
 
 /* Pixie-dust vanish, when a category is dismissed */
 .dl-pixie-burst { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 5; }
