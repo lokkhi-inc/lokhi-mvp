@@ -303,8 +303,8 @@
     const innerRadius = ringRadiusCqw(innerItems.length, 22, 36, 10, 4);
 
     const nodes = []
-      .concat(layoutOrbit(outerItems, outerRadius, -90, 130))
-      .concat(layoutOrbit(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0), 80));
+      .concat(layoutOrbit(outerItems, outerRadius, -90, 220))
+      .concat(layoutOrbit(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0), 150));
 
     const avatarId = getAvatarId();
 

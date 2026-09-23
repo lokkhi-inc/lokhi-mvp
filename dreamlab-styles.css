@@ -9,7 +9,7 @@
 /* #dreamlab-root is a plain mount div (see index.html) — the base reset
    zeroes out heading/paragraph margins, so without this it and .screen-title
    / .screen-subtitle / .dl-toolbar would all sit flush against each other. */
-#dreamlab-root { display: flex; flex-direction: column; gap: var(--space-5); }
+#dreamlab-root { display: flex; flex-direction: column; gap: var(--space-4); }
 
 /* ---- Toolbar: view toggle + new dream -------------------------------- */
 
@@ -36,7 +36,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 420px;
+  max-width: 360px;
   margin: 0 auto;
   container-type: size;
   container-name: dreamscape;
@@ -130,7 +130,7 @@
 
 
 
-.dl-canvas-caption { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: var(--space-4); }
+.dl-canvas-caption { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: var(--space-2); }
 
 /* ---- Plan view ---------------------------------------------------------- */
 
