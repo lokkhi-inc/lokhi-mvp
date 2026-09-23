@@ -283,6 +283,19 @@
     return `<img class="avatar-img" src="${avatar.avatarImage}" alt="">`;
   }
 
+  // Real, fixed pixel measurements of what actually gets rendered — badge +
+  // label + type + meta lines, each in its own bounding circle. Deriving
+  // radius from these (rather than tuning a percentage against a fluid
+  // container) is what makes the "never overlap" guarantee durable as the
+  // number of dreams grows, instead of something to re-tune each time.
+  const AVATAR_R = 40;
+  const NODE_R_LIFE = 65;
+  const NODE_R_MICRO = 56;
+  const MIN_GAP = 16;
+  const CANVAS_PADDING = 24;
+
+  let dreamscapeZoom = 1;
+
   function renderDreamscape(container) {
     // Every dream that isn't a super goal gets a full-size slot, regardless
     // of whether it belongs to a super goal — a dream under Freedom looks
@@ -296,47 +309,70 @@
     const outerItems = orbitable.filter((d) => d.type === "life_goal").map((d) => ({ dream: d }));
     const innerItems = orbitable.filter((d) => d.type === "micro").map((d) => ({ dream: d }));
 
-    // Radius grows with how many dreams share a ring, so adding more never
-    // crowds/overlaps existing ones — it just spreads the ring wider. Capped
-    // well below 50% so a node's own height/width (it's a fixed pixel size,
-    // not relative) can never poke past the canvas's own edges into the
-    // toolbar above or the caption below.
-    const outerRadius = ringRadiusCqw(outerItems.length, 30, 38, 22, 4);
-    const innerRadius = ringRadiusCqw(innerItems.length, 24, 30, 16, 3);
+    let innerRadius = ringRadiusPx(innerItems.length, NODE_R_MICRO);
+    let outerRadius = ringRadiusPx(outerItems.length, NODE_R_LIFE);
+    if (outerItems.length && innerItems.length) {
+      // Keep the two rings from crowding each other, not just their own members.
+      outerRadius = Math.max(outerRadius, innerRadius + NODE_R_MICRO + NODE_R_LIFE + MIN_GAP);
+    }
+    const maxNodeR = outerItems.length ? NODE_R_LIFE : NODE_R_MICRO;
+    const canvasRadius = Math.max(outerRadius, innerRadius) + maxNodeR + CANVAS_PADDING;
+    const canvasSize = Math.round(canvasRadius * 2);
 
     const nodes = []
       .concat(layoutStatic(outerItems, outerRadius, -90))
       .concat(layoutStatic(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0)));
 
     const avatarId = getAvatarId();
+    const zoomedSize = Math.round(canvasSize * dreamscapeZoom);
 
     container.innerHTML = `
-      <div class="dreamscape-canvas">
-        <div class="dreamscape-orbit-track" style="width:${outerRadius * 2}cqw;height:${outerRadius * 2}cqw;"></div>
-        <div class="dreamscape-orbit-track" style="width:${innerRadius * 2}cqw;height:${innerRadius * 2}cqw;"></div>
-        <div class="dreamscape-avatar">
-          <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
-          <span class="dreamscape-avatar-label">You</span>
+      <div class="dreamscape-viewport">
+        <div class="dreamscape-zoom-frame" style="width:${zoomedSize}px;height:${zoomedSize}px;">
+          <div class="dreamscape-canvas" style="width:${canvasSize}px;height:${canvasSize}px;transform:scale(${dreamscapeZoom});">
+            <div class="dreamscape-orbit-track" style="width:${outerRadius * 2}px;height:${outerRadius * 2}px;"></div>
+            <div class="dreamscape-orbit-track" style="width:${innerRadius * 2}px;height:${innerRadius * 2}px;"></div>
+            <div class="dreamscape-avatar">
+              <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
+              <span class="dreamscape-avatar-label">You</span>
+            </div>
+            ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
+          </div>
         </div>
-        ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
+        <div class="dreamscape-zoom-controls">
+          <button class="dreamscape-zoom-btn" data-zoom="out" aria-label="Zoom out">−</button>
+          <button class="dreamscape-zoom-btn" data-zoom="in" aria-label="Zoom in">+</button>
+        </div>
       </div>
       <p class="dl-canvas-caption">This is the life you're imagining, gently floating around you — tap anything to look closer.</p>
     `;
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
       el.addEventListener("click", () => openDreamDetail(el.dataset.dreamNode));
     });
+    container.querySelectorAll("[data-zoom]").forEach((el) => {
+      el.addEventListener("click", () => {
+        dreamscapeZoom = Math.max(0.6, Math.min(1.8, dreamscapeZoom + (el.dataset.zoom === "in" ? 0.15 : -0.15)));
+        renderDreamscape(container);
+      });
+    });
   }
 
-  // Radius grows with how many dreams share a ring — so adding more never
-  // crowds/overlaps the ones already there, it just spreads the ring wider.
-  function ringRadiusCqw(n, min, max, base, perItem) {
-    return Math.max(min, Math.min(max, base + n * perItem));
+  // The minimum radius that guarantees no overlap: large enough that
+  // adjacent nodes' bounding circles clear each other by MIN_GAP, AND large
+  // enough that the ring itself clears the avatar. Grows with n — however
+  // many dreams there are, they always get their own room; the canvas
+  // grows to fit instead of the spacing shrinking to fit the canvas.
+  function ringRadiusPx(n, nodeR) {
+    if (n === 0) return 0;
+    const avatarConstraint = AVATAR_R + nodeR + MIN_GAP;
+    const interNodeConstraint = n > 1 ? (nodeR + MIN_GAP / 2) / Math.sin(Math.PI / n) : 0;
+    return Math.max(avatarConstraint, interNodeConstraint);
   }
 
   // Fixed positions around the avatar — no orbiting. Each item still gets a
   // gentle independent float (see .dreamscape-node's animation), staggered
   // by index so they don't all bob in sync.
-  function layoutStatic(items, radiusPct, startDeg) {
+  function layoutStatic(items, radiusPx, startDeg) {
     const n = items.length;
     if (!n) return [];
     return items.map((item, i) => {
@@ -344,8 +380,8 @@
       const rad = (angleDeg * Math.PI) / 180;
       return {
         item,
-        x: 50 + radiusPct * Math.cos(rad),
-        y: 50 + radiusPct * Math.sin(rad),
+        x: radiusPx * Math.cos(rad),
+        y: radiusPx * Math.sin(rad),
         floatDuration: 3.2 + (i % 3) * 0.5,
         floatDelay: -((i % 5) * 0.6)
       };
@@ -358,7 +394,7 @@
     const status = statusOf(d.id);
     const sizeClass = d.type === "life_goal" ? "is-life" : "is-micro";
     const ringDeg = Math.round(progress * 360);
-    const style = `left:${n.x}%;top:${n.y}%;animation-duration:${n.floatDuration}s;animation-delay:${n.floatDelay}s;`;
+    const style = `left:calc(50% + ${n.x}px);top:calc(50% + ${n.y}px);animation-duration:${n.floatDuration}s;animation-delay:${n.floatDelay}s;`;
     return `
       <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="${style}">
         <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>

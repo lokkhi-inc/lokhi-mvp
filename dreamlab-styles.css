@@ -32,20 +32,42 @@
 
 /* ---- Dreamscape ------------------------------------------------------- */
 
+/* The canvas's pixel size is computed in JS from the actual number of
+   dreams (see ringRadiusPx in dreamlab.js) — it grows to fit everyone with
+   guaranteed spacing rather than shrinking spacing to fit a fixed box. When
+   it's bigger than this viewport, this scrolls; text-align:center + an
+   inline-block frame (rather than flexbox) keeps it centered without the
+   well-known flex+overflow clipping quirk when content is scrolled. */
+.dreamscape-viewport {
+  position: relative;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  text-align: center;
+  min-height: 280px;
+  max-height: min(70vh, 520px);
+  background: var(--surface-alt);
+  border-radius: var(--radius-lg);
+}
+.dreamscape-zoom-frame { display: inline-block; vertical-align: top; margin: 24px; }
+
 .dreamscape-canvas {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  max-width: 360px;
-  /* Nodes are fixed-pixel-sized, not relative, so one resting right at the
-     ring's edge can extend past this box's own boundary (its own half-height
-     is ~60px). This margin is a buffer so that overflow lands in empty
-     space instead of visually overlapping the toolbar above or the caption
-     below — it doesn't shrink the canvas itself. */
-  margin: 68px auto;
-  container-type: size;
-  container-name: dreamscape;
+  transform-origin: top left;
 }
+
+.dreamscape-zoom-controls {
+  position: absolute; bottom: 10px; right: 10px; z-index: 5;
+  display: flex; gap: 6px;
+}
+.dreamscape-zoom-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: 1.5px solid var(--border-strong);
+  box-shadow: var(--shadow-sm); font-size: 18px; font-weight: 700; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--ink-soft);
+}
+.dreamscape-zoom-btn:active { transform: scale(0.94); }
 
 /* Faint circular paths standing in for the old straight connector lines —
    the orbit itself is the relationship now, not a line to the avatar. */
