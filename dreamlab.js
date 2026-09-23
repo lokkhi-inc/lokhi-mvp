@@ -284,23 +284,18 @@
   }
 
   function renderDreamscape(container) {
-    const topLevel = getTopLevel();
-    if (!topLevel.length) {
+    // Every dream that isn't a super goal gets a full-size orbit slot,
+    // regardless of whether it belongs to a super goal — a dream under
+    // Freedom looks exactly like a standalone one. Super goals themselves
+    // don't orbit at all; "Freedom" is just a faint placeholder label.
+    const orbitable = DL.order.map((id) => DL.dreams[id]).filter((d) => d.type !== "super_goal");
+    if (!orbitable.length) {
       container.innerHTML = emptyStateHtml();
       wireEmptyState(container);
       return;
     }
-    // Super goals are never their own orbiting node — they're a dotted
-    // "constellation" cluster holding their children (shown small, like
-    // micro dreams) so it's obvious at a glance which dreams belong to a
-    // bigger goal versus standing on their own.
-    const superGoals = topLevel.filter((d) => d.type === "super_goal");
-    const standaloneLife = topLevel.filter((d) => d.type === "life_goal");
-    const standaloneMicro = topLevel.filter((d) => d.type === "micro");
-
-    const outerItems = standaloneLife.map((d) => ({ kind: "dream", dream: d }))
-      .concat(superGoals.map((d) => ({ kind: "cluster", dream: d, children: getChildren(d.id) })));
-    const innerItems = standaloneMicro.map((d) => ({ kind: "dream", dream: d }));
+    const outerItems = orbitable.filter((d) => d.type === "life_goal").map((d) => ({ dream: d }));
+    const innerItems = orbitable.filter((d) => d.type === "micro").map((d) => ({ dream: d }));
 
     const nodes = []
       .concat(layoutOrbit(outerItems, 40, -90, 130))
@@ -310,13 +305,14 @@
 
     container.innerHTML = `
       <div class="dreamscape-canvas">
+        <span class="dreamscape-freedom-placeholder">Freedom</span>
         <div class="dreamscape-orbit-track" style="width:80cqw;height:80cqw;"></div>
         <div class="dreamscape-orbit-track" style="width:48cqw;height:48cqw;"></div>
         <div class="dreamscape-avatar">
           <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
           <span class="dreamscape-avatar-label">You</span>
         </div>
-        ${nodes.map((n) => (n.item.kind === "cluster" ? dreamscapeClusterHtml(n) : dreamscapeNodeHtml(n))).join("")}
+        ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
       </div>
       <p class="dl-canvas-caption">This is the life you're imagining, slowly turning around you — tap anything to look closer.</p>
     `;
@@ -355,52 +351,6 @@
           <span class="dreamscape-node-type">${TYPE_LABEL[d.type]}</span>
           <span class="dreamscape-node-meta">${pct(progress)}</span>
         </button>
-      </div>`;
-  }
-
-  // A super goal's cluster: a dotted, not-quite-circular "constellation"
-  // boundary with the goal's name on it, holding its children as small
-  // micro-dream-sized bubbles. Tapping the boundary/label opens the super
-  // goal itself; tapping a child bubble opens that dream directly.
-  // A fixed (not random — stays put across re-renders), organic-looking
-  // closed outline: N points around a circle with a bit of harmonic radius
-  // jitter, so it reads as an uneven "constellation" boundary rather than a
-  // perfect circle.
-  function clusterBlobPathD() {
-    const N = 14;
-    const pts = [];
-    for (let i = 0; i < N; i++) {
-      const angle = (i / N) * 2 * Math.PI;
-      const r = 42 + 6 * Math.sin(i * 2.1) + 3 * Math.cos(i * 3.7);
-      pts.push((50 + r * Math.cos(angle)).toFixed(1) + "," + (50 + r * Math.sin(angle)).toFixed(1));
-    }
-    return "M" + pts.join(" L") + " Z";
-  }
-  const CLUSTER_BLOB_PATH = clusterBlobPathD();
-
-  function dreamscapeClusterHtml(n) {
-    const superDream = n.item.dream;
-    const kids = n.item.children;
-    const timing = `animation-duration:${n.durationSec}s;animation-delay:${n.delay.toFixed(2)}s;`;
-    const miniAngleStart = -90;
-    const kidsHtml = kids.map((k, i) => {
-      const angle = ((miniAngleStart + (i * 360) / kids.length) * Math.PI) / 180;
-      const x = 50 + 32 * Math.cos(angle);
-      const y = 50 + 32 * Math.sin(angle);
-      const progress = computeProgress(k.id);
-      const status = statusOf(k.id);
-      return `
-        <button class="dreamscape-cluster-node status-${status}" data-dream-node="${k.id}" style="left:${x}%;top:${y}%;--ring:${Math.round(progress * 360)}deg;" title="${escapeHtml(k.title)}">
-          ${comicIcon(k.icon)}
-        </button>`;
-    }).join("");
-    return `
-      <div class="dreamscape-orbit-ring" style="--radius:${n.radiusCqw}cqw;${timing}">
-        <div class="dreamscape-cluster" style="${timing}">
-          <svg class="dreamscape-cluster-boundary" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${CLUSTER_BLOB_PATH}"/></svg>
-          <button class="dreamscape-cluster-label" data-dream-node="${superDream.id}">${escapeHtml(superDream.title).toUpperCase()}</button>
-          ${kidsHtml}
-        </div>
       </div>`;
   }
 

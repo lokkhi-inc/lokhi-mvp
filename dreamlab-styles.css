@@ -51,6 +51,15 @@
   opacity: 0.5;
 }
 
+/* Faint, non-interactive placeholder marking that a group of these dreams
+   belongs to a bigger goal (e.g. "Freedom") — no boundary or grouping, just
+   an ambient label behind everything else. */
+.dreamscape-freedom-placeholder {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 15cqw; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-faint); opacity: 0.35; pointer-events: none; white-space: nowrap; z-index: 0;
+}
+
 .dreamscape-avatar {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -80,27 +89,23 @@
   animation-name: dl-orbit-spin;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  z-index: 1;
 }
 
-/* Shared positioning + counter-rotation for anything riding an orbit ring —
-   a lone dream node, or a whole super-goal cluster. */
-.dreamscape-node, .dreamscape-cluster {
+.dreamscape-node {
   position: absolute; left: var(--radius); top: 0;
   transform: translate(-50%, -50%);
   animation-name: dl-orbit-counter-spin;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-}
-.dreamscape-node {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: none; border: none; cursor: pointer; padding: 4px;
   width: 84px;
 }
-.dreamscape-node:hover, .dreamscape-node:focus-visible,
-.dreamscape-cluster:hover, .dreamscape-cluster:focus-within { animation-play-state: paused; }
+.dreamscape-node:hover, .dreamscape-node:focus-visible { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
-  .dreamscape-orbit-ring, .dreamscape-node, .dreamscape-cluster { animation: none; }
+  .dreamscape-orbit-ring, .dreamscape-node { animation: none; }
 }
 
 /* Shape is a category signal on its own: Life Goals get a soft squircle,
@@ -129,47 +134,7 @@
 .dreamscape-node-type { font-size: 8px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
 .dreamscape-node-meta { font-size: 10px; color: var(--ink-faint); font-weight: 600; }
 
-/* A super goal's constellation: a giant, faint, irregular dotted boundary
-   holding its children at the exact same size/shape as a standalone micro
-   dream node — visually "these are micro dreams, gathered under one goal." */
-.dreamscape-cluster { width: 44cqw; height: 44cqw; }
-.dreamscape-cluster-boundary {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  pointer-events: none; overflow: visible;
-}
-.dreamscape-cluster-boundary path {
-  fill: none;
-  stroke: var(--ink-faint);
-  stroke-width: 1.2;
-  stroke-dasharray: 3 4;
-  opacity: 0.55;
-}
-.dreamscape-cluster-label {
-  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-  white-space: nowrap; background: var(--surface); border: 1.5px solid var(--primary);
-  border-radius: var(--radius-pill); padding: 3px 10px;
-  font-size: 9px; font-weight: 800; letter-spacing: 0.05em;
-  color: var(--primary); cursor: pointer;
-}
-/* Matches .dreamscape-node.is-micro .dreamscape-node-badge exactly, so a
-   dream looks the same whether it's standalone or clustered under a goal. */
-.dreamscape-cluster-node {
-  position: absolute; transform: translate(-50%, -50%);
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--surface); border: 2px solid var(--border-strong);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-.dreamscape-cluster-node::before {
-  content: "";
-  position: absolute; inset: -4px; border-radius: 50%;
-  background: conic-gradient(var(--primary) var(--ring, 0deg), var(--surface-alt) 0);
-  z-index: -1;
-}
-.dreamscape-cluster-node.status-completed { border-color: var(--moss); }
-.dreamscape-cluster-node.status-completed::before { background: conic-gradient(var(--moss) var(--ring, 0deg), var(--surface-alt) 0); }
-.dreamscape-cluster-node.status-exploring { border-style: dashed; opacity: 0.75; }
-.dreamscape-cluster-node.status-exploring::before { background: var(--surface-alt); }
+
 
 .dl-canvas-caption { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: var(--space-4); }
 
