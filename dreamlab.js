@@ -279,39 +279,41 @@
     const outer = topLevel.filter((d) => d.type !== "micro");
     const inner = topLevel.filter((d) => d.type === "micro");
 
-    const nodes = [];
-    layoutRing(outer, 40, -90).forEach((n) => nodes.push(n));
-    layoutRing(inner, 23, -90 + (inner.length ? 180 / inner.length : 0)).forEach((n) => nodes.push(n));
+    const nodes = []
+      .concat(layoutOrbit(outer, 40, -90, 130))
+      .concat(layoutOrbit(inner, 24, -90 + (inner.length ? 180 / inner.length : 0), 80));
 
-    const lines = nodes.map((n) => `<line x1="50" y1="50" x2="${n.x}" y2="${n.y}" />`).join("");
     const avatarIcon = getAvatarIconKey();
 
     container.innerHTML = `
       <div class="dreamscape-canvas">
-        <svg class="dreamscape-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
+        <div class="dreamscape-orbit-track" style="width:80cqw;height:80cqw;"></div>
+        <div class="dreamscape-orbit-track" style="width:48cqw;height:48cqw;"></div>
         <div class="dreamscape-avatar">
           <div class="dreamscape-avatar-badge">${comicIcon(avatarIcon, 30)}</div>
           <span class="dreamscape-avatar-label">You</span>
         </div>
         ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
       </div>
-      <p class="dl-canvas-caption">This is the life you're imagining — tap anything to look closer.</p>
+      <p class="dl-canvas-caption">This is the life you're imagining, slowly turning around you — tap anything to look closer.</p>
     `;
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
       el.addEventListener("click", () => openDreamDetail(el.dataset.dreamNode));
     });
   }
 
-  function layoutRing(dreams, radiusPct, startDeg) {
+  // Lays dreams out on a circular orbit around the avatar. Rather than a
+  // fixed x/y position, each node gets an angle (as a negative animation
+  // delay, so it starts already at that point on the ring) and shares a
+  // duration with its counter-rotating content — see .dreamscape-orbit-ring
+  // / .dreamscape-node in dreamlab-styles.css for how that stays upright.
+  function layoutOrbit(dreams, radiusCqw, startDeg, durationSec) {
     const n = dreams.length;
     if (!n) return [];
     return dreams.map((d, i) => {
-      const angle = ((startDeg + (i * 360) / n) * Math.PI) / 180;
-      return {
-        dream: d,
-        x: 50 + radiusPct * Math.cos(angle),
-        y: 50 + radiusPct * Math.sin(angle)
-      };
+      const angleDeg = startDeg + (i * 360) / n;
+      const delay = -((((angleDeg % 360) + 360) % 360) / 360) * durationSec;
+      return { dream: d, radiusCqw, durationSec, delay };
     });
   }
 
@@ -321,12 +323,15 @@
     const status = statusOf(d.id);
     const sizeClass = d.type === "super_goal" ? "is-super" : d.type === "life_goal" ? "is-life" : "is-micro";
     const ringDeg = Math.round(progress * 360);
+    const timing = `animation-duration:${n.durationSec}s;animation-delay:${n.delay.toFixed(2)}s;`;
     return `
-      <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="left:${n.x}%;top:${n.y}%;">
-        <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>
-        <span class="dreamscape-node-label">${escapeHtml(d.title)}</span>
-        <span class="dreamscape-node-meta">${d.type === "super_goal" ? activeQuestCount(d.id) + " active" : pct(progress)}</span>
-      </button>`;
+      <div class="dreamscape-orbit-ring" style="--radius:${n.radiusCqw}cqw;${timing}">
+        <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="${timing}">
+          <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>
+          <span class="dreamscape-node-label">${escapeHtml(d.title)}</span>
+          <span class="dreamscape-node-meta">${d.type === "super_goal" ? activeQuestCount(d.id) + " active" : pct(progress)}</span>
+        </button>
+      </div>`;
   }
 
   function emptyStateHtml() {

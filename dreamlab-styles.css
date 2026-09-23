@@ -33,9 +33,18 @@
   aspect-ratio: 1 / 1;
   max-width: 420px;
   margin: 0 auto;
+  container-type: size;
+  container-name: dreamscape;
 }
-.dreamscape-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
-.dreamscape-lines line { stroke: var(--border-strong); stroke-width: 0.4; stroke-dasharray: 1.4 1.4; }
+
+/* Faint circular paths standing in for the old straight connector lines —
+   the orbit itself is the relationship now, not a line to the avatar. */
+.dreamscape-orbit-track {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed var(--border-strong);
+  opacity: 0.5;
+}
 
 .dreamscape-avatar {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -50,12 +59,39 @@
 }
 .dreamscape-avatar-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
 
+/* Each dream sits on a .dreamscape-orbit-ring: a zero-size anchor at the
+   center that continuously rotates. The .dreamscape-node inside it is
+   offset by --radius and runs the exact opposite rotation in lockstep, so
+   it travels around the avatar while its icon and label stay upright. */
+@keyframes dl-orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes dl-orbit-counter-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+.dreamscape-orbit-ring {
+  position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+  animation-name: dl-orbit-spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 .dreamscape-node {
-  position: absolute; transform: translate(-50%, -50%);
+  position: absolute; left: var(--radius); top: 0;
+  transform: translate(-50%, -50%);
+  animation-name: dl-orbit-counter-spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   background: none; border: none; cursor: pointer; padding: 4px;
   width: 84px;
 }
+.dreamscape-node:hover, .dreamscape-node:focus-visible { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dreamscape-orbit-ring, .dreamscape-node { animation: none; }
+}
+
 .dreamscape-node-badge {
   width: 52px; height: 52px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
