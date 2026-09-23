@@ -362,6 +362,22 @@
   // boundary with the goal's name on it, holding its children as small
   // micro-dream-sized bubbles. Tapping the boundary/label opens the super
   // goal itself; tapping a child bubble opens that dream directly.
+  // A fixed (not random — stays put across re-renders), organic-looking
+  // closed outline: N points around a circle with a bit of harmonic radius
+  // jitter, so it reads as an uneven "constellation" boundary rather than a
+  // perfect circle.
+  function clusterBlobPathD() {
+    const N = 14;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const angle = (i / N) * 2 * Math.PI;
+      const r = 42 + 6 * Math.sin(i * 2.1) + 3 * Math.cos(i * 3.7);
+      pts.push((50 + r * Math.cos(angle)).toFixed(1) + "," + (50 + r * Math.sin(angle)).toFixed(1));
+    }
+    return "M" + pts.join(" L") + " Z";
+  }
+  const CLUSTER_BLOB_PATH = clusterBlobPathD();
+
   function dreamscapeClusterHtml(n) {
     const superDream = n.item.dream;
     const kids = n.item.children;
@@ -369,19 +385,19 @@
     const miniAngleStart = -90;
     const kidsHtml = kids.map((k, i) => {
       const angle = ((miniAngleStart + (i * 360) / kids.length) * Math.PI) / 180;
-      const x = 50 + 34 * Math.cos(angle);
-      const y = 50 + 34 * Math.sin(angle);
+      const x = 50 + 32 * Math.cos(angle);
+      const y = 50 + 32 * Math.sin(angle);
       const progress = computeProgress(k.id);
       const status = statusOf(k.id);
       return `
         <button class="dreamscape-cluster-node status-${status}" data-dream-node="${k.id}" style="left:${x}%;top:${y}%;--ring:${Math.round(progress * 360)}deg;" title="${escapeHtml(k.title)}">
-          ${comicIcon(k.icon, 18)}
+          ${comicIcon(k.icon)}
         </button>`;
     }).join("");
     return `
       <div class="dreamscape-orbit-ring" style="--radius:${n.radiusCqw}cqw;${timing}">
         <div class="dreamscape-cluster" style="${timing}">
-          <div class="dreamscape-cluster-boundary" data-dream-node="${superDream.id}"></div>
+          <svg class="dreamscape-cluster-boundary" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${CLUSTER_BLOB_PATH}"/></svg>
           <button class="dreamscape-cluster-label" data-dream-node="${superDream.id}">${escapeHtml(superDream.title).toUpperCase()}</button>
           ${kidsHtml}
         </div>
