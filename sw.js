@@ -1,7 +1,7 @@
 /* Lokhi service worker — minimal cache-first offline support for the app shell,
    plus Web Share Target handling (Android/Chrome; iOS Safari does not support
    share_target, see README). */
-const CACHE_NAME = "lokhi-v5";
+const CACHE_NAME = "lokhi-v6";
 const SHARE_CACHE_NAME = "lokhi-share-v1";
 const CORE_ASSETS = [
   "./",
