@@ -6,6 +6,11 @@
    app.
    ========================================================================== */
 
+/* #dreamlab-root is a plain mount div (see index.html) — the base reset
+   zeroes out heading/paragraph margins, so without this it and .screen-title
+   / .screen-subtitle / .dl-toolbar would all sit flush against each other. */
+#dreamlab-root { display: flex; flex-direction: column; gap: var(--space-5); }
+
 /* ---- Toolbar: view toggle + new dream -------------------------------- */
 
 .dl-toolbar { display: flex; align-items: center; gap: var(--space-3); }
