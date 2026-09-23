@@ -107,6 +107,17 @@
     const size = opts.size ? `width:${opts.size}px;height:${opts.size}px;` : "";
     return `<span class="icon-line icon-line-${name} ${opts.cls || ""}" style="${size}"></span>`;
   }
+  // Profile avatar — a DiceBear SVG keyed by archetype (lokhi-assets/avatars/),
+  // reflecting whichever archetype the user was classified with during
+  // onboarding. Fills its container edge-to-edge like a profile photo (see
+  // .avatar-img in app-styles.css) rather than floating small like an emoji
+  // icon — falls back to the flat comic icon if the id is unknown.
+  function avatarImg(avatarId, opts) {
+    opts = opts || {};
+    const avatar = DATA.avatars.find((a) => a.id === avatarId);
+    if (!avatar || !avatar.avatarImage) return comicIcon((avatar && avatar.icon) || "compass", opts);
+    return `<img class="avatar-img ${opts.cls || ""}" src="${avatar.avatarImage}" alt="">`;
+  }
 
   // ---------------------------------------------------------------------
   // Web Share Target: content received via share-target.html
@@ -265,8 +276,7 @@
     document.getElementById("header-streak").textContent = p.streakWeeks + "w";
 
     // character card
-    const avatarIcon = (DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "compass";
-    root.querySelector("#character-avatar").innerHTML = comicIcon(avatarIcon);
+    root.querySelector("#character-avatar").innerHTML = avatarImg(p.avatar);
     root.querySelector("#character-level").textContent = "Level " + p.level;
     root.querySelector("#character-archetype").textContent = capitalize(p.archetype) + " · " + p.streakWeeks + "-week streak";
     root.querySelector("#xp-fill").style.width = pct(p.xp / p.xpForNextLevel);
@@ -617,7 +627,7 @@
     const p = state.profile;
     root.querySelector("#profile-name").textContent = p.name;
     root.querySelector("#profile-archetype-label").textContent = capitalize(p.archetype);
-    root.querySelector("#profile-avatar-icon").innerHTML = comicIcon((DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "compass");
+    root.querySelector("#profile-avatar-icon").innerHTML = avatarImg(p.avatar);
 
     root.querySelectorAll(".profile-subtab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.profileTab === state.activeProfileTab));
     root.querySelectorAll(".profile-section").forEach((s) => s.style.display = s.dataset.profileSection === state.activeProfileTab ? "" : "none");

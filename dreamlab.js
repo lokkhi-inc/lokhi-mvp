@@ -257,16 +257,22 @@
   // -----------------------------------------------------------------------
   // Dreamscape view
   // -----------------------------------------------------------------------
-  function getAvatarIconKey() {
+  // The avatar at the center reflects whichever archetype the user was
+  // classified with during onboarding (same lookup app.js's Home/Profile
+  // screens use) — a DiceBear SVG from the avatar library, not a generic icon.
+  function getAvatarId() {
     try {
       const overrides = JSON.parse(localStorage.getItem("lokhi_profile_overrides") || "{}");
       const saved = JSON.parse(localStorage.getItem("lokhi_state") || "{}");
-      const avatarId = (saved.profile && saved.profile.avatar) || overrides.avatar || window.APP_DATA.userProfile.avatar;
-      const avatar = window.APP_DATA.avatars.find((a) => a.id === avatarId);
-      return avatar ? avatar.icon : "compass";
+      return (saved.profile && saved.profile.avatar) || overrides.avatar || window.APP_DATA.userProfile.avatar;
     } catch (e) {
-      return "compass";
+      return window.APP_DATA.userProfile.avatar;
     }
+  }
+  function avatarImgHtml(avatarId) {
+    const avatar = window.APP_DATA.avatars.find((a) => a.id === avatarId);
+    if (!avatar || !avatar.avatarImage) return comicIcon((avatar && avatar.icon) || "compass");
+    return `<img class="avatar-img" src="${avatar.avatarImage}" alt="">`;
   }
 
   function renderDreamscape(container) {
@@ -283,14 +289,14 @@
       .concat(layoutOrbit(outer, 40, -90, 130))
       .concat(layoutOrbit(inner, 24, -90 + (inner.length ? 180 / inner.length : 0), 80));
 
-    const avatarIcon = getAvatarIconKey();
+    const avatarId = getAvatarId();
 
     container.innerHTML = `
       <div class="dreamscape-canvas">
         <div class="dreamscape-orbit-track" style="width:80cqw;height:80cqw;"></div>
         <div class="dreamscape-orbit-track" style="width:48cqw;height:48cqw;"></div>
         <div class="dreamscape-avatar">
-          <div class="dreamscape-avatar-badge">${comicIcon(avatarIcon, 30)}</div>
+          <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
           <span class="dreamscape-avatar-label">You</span>
         </div>
         ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}

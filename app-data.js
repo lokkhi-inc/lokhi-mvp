@@ -75,14 +75,19 @@ window.APP_DATA = {
     { id: "custom", label: "Design your own", icon: "sparkles", description: "None of these quite fit — write your own in a few words.", evolvesTo: null }
   ],
 
+  // `avatarImage` is a DiceBear (Personas) SVG generated offline — see
+  // scripts/gen_avatars.mjs — and lives in the avatar library folder,
+  // lokhi-assets/avatars/. `icon` is kept as a fallback/for places that
+  // still want the flat comic-icon treatment.
   avatars: [
-    { id: "explorer", label: "Explorer", icon: "compass" },
-    { id: "strategist", label: "Strategist", icon: "chess-pawn" },
-    { id: "builder", label: "Builder", icon: "building-construction" },
-    { id: "dreamer", label: "Dreamer", icon: "crescent-moon" },
-    { id: "adventurer", label: "Adventurer", icon: "world-map" },
-    { id: "investor", label: "Investor", icon: "chart-increasing" },
-    { id: "creator", label: "Creator", icon: "artist-palette" }
+    { id: "explorer", label: "Explorer", icon: "compass", avatarImage: "./lokhi-assets/avatars/explorer.svg" },
+    { id: "strategist", label: "Strategist", icon: "chess-pawn", avatarImage: "./lokhi-assets/avatars/strategist.svg" },
+    { id: "builder", label: "Builder", icon: "building-construction", avatarImage: "./lokhi-assets/avatars/builder.svg" },
+    { id: "dreamer", label: "Dreamer", icon: "crescent-moon", avatarImage: "./lokhi-assets/avatars/dreamer.svg" },
+    { id: "adventurer", label: "Adventurer", icon: "world-map", avatarImage: "./lokhi-assets/avatars/adventurer.svg" },
+    { id: "investor", label: "Investor", icon: "chart-increasing", avatarImage: "./lokhi-assets/avatars/investor.svg" },
+    { id: "creator", label: "Creator", icon: "artist-palette", avatarImage: "./lokhi-assets/avatars/creator.svg" },
+    { id: "custom", label: "Design your own", icon: "sparkles", avatarImage: "./lokhi-assets/avatars/custom.svg" }
   ],
 
   // ---- Flow 1: minimal onboarding checklist ----------------------------

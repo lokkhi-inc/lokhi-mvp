@@ -130,6 +130,11 @@ input, select, textarea { font: inherit; color: inherit; }
 .icon-line-lock { -webkit-mask-image: url('./lokhi-assets/icons/line/lock.svg'); mask-image: url('./lokhi-assets/icons/line/lock.svg'); }
 .icon-line-file-text { -webkit-mask-image: url('./lokhi-assets/icons/line/file-text.svg'); mask-image: url('./lokhi-assets/icons/line/file-text.svg'); }
 
+/* Profile avatar — DiceBear SVG, sized by whichever circular/rounded
+   container it's placed in (character card, profile header, Dream Lab's
+   Dreamscape avatar badge). */
+.avatar-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
 
 /* ==========================================================================
    App shell
@@ -363,7 +368,7 @@ input, select, textarea { font: inherit; color: inherit; }
   width: 56px; height: 56px; border-radius: var(--radius-md);
   background: var(--primary-tint);
   display: flex; align-items: center; justify-content: center;
-  font-size: 28px; flex-shrink: 0;
+  font-size: 28px; flex-shrink: 0; overflow: hidden;
 }
 .character-meta { flex: 1; min-width: 0; }
 .character-meta .name { font-size: 17px; font-weight: 700; }
@@ -599,7 +604,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .profile-avatar {
   width: 84px; height: 84px; border-radius: 50%;
   background: var(--primary-tint); display: flex; align-items: center; justify-content: center;
-  font-size: 40px;
+  font-size: 40px; overflow: hidden;
 }
 .profile-subtabs {
   display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;

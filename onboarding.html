@@ -278,7 +278,7 @@
       debtDetails: debtDetails.length ? debtDetails : defaults.debtDetails,
       household: { situation: answers.household || defaults.household.situation, dependents: answers.dependents || defaults.household.dependents },
       archetype: answers.archetype === "custom" ? (answers.customArchetype || "custom") : (answers.archetype || defaults.archetype),
-      avatar: answers.archetype && answers.archetype !== "custom" ? answers.archetype : defaults.avatar
+      avatar: answers.archetype === "custom" ? "custom" : (answers.archetype || defaults.avatar)
     };
     localStorage.setItem("lokhi_profile_overrides", JSON.stringify(overrides));
     localStorage.setItem("lokhi_onboarded", "true");
