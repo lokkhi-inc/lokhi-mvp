@@ -37,7 +37,12 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   max-width: 360px;
-  margin: 0 auto;
+  /* Nodes are fixed-pixel-sized, not relative, so one resting right at the
+     ring's edge can extend past this box's own boundary (its own half-height
+     is ~60px). This margin is a buffer so that overflow lands in empty
+     space instead of visually overlapping the toolbar above or the caption
+     below — it doesn't shrink the canvas itself. */
+  margin: 68px auto;
   container-type: size;
   container-name: dreamscape;
 }
@@ -65,38 +70,29 @@
 }
 .dreamscape-avatar-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
 
-/* Each dream sits on a .dreamscape-orbit-ring: a zero-size anchor at the
-   center that continuously rotates. The .dreamscape-node inside it is
-   offset by --radius and runs the exact opposite rotation in lockstep, so
-   it travels around the avatar while its icon and label stay upright. */
-@keyframes dl-orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes dl-orbit-counter-spin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(-360deg); }
-}
-
-.dreamscape-orbit-ring {
-  position: absolute; left: 50%; top: 50%; width: 0; height: 0;
-  animation-name: dl-orbit-spin;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  z-index: 1;
+/* Dreams hold a fixed position and gently bob in place — no orbiting.
+   Each keyframe bakes in the same translate(-50%,-50%) centering used to
+   anchor the node on its left/top point, plus a small vertical drift. */
+@keyframes dl-node-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-7px); }
 }
 
 .dreamscape-node {
-  position: absolute; left: var(--radius); top: 0;
+  position: absolute;
   transform: translate(-50%, -50%);
-  animation-name: dl-orbit-counter-spin;
-  animation-timing-function: linear;
+  animation-name: dl-node-float;
+  animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: none; border: none; cursor: pointer; padding: 4px;
   width: 84px;
+  z-index: 1;
 }
 .dreamscape-node:hover, .dreamscape-node:focus-visible { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
-  .dreamscape-orbit-ring, .dreamscape-node { animation: none; }
+  .dreamscape-node { animation: none; }
 }
 
 /* Shape is a category signal on its own: Life Goals get a soft squircle,

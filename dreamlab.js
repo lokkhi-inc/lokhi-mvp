@@ -284,10 +284,9 @@
   }
 
   function renderDreamscape(container) {
-    // Every dream that isn't a super goal gets a full-size orbit slot,
-    // regardless of whether it belongs to a super goal — a dream under
-    // Freedom looks exactly like a standalone one. Super goals themselves
-    // don't orbit at all; "Freedom" is just a faint placeholder label.
+    // Every dream that isn't a super goal gets a full-size slot, regardless
+    // of whether it belongs to a super goal — a dream under Freedom looks
+    // exactly like a standalone one. Super goals themselves don't appear.
     const orbitable = DL.order.map((id) => DL.dreams[id]).filter((d) => d.type !== "super_goal");
     if (!orbitable.length) {
       container.innerHTML = emptyStateHtml();
@@ -298,13 +297,16 @@
     const innerItems = orbitable.filter((d) => d.type === "micro").map((d) => ({ dream: d }));
 
     // Radius grows with how many dreams share a ring, so adding more never
-    // crowds/overlaps existing ones — it just spreads the ring wider.
-    const outerRadius = ringRadiusCqw(outerItems.length, 30, 50, 20, 5);
-    const innerRadius = ringRadiusCqw(innerItems.length, 22, 36, 10, 4);
+    // crowds/overlaps existing ones — it just spreads the ring wider. Capped
+    // well below 50% so a node's own height/width (it's a fixed pixel size,
+    // not relative) can never poke past the canvas's own edges into the
+    // toolbar above or the caption below.
+    const outerRadius = ringRadiusCqw(outerItems.length, 26, 38, 18, 4);
+    const innerRadius = ringRadiusCqw(innerItems.length, 16, 28, 8, 3);
 
     const nodes = []
-      .concat(layoutOrbit(outerItems, outerRadius, -90, 220))
-      .concat(layoutOrbit(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0), 150));
+      .concat(layoutStatic(outerItems, outerRadius, -90))
+      .concat(layoutStatic(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0)));
 
     const avatarId = getAvatarId();
 
@@ -318,7 +320,7 @@
         </div>
         ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
       </div>
-      <p class="dl-canvas-caption">This is the life you're imagining, slowly turning around you — tap anything to look closer.</p>
+      <p class="dl-canvas-caption">This is the life you're imagining, gently floating around you — tap anything to look closer.</p>
     `;
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
       el.addEventListener("click", () => openDreamDetail(el.dataset.dreamNode));
@@ -331,18 +333,22 @@
     return Math.max(min, Math.min(max, base + n * perItem));
   }
 
-  // Lays items out on a circular orbit around the avatar. Rather than a
-  // fixed x/y position, each item gets an angle (as a negative animation
-  // delay, so it starts already at that point on the ring) and shares a
-  // duration with its counter-rotating content — see .dreamscape-orbit-ring
-  // / .dreamscape-node in dreamlab-styles.css for how that stays upright.
-  function layoutOrbit(items, radiusCqw, startDeg, durationSec) {
+  // Fixed positions around the avatar — no orbiting. Each item still gets a
+  // gentle independent float (see .dreamscape-node's animation), staggered
+  // by index so they don't all bob in sync.
+  function layoutStatic(items, radiusPct, startDeg) {
     const n = items.length;
     if (!n) return [];
     return items.map((item, i) => {
       const angleDeg = startDeg + (i * 360) / n;
-      const delay = -((((angleDeg % 360) + 360) % 360) / 360) * durationSec;
-      return { item, radiusCqw, durationSec, delay };
+      const rad = (angleDeg * Math.PI) / 180;
+      return {
+        item,
+        x: 50 + radiusPct * Math.cos(rad),
+        y: 50 + radiusPct * Math.sin(rad),
+        floatDuration: 3.2 + (i % 3) * 0.5,
+        floatDelay: -((i % 5) * 0.6)
+      };
     });
   }
 
@@ -352,16 +358,14 @@
     const status = statusOf(d.id);
     const sizeClass = d.type === "life_goal" ? "is-life" : "is-micro";
     const ringDeg = Math.round(progress * 360);
-    const timing = `animation-duration:${n.durationSec}s;animation-delay:${n.delay.toFixed(2)}s;`;
+    const style = `left:${n.x}%;top:${n.y}%;animation-duration:${n.floatDuration}s;animation-delay:${n.floatDelay}s;`;
     return `
-      <div class="dreamscape-orbit-ring" style="--radius:${n.radiusCqw}cqw;${timing}">
-        <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="${timing}">
-          <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>
-          <span class="dreamscape-node-label">${escapeHtml(d.title)}</span>
-          <span class="dreamscape-node-type">${TYPE_LABEL[d.type]}</span>
-          <span class="dreamscape-node-meta">${pct(progress)}</span>
-        </button>
-      </div>`;
+      <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="${style}">
+        <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>
+        <span class="dreamscape-node-label">${escapeHtml(d.title)}</span>
+        <span class="dreamscape-node-type">${TYPE_LABEL[d.type]}</span>
+        <span class="dreamscape-node-meta">${pct(progress)}</span>
+      </button>`;
   }
 
   function emptyStateHtml() {
