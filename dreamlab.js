@@ -100,7 +100,8 @@
       decisions: {},
       savedItems: {},
       memory: {},
-      conversations: {}
+      conversations: {},
+      hiddenSections: {}
     };
     DATA.dreams.forEach((seed) => {
       const dream = Object.assign({}, seed, { why: seed.why.slice(), values: seed.values.slice(), concerns: seed.concerns.slice() });
@@ -121,10 +122,17 @@
 
   function loadState() {
     const saved = JSON.parse(localStorage.getItem(DL_KEY) || "null");
-    if (saved) return saved;
+    if (saved) {
+      saved.hiddenSections = saved.hiddenSections || {}; // migrate state saved before removable sections existed
+      return saved;
+    }
     const initial = buildInitialState();
     localStorage.setItem(DL_KEY, JSON.stringify(initial));
     return initial;
+  }
+
+  function getHiddenSections(dreamId) {
+    return DL.hiddenSections[dreamId] || (DL.hiddenSections[dreamId] = {});
   }
 
   function addDream(structure) {
@@ -282,12 +290,21 @@
       wireEmptyState(container);
       return;
     }
-    const outer = topLevel.filter((d) => d.type !== "micro");
-    const inner = topLevel.filter((d) => d.type === "micro");
+    // Super goals are never their own orbiting node — they're a dotted
+    // "constellation" cluster holding their children (shown small, like
+    // micro dreams) so it's obvious at a glance which dreams belong to a
+    // bigger goal versus standing on their own.
+    const superGoals = topLevel.filter((d) => d.type === "super_goal");
+    const standaloneLife = topLevel.filter((d) => d.type === "life_goal");
+    const standaloneMicro = topLevel.filter((d) => d.type === "micro");
+
+    const outerItems = standaloneLife.map((d) => ({ kind: "dream", dream: d }))
+      .concat(superGoals.map((d) => ({ kind: "cluster", dream: d, children: getChildren(d.id) })));
+    const innerItems = standaloneMicro.map((d) => ({ kind: "dream", dream: d }));
 
     const nodes = []
-      .concat(layoutOrbit(outer, 40, -90, 130))
-      .concat(layoutOrbit(inner, 24, -90 + (inner.length ? 180 / inner.length : 0), 80));
+      .concat(layoutOrbit(outerItems, 40, -90, 130))
+      .concat(layoutOrbit(innerItems, 24, -90 + (innerItems.length ? 180 / innerItems.length : 0), 80));
 
     const avatarId = getAvatarId();
 
@@ -299,7 +316,7 @@
           <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
           <span class="dreamscape-avatar-label">You</span>
         </div>
-        ${nodes.map((n) => dreamscapeNodeHtml(n)).join("")}
+        ${nodes.map((n) => (n.item.kind === "cluster" ? dreamscapeClusterHtml(n) : dreamscapeNodeHtml(n))).join("")}
       </div>
       <p class="dl-canvas-caption">This is the life you're imagining, slowly turning around you — tap anything to look closer.</p>
     `;
@@ -308,26 +325,26 @@
     });
   }
 
-  // Lays dreams out on a circular orbit around the avatar. Rather than a
-  // fixed x/y position, each node gets an angle (as a negative animation
+  // Lays items out on a circular orbit around the avatar. Rather than a
+  // fixed x/y position, each item gets an angle (as a negative animation
   // delay, so it starts already at that point on the ring) and shares a
   // duration with its counter-rotating content — see .dreamscape-orbit-ring
   // / .dreamscape-node in dreamlab-styles.css for how that stays upright.
-  function layoutOrbit(dreams, radiusCqw, startDeg, durationSec) {
-    const n = dreams.length;
+  function layoutOrbit(items, radiusCqw, startDeg, durationSec) {
+    const n = items.length;
     if (!n) return [];
-    return dreams.map((d, i) => {
+    return items.map((item, i) => {
       const angleDeg = startDeg + (i * 360) / n;
       const delay = -((((angleDeg % 360) + 360) % 360) / 360) * durationSec;
-      return { dream: d, radiusCqw, durationSec, delay };
+      return { item, radiusCqw, durationSec, delay };
     });
   }
 
   function dreamscapeNodeHtml(n) {
-    const d = n.dream;
+    const d = n.item.dream;
     const progress = computeProgress(d.id);
     const status = statusOf(d.id);
-    const sizeClass = d.type === "super_goal" ? "is-super" : d.type === "life_goal" ? "is-life" : "is-micro";
+    const sizeClass = d.type === "life_goal" ? "is-life" : "is-micro";
     const ringDeg = Math.round(progress * 360);
     const timing = `animation-duration:${n.durationSec}s;animation-delay:${n.delay.toFixed(2)}s;`;
     return `
@@ -335,8 +352,39 @@
         <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="${timing}">
           <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>
           <span class="dreamscape-node-label">${escapeHtml(d.title)}</span>
-          <span class="dreamscape-node-meta">${d.type === "super_goal" ? activeQuestCount(d.id) + " active" : pct(progress)}</span>
+          <span class="dreamscape-node-type">${TYPE_LABEL[d.type]}</span>
+          <span class="dreamscape-node-meta">${pct(progress)}</span>
         </button>
+      </div>`;
+  }
+
+  // A super goal's cluster: a dotted, not-quite-circular "constellation"
+  // boundary with the goal's name on it, holding its children as small
+  // micro-dream-sized bubbles. Tapping the boundary/label opens the super
+  // goal itself; tapping a child bubble opens that dream directly.
+  function dreamscapeClusterHtml(n) {
+    const superDream = n.item.dream;
+    const kids = n.item.children;
+    const timing = `animation-duration:${n.durationSec}s;animation-delay:${n.delay.toFixed(2)}s;`;
+    const miniAngleStart = -90;
+    const kidsHtml = kids.map((k, i) => {
+      const angle = ((miniAngleStart + (i * 360) / kids.length) * Math.PI) / 180;
+      const x = 50 + 34 * Math.cos(angle);
+      const y = 50 + 34 * Math.sin(angle);
+      const progress = computeProgress(k.id);
+      const status = statusOf(k.id);
+      return `
+        <button class="dreamscape-cluster-node status-${status}" data-dream-node="${k.id}" style="left:${x}%;top:${y}%;--ring:${Math.round(progress * 360)}deg;" title="${escapeHtml(k.title)}">
+          ${comicIcon(k.icon, 18)}
+        </button>`;
+    }).join("");
+    return `
+      <div class="dreamscape-orbit-ring" style="--radius:${n.radiusCqw}cqw;${timing}">
+        <div class="dreamscape-cluster" style="${timing}">
+          <div class="dreamscape-cluster-boundary" data-dream-node="${superDream.id}"></div>
+          <button class="dreamscape-cluster-label" data-dream-node="${superDream.id}">${escapeHtml(superDream.title).toUpperCase()}</button>
+          ${kidsHtml}
+        </div>
       </div>`;
   }
 
@@ -355,8 +403,11 @@
   }
 
   // -----------------------------------------------------------------------
-  // Plan view
+  // Plan view — grouped by Super Goal / Life Goal / Micro Dream, with
+  // super goals expandable in place to browse their micro dreams.
   // -----------------------------------------------------------------------
+  let expandedSuperGoals = new Set();
+
   function renderPlanView(container) {
     const topLevel = getTopLevel();
     if (!topLevel.length) {
@@ -364,24 +415,58 @@
       wireEmptyState(container);
       return;
     }
-    container.innerHTML = `<div class="dl-plan-list">${topLevel.map(planCardHtml).join("")}</div>`;
+    const groups = [
+      { key: "super_goal", label: "Super Goals", items: topLevel.filter((d) => d.type === "super_goal") },
+      { key: "life_goal", label: "Life Goals", items: topLevel.filter((d) => d.type === "life_goal") },
+      { key: "micro", label: "Micro Dreams", items: topLevel.filter((d) => d.type === "micro") }
+    ].filter((g) => g.items.length);
+
+    container.innerHTML = groups.map((g) => `
+      <div class="dl-plan-group">
+        <div class="card-eyebrow dl-plan-group-label">${g.label}</div>
+        <div class="dl-plan-list">
+          ${g.items.map((d) => (d.type === "super_goal" ? superGoalPlanCardHtml(d) : planCardHtml(d))).join("")}
+        </div>
+      </div>`).join("");
+
+    container.querySelectorAll("[data-toggle-super]").forEach((el) => el.addEventListener("click", () => {
+      const id = el.dataset.toggleSuper;
+      if (expandedSuperGoals.has(id)) expandedSuperGoals.delete(id);
+      else expandedSuperGoals.add(id);
+      renderPlanView(container);
+    }));
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
       el.addEventListener("click", () => openDreamDetail(el.dataset.dreamNode));
     });
   }
 
+  function superGoalPlanCardHtml(d) {
+    const kids = getChildren(d.id);
+    const expanded = expandedSuperGoals.has(d.id);
+    return `
+      <div class="card dl-plan-card dl-plan-card-super">
+        <button class="dl-plan-card-head dl-plan-card-toggle" data-toggle-super="${d.id}">
+          <span class="icon">${comicIcon(d.icon, 30)}</span>
+          <div class="dl-plan-card-title-wrap">
+            <span class="dl-plan-card-title">${escapeHtml(d.title)}</span>
+            <span class="chip chip-neutral">Super Goal</span>
+          </div>
+          <span class="dl-plan-chevron ${expanded ? "is-open" : ""}">▾</span>
+        </button>
+        <span class="dl-plan-card-meta">${activeQuestCount(d.id)} active quests across ${kids.length} dream${kids.length === 1 ? "" : "s"}</span>
+        ${expanded ? `<div class="dl-plan-children">${kids.map((k) => planCardHtml(k)).join("") || `<p style="font-size:13px;color:var(--ink-soft);">No dreams inside this goal yet.</p>`}</div>` : ""}
+      </div>`;
+  }
+
+  // Renders a Life Goal or Micro Dream card — Super Goals get their own
+  // expandable card (see superGoalPlanCardHtml above).
   function planCardHtml(d) {
     const progress = computeProgress(d.id);
     const status = statusOf(d.id);
-    let metaLine;
-    if (d.type === "super_goal") {
-      metaLine = `<span class="dl-plan-card-meta">${activeQuestCount(d.id)} active quests across your dreams</span>`;
-    } else {
-      const next = nextAction(d.id);
-      metaLine = `
+    const next = nextAction(d.id);
+    const metaLine = `
         <div class="progress-track"><div class="progress-fill" style="width:${pct(progress)}"></div></div>
         <span class="dl-plan-card-meta">${next ? "Next: " + escapeHtml(next) : (progress >= 1 ? "🎉 All quests complete for now" : "No quests yet")}</span>`;
-    }
     return `
       <button class="card dl-plan-card" data-dream-node="${d.id}" style="text-align:left;cursor:pointer;">
         <div class="dl-plan-card-head">
@@ -596,6 +681,72 @@
     }
   }
 
+  // A category (Psychological / Logistical / Financial) can be dismissed by
+  // the user — it collapses into a small tab up top and can be brought back.
+  // `justRestoredCategory` is a one-render flag so the "appear" animation
+  // only plays right after a restore, not on every incidental re-render.
+  let justRestoredCategory = null;
+  const CATEGORY_DEFS = [
+    { key: "psychological", emoji: "🧠", label: "Psychological" },
+    { key: "logistical", emoji: "🗺️", label: "Logistical" },
+    { key: "financial", emoji: "💰", label: "Financial" }
+  ];
+
+  function categoryBlockHtml(id, key, innerHtml) {
+    const def = CATEGORY_DEFS.find((c) => c.key === key);
+    if (getHiddenSections(id)[key]) return "";
+    const enterCls = justRestoredCategory === key ? "dl-category-enter" : "";
+    return `
+      <div class="dl-category ${enterCls}" data-category="${key}">
+        <div class="dl-category-head">
+          <span class="dl-category-title">${def.emoji} ${def.label}</span>
+          <button class="dl-category-remove" data-remove-category="${key}" aria-label="Hide ${def.label} section">${lineIcon("x")}</button>
+        </div>
+        <div class="dl-category-body">${innerHtml}</div>
+      </div>`;
+  }
+
+  function hiddenCategoryTabsHtml(id) {
+    const hidden = getHiddenSections(id);
+    const hiddenOnes = CATEGORY_DEFS.filter((c) => hidden[c.key]);
+    if (!hiddenOnes.length) return "";
+    return `<div class="dl-hidden-tabs">${hiddenOnes.map((c) => `
+      <button class="dl-hidden-tab" data-restore-category="${c.key}">${c.emoji} ${c.label} <span class="dl-hidden-tab-plus">+</span></button>`).join("")}</div>`;
+  }
+
+  function removeCategorySection(overlay, dreamId, key) {
+    const el = overlay.querySelector(`[data-category="${key}"]`);
+    if (!el || el.classList.contains("is-vanishing")) return;
+    el.classList.add("is-vanishing");
+    const burst = document.createElement("div");
+    burst.className = "dl-pixie-burst";
+    for (let i = 0; i < 12; i++) {
+      const s = document.createElement("span");
+      s.className = "dl-pixie-particle";
+      const angle = (i / 12) * 2 * Math.PI + Math.random() * 0.4;
+      const dist = 40 + Math.random() * 50;
+      s.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      s.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      s.style.left = 25 + Math.random() * 50 + "%";
+      s.style.top = 15 + Math.random() * 40 + "%";
+      s.style.animationDelay = Math.random() * 150 + "ms";
+      burst.appendChild(s);
+    }
+    el.appendChild(burst);
+    setTimeout(() => {
+      getHiddenSections(dreamId)[key] = true;
+      persist();
+      renderDreamDetail(dreamId);
+    }, 620);
+  }
+
+  function restoreCategorySection(dreamId, key) {
+    getHiddenSections(dreamId)[key] = false;
+    persist();
+    justRestoredCategory = key;
+    renderDreamDetail(dreamId);
+  }
+
   function renderDreamDetail(id) {
     const dream = DL.dreams[id];
     const overlay = document.getElementById("dreamlab-detail-overlay");
@@ -618,47 +769,52 @@
           <span class="chip ${statusOf(id) === "completed" ? "chip-easy" : "chip-medium"}">${STATUS_LABEL[statusOf(id)]}</span>
         </div>
 
+        ${isSuper ? `
         <div class="card dl-section">
           <div class="card-eyebrow">Dream</div>
           <p class="dl-dream-statement">${escapeHtml(dream.description)}</p>
           <div class="card-eyebrow" style="margin-top:12px;">Why</div>
           ${memoryListEditor(id, "why", "+ Add a reason")}
         </div>
-
-        ${isSuper ? superGoalSectionsHtml(id) : soloDreamSectionsHtml(id, dream, variables)}
-
+        ${superGoalSectionsHtml(id)}
         <div class="card dl-section">
           <div class="card-eyebrow">Things worth thinking about</div>
           ${considerationsHtml(id)}
         </div>
-
         <div class="card dl-section">
           <div class="card-eyebrow">Decisions I've made</div>
           ${decisionsHtml(id)}
         </div>
-
-        <div class="card dl-section">
-          <div class="card-eyebrow">Saved</div>
-          ${savedItemsHtml(id)}
-        </div>
-
         <div class="card dl-section dl-fairy-card">
           <span class="icon">🧚</span>
           <p>${escapeHtml(ENGINE.introFor(dream))}</p>
-          <button class="btn btn-secondary btn-sm" id="dl-dd-fairy-btn2">Chat with your Fairy Godmother</button>
+          <button class="btn btn-secondary btn-sm" data-open-fairy>Chat with your Fairy Godmother</button>
         </div>
-
         <div class="card dl-section">
           <div class="card-eyebrow">What your Fairy Godmother knows</div>
           ${memoryPanelHtml(id)}
         </div>
+        ` : `
+        ${hiddenCategoryTabsHtml(id)}
+        ${categoryBlockHtml(id, "psychological", psychologicalSectionHtml(id, dream))}
+        ${categoryBlockHtml(id, "logistical", logisticalSectionHtml(id, dream, variables))}
+        ${categoryBlockHtml(id, "financial", financialSectionHtml(id, dream, variables))}
+        `}
+
+        <div class="card dl-section">
+          <div class="card-eyebrow">Bookmarks</div>
+          ${savedItemsHtml(id)}
+        </div>
       </div>
     `;
+    justRestoredCategory = null;
 
     document.getElementById("dl-dd-back").addEventListener("click", backDreamDetail);
     document.getElementById("dl-dd-close").addEventListener("click", closeDreamDetail);
     document.getElementById("dl-dd-fairy-btn").addEventListener("click", () => openFairyConvo(id));
-    document.getElementById("dl-dd-fairy-btn2").addEventListener("click", () => openFairyConvo(id));
+    overlay.querySelectorAll("[data-open-fairy]").forEach((b) => b.addEventListener("click", () => openFairyConvo(id)));
+    overlay.querySelectorAll("[data-remove-category]").forEach((b) => b.addEventListener("click", () => removeCategorySection(overlay, id, b.dataset.removeCategory)));
+    overlay.querySelectorAll("[data-restore-category]").forEach((b) => b.addEventListener("click", () => restoreCategorySection(id, b.dataset.restoreCategory)));
 
     wireMemoryListEditor(overlay, id, "why");
     wireConsiderations(overlay, id);
@@ -701,20 +857,53 @@
       </div>`;
   }
 
-  function soloDreamSectionsHtml(id, dream, variables) {
+  // ---- Psychological: the why, the emotional context, the Fairy's memory --
+  function psychologicalSectionHtml(id, dream) {
     return `
-      ${baselineHtml(id, dream)}
+      <div class="card dl-section">
+        <div class="card-eyebrow">Dream</div>
+        <p class="dl-dream-statement">${escapeHtml(dream.description)}</p>
+        <div class="card-eyebrow" style="margin-top:12px;">Why</div>
+        ${memoryListEditor(id, "why", "+ Add a reason")}
+      </div>
+      <div class="card dl-section dl-fairy-card">
+        <span class="icon">🧚</span>
+        <p>${escapeHtml(ENGINE.introFor(dream))}</p>
+        <button class="btn btn-secondary btn-sm" data-open-fairy>Chat with your Fairy Godmother</button>
+      </div>
+      <div class="card dl-section">
+        <div class="card-eyebrow">What your Fairy Godmother knows</div>
+        ${memoryPanelHtml(id)}
+      </div>`;
+  }
+
+  // ---- Logistical: progress, what's shaping it, what to weigh, decisions --
+  function logisticalSectionHtml(id, dream, variables) {
+    return `
       <div class="card dl-section">
         <div class="card-eyebrow">Progress &amp; next step</div>
         <div class="progress-track"><div class="progress-fill" style="width:${pct(computeProgress(id))}"></div></div>
         ${questsHtml(id)}
       </div>
-      ${variables.length ? `
       <div class="card dl-section">
         <div class="card-eyebrow">What's shaping this dream</div>
         <p style="font-size:12px;color:var(--ink-soft);margin-top:-4px;">Curated by your Dream Engine — tap anything to see why it's here.</p>
         <div id="dl-vartree-region">${variableVisualizationHtml(dream, variables)}</div>
       </div>
+      <div class="card dl-section">
+        <div class="card-eyebrow">Things worth thinking about</div>
+        ${considerationsHtml(id)}
+      </div>
+      <div class="card dl-section">
+        <div class="card-eyebrow">Decisions I've made</div>
+        ${decisionsHtml(id)}
+      </div>`;
+  }
+
+  // ---- Financial: baseline, simulation, sensitivity, scenarios ------------
+  function financialSectionHtml(id, dream, variables) {
+    return `
+      ${baselineHtml(id, dream)}
       <div class="card dl-section">
         <div class="card-eyebrow">Simulation playground</div>
         ${simulationSlidersHtml(id, variables)}
@@ -728,8 +917,7 @@
       <div class="card dl-section">
         <div class="card-eyebrow">Scenarios</div>
         ${scenariosHtml(id, dream)}
-      </div>` : ""}
-    `;
+      </div>`;
   }
 
   // ---- Baseline -----------------------------------------------------------
@@ -1224,16 +1412,21 @@
 
   // ---- Saved items ----------------------------------------------------------
   function savedItemsHtml(id) {
-    const explicit = (DL.savedItems[id] || []).map((s) => ({ id: s.id, label: s.label, kind: "item" }));
+    const explicit = (DL.savedItems[id] || []).map((s) => ({ id: s.id, label: s.label, url: s.url, kind: "item" }));
     const bookmarkedScenarios = (DL.scenarios[id] || []).filter((s) => s.bookmarked).map((s) => ({ id: s.id, label: "Scenario: " + s.name, kind: "scenario" }));
     const bookmarkedConsiderations = (DL.considerations[id] || []).filter((c) => c.bookmarked).map((c) => ({ id: c.id, label: "Consideration: " + c.title, kind: "consideration" }));
     const all = explicit.concat(bookmarkedScenarios, bookmarkedConsiderations);
-    if (!all.length) return `<p style="font-size:13px;color:var(--ink-soft);">Nothing saved yet — bookmark a scenario or consideration, and it'll show up here.</p>`;
-    return `<div class="dl-saved-list">${all.map((s) => `
-      <div class="dl-saved-row">
-        <span>${escapeHtml(s.label)}</span>
-        <button class="skip-link" data-remove-saved="${s.kind}:${s.id}">Remove</button>
-      </div>`).join("")}</div>`;
+    const listHtml = all.length
+      ? `<div class="dl-saved-list">${all.map((s) => `
+          <div class="dl-saved-row">
+            ${s.url ? `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a>` : `<span>${escapeHtml(s.label)}</span>`}
+            <button class="skip-link" data-remove-saved="${s.kind}:${s.id}">Remove</button>
+          </div>`).join("")}</div>`
+      : `<p style="font-size:13px;color:var(--ink-soft);">Nothing bookmarked yet — bookmark a link, a scenario, or a consideration, and it'll show up here.</p>`;
+    return `
+      ${listHtml}
+      <button class="btn btn-secondary btn-sm" id="dl-add-link-btn" style="margin-top:8px;">+ Bookmark a link</button>
+      <div id="dl-add-link-form"></div>`;
   }
 
   function wireSavedItems(overlay, id) {
@@ -1245,6 +1438,26 @@
       persist();
       renderDreamDetail(id);
     }));
+    const addLinkBtn = overlay.querySelector("#dl-add-link-btn");
+    if (addLinkBtn) {
+      addLinkBtn.addEventListener("click", () => {
+        const form = overlay.querySelector("#dl-add-link-form");
+        form.className = "dl-link-form";
+        form.innerHTML = `
+          <input type="text" id="dl-link-label" placeholder="What is it? (e.g. Listing on Suumo)">
+          <input type="url" id="dl-link-url" placeholder="https://...">
+          <button class="btn btn-primary btn-sm" id="dl-link-save">Save bookmark</button>`;
+        addLinkBtn.style.display = "none";
+        overlay.querySelector("#dl-link-save").addEventListener("click", () => {
+          const label = overlay.querySelector("#dl-link-label").value.trim();
+          const url = overlay.querySelector("#dl-link-url").value.trim();
+          if (!label || !url) return;
+          DL.savedItems[id].push({ id: uid("link"), type: "link", label, url, createdAt: new Date().toISOString().slice(0, 10) });
+          persist();
+          renderDreamDetail(id);
+        });
+      });
+    }
   }
 
   // ---- Memory (WHY block + full panel) -------------------------------------
