@@ -297,17 +297,21 @@
     const outerItems = orbitable.filter((d) => d.type === "life_goal").map((d) => ({ dream: d }));
     const innerItems = orbitable.filter((d) => d.type === "micro").map((d) => ({ dream: d }));
 
+    // Radius grows with how many dreams share a ring, so adding more never
+    // crowds/overlaps existing ones — it just spreads the ring wider.
+    const outerRadius = ringRadiusCqw(outerItems.length, 30, 50, 20, 5);
+    const innerRadius = ringRadiusCqw(innerItems.length, 22, 36, 10, 4);
+
     const nodes = []
-      .concat(layoutOrbit(outerItems, 40, -90, 130))
-      .concat(layoutOrbit(innerItems, 24, -90 + (innerItems.length ? 180 / innerItems.length : 0), 80));
+      .concat(layoutOrbit(outerItems, outerRadius, -90, 130))
+      .concat(layoutOrbit(innerItems, innerRadius, -90 + (innerItems.length ? 180 / innerItems.length : 0), 80));
 
     const avatarId = getAvatarId();
 
     container.innerHTML = `
       <div class="dreamscape-canvas">
-        <span class="dreamscape-freedom-placeholder">Freedom</span>
-        <div class="dreamscape-orbit-track" style="width:80cqw;height:80cqw;"></div>
-        <div class="dreamscape-orbit-track" style="width:48cqw;height:48cqw;"></div>
+        <div class="dreamscape-orbit-track" style="width:${outerRadius * 2}cqw;height:${outerRadius * 2}cqw;"></div>
+        <div class="dreamscape-orbit-track" style="width:${innerRadius * 2}cqw;height:${innerRadius * 2}cqw;"></div>
         <div class="dreamscape-avatar">
           <div class="dreamscape-avatar-badge">${avatarImgHtml(avatarId)}</div>
           <span class="dreamscape-avatar-label">You</span>
@@ -319,6 +323,12 @@
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
       el.addEventListener("click", () => openDreamDetail(el.dataset.dreamNode));
     });
+  }
+
+  // Radius grows with how many dreams share a ring — so adding more never
+  // crowds/overlaps the ones already there, it just spreads the ring wider.
+  function ringRadiusCqw(n, min, max, base, perItem) {
+    return Math.max(min, Math.min(max, base + n * perItem));
   }
 
   // Lays items out on a circular orbit around the avatar. Rather than a
