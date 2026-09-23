@@ -42,8 +42,12 @@
   position: relative;
   overflow: hidden;
   touch-action: none;
-  min-height: 280px;
-  max-height: min(70vh, 520px);
+  /* Everything inside is position:absolute, so this box has no in-flow
+     content to size itself from — height must be set explicitly, or it
+     just collapses to min-height (which is what made this wider than tall
+     on a typical portrait phone). Sized to actually read as vertical. */
+  height: min(68vh, 620px);
+  min-height: 420px;
   background: var(--surface-alt);
   border-radius: var(--radius-lg);
 }
