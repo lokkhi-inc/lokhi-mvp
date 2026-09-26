@@ -291,18 +291,22 @@
   const AVATAR_R = 40;
   const NODE_R_LIFE = 65;
   const NODE_R_MICRO = 56;
-  const MIN_GAP = 16; // avatar clearance, and life-goal ring spacing
-  const MIN_GAP_MICRO = 8; // micro dreams are allowed to sit closer together
+  const MIN_GAP = 12; // avatar clearance, and life-goal ring spacing
+  const MIN_GAP_MICRO = 6; // micro dreams are allowed to sit closer together
   const CANVAS_PADDING = 24;
 
   // Pan/zoom is a plain transform on .dreamscape-canvas, driven entirely by
   // touch/pointer gestures (pinch to zoom, drag to pan) — no buttons. The
   // avatar is rendered as a sibling, pinned to the viewport's own center, so
   // it never moves regardless of pan/zoom; the world moves around it.
+  // Default zoom is computed to fit — see fitDreamscapeToViewport — rather
+  // than a flat 1, so a handful of dreams don't look tiny in a screen-filling
+  // viewport, and a lot of them still all fit on screen at once.
   let dreamscapeZoom = 1;
   let dreamscapePanX = 0;
   let dreamscapePanY = 0;
   let dreamscapeWasGesture = false;
+  let dreamscapeFitApplied = false;
 
   function renderDreamscape(container) {
     // Every dream that isn't a super goal gets a full-size slot, regardless
@@ -333,6 +337,7 @@
 
     const avatarId = getAvatarId();
 
+    dreamscapeFitApplied = false;
     container.innerHTML = `
       <div class="dreamscape-viewport">
         <div class="dreamscape-canvas" style="width:${canvasSize}px;height:${canvasSize}px;transform:translate(calc(-50% + ${dreamscapePanX}px), calc(-50% + ${dreamscapePanY}px)) scale(${dreamscapeZoom});">
@@ -354,6 +359,37 @@
       });
     });
     wireDreamscapeGestures(container.querySelector(".dreamscape-viewport"), container.querySelector(".dreamscape-canvas"));
+    fitDreamscapeToViewport(container.querySelector(".dreamscape-viewport"), container.querySelector(".dreamscape-canvas"), canvasSize);
+  }
+
+  // Sets the default zoom so the whole dreamscape actually fills the real,
+  // measured viewport — a "contain" fit (never crops), same idea as
+  // object-fit:contain. Without this, a canvas sized to the *minimum*
+  // needed for no-overlap looks tiny inside a screen-filling viewport when
+  // there are only a few dreams, and a canvas with many dreams could run
+  // past the edges. Only runs once per render (the user's own pinch/drag
+  // takes over after that) and is measurement-driven, not guessed, so it
+  // still works once the Dream Lab tab actually becomes visible even if
+  // this ran while it was hidden (e.g. on initial app load).
+  function fitDreamscapeToViewport(viewport, canvasEl, canvasSize) {
+    function tryFit() {
+      if (dreamscapeFitApplied) return true;
+      const w = viewport.clientWidth, h = viewport.clientHeight;
+      if (w < 10 || h < 10) return false; // not laid out / not visible yet
+      const fit = Math.min(w / canvasSize, h / canvasSize) * 0.92; // small margin so edges aren't flush
+      dreamscapeZoom = Math.max(0.5, Math.min(1.8, fit));
+      dreamscapePanX = 0;
+      dreamscapePanY = 0;
+      canvasEl.style.transform = `translate(calc(-50% + 0px), calc(-50% + 0px)) scale(${dreamscapeZoom})`;
+      dreamscapeFitApplied = true;
+      return true;
+    }
+    if (tryFit()) return;
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      if (tryFit()) ro.disconnect();
+    });
+    ro.observe(viewport);
   }
 
   // Pinch-to-zoom (two fingers) and drag-to-pan (one finger), via Pointer
