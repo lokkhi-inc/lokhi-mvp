@@ -376,8 +376,8 @@
       if (dreamscapeFitApplied) return true;
       const w = viewport.clientWidth, h = viewport.clientHeight;
       if (w < 10 || h < 10) return false; // not laid out / not visible yet
-      const fit = Math.min(w / canvasSize, h / canvasSize) * 0.92; // small margin so edges aren't flush
-      dreamscapeZoom = Math.max(0.5, Math.min(1.8, fit));
+      const fit = Math.min(w / canvasSize, h / canvasSize); // fill the measured viewport as fully as possible
+      dreamscapeZoom = Math.max(0.65, Math.min(1.8, fit));
       dreamscapePanX = 0;
       dreamscapePanY = 0;
       canvasEl.style.transform = `translate(calc(-50% + 0px), calc(-50% + 0px)) scale(${dreamscapeZoom})`;
@@ -453,11 +453,17 @@
     }
     viewport.addEventListener("pointerup", endPointer);
     viewport.addEventListener("pointercancel", endPointer);
-    // Trackpad pinch on desktop browsers fires as a ctrl+wheel event.
+    // Desktop scroll/trackpad: plain wheel pans (this is "scroll" for mouse
+    // and trackpad-swipe users — touch users already pan by dragging),
+    // ctrl+wheel is the trackpad-pinch equivalent and zooms instead.
     viewport.addEventListener("wheel", (e) => {
-      if (!e.ctrlKey) return;
       e.preventDefault();
-      dreamscapeZoom = Math.max(0.5, Math.min(2.2, dreamscapeZoom - e.deltaY * 0.01));
+      if (e.ctrlKey) {
+        dreamscapeZoom = Math.max(0.5, Math.min(2.2, dreamscapeZoom - e.deltaY * 0.01));
+      } else {
+        dreamscapePanX -= e.deltaX;
+        dreamscapePanY -= e.deltaY;
+      }
       applyTransform();
     }, { passive: false });
   }
