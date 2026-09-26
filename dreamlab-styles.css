@@ -8,8 +8,23 @@
 
 /* #dreamlab-root is a plain mount div (see index.html) — the base reset
    zeroes out heading/paragraph margins, so without this it and .screen-title
-   / .screen-subtitle / .dl-toolbar would all sit flush against each other. */
-#dreamlab-root { display: flex; flex-direction: column; gap: var(--space-4); }
+   / .screen-subtitle / .dl-toolbar would all sit flush against each other.
+   flex:1 makes it actually claim .screen's full remaining height (.screen
+   itself is flex:1 in app-styles.css) — without it, the Dreamscape view
+   below just sat at its own content height, leaving blank space above the
+   tab bar instead of filling the screen. */
+#dreamlab-root { display: flex; flex-direction: column; gap: var(--space-4); flex: 1; min-height: 0; }
+
+/* Only affects the Dreamscape view (scoped via :has so Plan view, which
+   should size to its content and not stretch, is untouched) — makes
+   .dreamscape-viewport the one thing that grows to fill whatever height
+   #dreamlab-root has left after the title/subtitle/toolbar. */
+#dl-view-body:has(> .dreamscape-viewport) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 
 /* ---- Toolbar: view toggle + new dream -------------------------------- */
 
@@ -43,10 +58,11 @@
   overflow: hidden;
   touch-action: none;
   /* Everything inside is position:absolute, so this box has no in-flow
-     content to size itself from — height must be set explicitly, or it
-     just collapses to min-height (which is what made this wider than tall
-     on a typical portrait phone). Sized to actually read as vertical. */
-  height: min(68vh, 620px);
+     content to size itself from — height must come from flex (see
+     #dl-view-body above), which lets it actually fill the screen's real
+     remaining height instead of guessing at a vh fraction. min-height is
+     just a floor for unusually short viewports. */
+  flex: 1;
   min-height: 420px;
   background: var(--surface-alt);
   border-radius: var(--radius-lg);
