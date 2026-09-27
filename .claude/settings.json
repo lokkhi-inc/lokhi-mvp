@@ -1,0 +1,78 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make)",
+      "Bash(make help*)",
+      "Bash(make check*)",
+      "Bash(make run*)",
+      "Bash(make stop*)",
+      "Bash(make open*)",
+      "Bash(make deploy*)",
+
+      "Bash(vercel deploy*)",
+      "Bash(vercel build*)",
+      "Bash(vercel whoami*)",
+      "Bash(vercel list*)",
+      "Bash(vercel ls*)",
+      "Bash(vercel inspect*)",
+      "Bash(vercel alias*)",
+      "Bash(vercel domains*)",
+      "Bash(vercel env*)",
+      "Bash(vercel remove*)",
+      "Bash(vercel rm*)",
+
+      "Bash(gh pr comment*)",
+      "Bash(gh pr list*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr diff*)",
+      "Bash(gh pr status*)",
+      "Bash(gh pr checks*)",
+      "Bash(gh issue list*)",
+      "Bash(gh issue view*)",
+      "Bash(gh run list*)",
+      "Bash(gh run view*)",
+      "Bash(gh auth status*)",
+      "Bash(gh repo view*)",
+
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git rev-parse*)",
+
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools",
+      "mcp__chrome-devtools"
+    ],
+
+    "ask": [
+      "Bash(make deploy ALLOW_MAIN*)",
+      "Bash(make deploy GITLESS*)",
+      "Bash(vercel deploy --prod*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh pr close*)"
+    ],
+
+    "deny": [
+      "Bash(vercel project rm*)",
+      "Bash(gh repo delete*)",
+      "Bash(gh secret*)",
+      "Bash(gh auth logout*)"
+    ]
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "make -C \"$CLAUDE_PROJECT_DIR\" check-quiet 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "Checking Lokhi local setup"
+          }
+        ]
+      }
+    ]
+  }
+}
