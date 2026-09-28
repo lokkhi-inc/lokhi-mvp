@@ -1,0 +1,54 @@
+name: Deploy main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to main supersedes an in-flight one. Hobby allows a single
+# concurrent build, so queuing them would only add latency.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Vercel reads git metadata from the checkout and BLOCKS the build when
+      # the commit author lacks permission on the project — the deploy token
+      # being valid is not enough. CI deploys whatever lands on main, whoever
+      # wrote it, so ship a plain upload with no author attached.
+      - name: Drop git metadata
+        run: rm -rf .git
+
+      - name: Deploy to production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          # Not secrets — these identify the project, they don't grant access.
+          VERCEL_ORG_ID: team_ST8eSlTp9dGP1XhlGaq183Tp
+          VERCEL_PROJECT_ID: prj_JjwPc6FDVCJKhr7TcgkD2Nvy2g9v
+        run: |
+          set -euo pipefail
+          # Major pin only. Exact pinning drifts from the unpinned CLI everyone
+          # runs locally; no pin lets a breaking output change take production
+          # down with no commit. The CLI already emits JSON on a non-TTY stdout
+          # despite the docs promising a bare URL, so the parse below tolerates
+          # both shapes and fails loudly rather than deploying to nowhere.
+          out=$(npx --yes vercel@60 deploy --prod --yes --json \
+                  --token="$VERCEL_TOKEN" \
+                  --meta branch=main \
+                  --meta sha="${GITHUB_SHA:0:7}")
+          url=$(printf '%s' "$out" | jq -r '.deployment.url // .url // empty' 2>/dev/null || true)
+          if [ -z "$url" ]; then
+            url=$(printf '%s' "$out" | grep -oE 'https://[a-z0-9.-]+\.vercel\.app' | tail -1 || true)
+          fi
+          if [ -z "$url" ]; then
+            printf 'No deployment URL in CLI output:\n%s\n' "$out" >&2
+            exit 1
+          fi
+          echo "Deployed $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Live at https://lokkhi-mvp.vercel.app" >> "$GITHUB_STEP_SUMMARY"
