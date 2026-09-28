@@ -95,7 +95,7 @@ out=$(cd "$dir" && vercel deploy --yes --json --no-wait \
   --meta branch="$BRANCH" --meta sha="$SHA")
 
 read -r id url <<EOF
-$(printf '%s' "$out" | python3 -c 'import sys,json;d=json.load(sys.stdin).get("deployment",{});print(d.get("id",""),d.get("url",""))')
+$(printf '%s' "$out" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("id",""),d.get("url",""))')
 EOF
 
 if [ -z "$url" ]; then
