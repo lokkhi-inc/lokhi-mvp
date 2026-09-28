@@ -288,12 +288,17 @@
   // radius from these (rather than tuning a percentage against a fluid
   // container) is what makes the "never overlap" guarantee durable as the
   // number of dreams grows, instead of something to re-tune each time.
-  const AVATAR_R = 40;
-  const NODE_R_LIFE = 65;
-  const NODE_R_MICRO = 56;
-  const MIN_GAP = 12; // avatar clearance, and life-goal ring spacing
-  const MIN_GAP_MICRO = 6; // micro dreams are allowed to sit closer together
-  const CANVAS_PADDING = 24;
+  // Bumped up from the previous pass (60px/44px badges) — bigger circles,
+  // pulled in tight against the avatar via AVATAR_GAP specifically, kept
+  // separate from MIN_GAP (which governs how close dreams sit to each
+  // other) so the two can be tuned independently.
+  const AVATAR_R = 36;
+  const AVATAR_GAP = 6;
+  const NODE_R_LIFE = 70;
+  const NODE_R_MICRO = 59;
+  const MIN_GAP = 10; // life-goal ring inter-node spacing, and ring-to-ring separation
+  const MIN_GAP_MICRO = 5; // micro dreams sit closer together still
+  const CANVAS_PADDING = 20;
 
   // Pan/zoom is a plain transform on .dreamscape-canvas, driven entirely by
   // touch/pointer gestures (pinch to zoom, drag to pan) — no buttons. The
@@ -475,7 +480,7 @@
   // grows to fit instead of the spacing shrinking to fit the canvas.
   function ringRadiusPx(n, nodeR, gap) {
     if (n === 0) return 0;
-    const avatarConstraint = AVATAR_R + nodeR + MIN_GAP;
+    const avatarConstraint = AVATAR_R + nodeR + AVATAR_GAP;
     const interNodeConstraint = n > 1 ? (nodeR + gap / 2) / Math.sin(Math.PI / n) : 0;
     return Math.max(avatarConstraint, interNodeConstraint);
   }

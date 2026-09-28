@@ -131,8 +131,8 @@
   border: 2px solid var(--border-strong);
   position: relative;
 }
-.dreamscape-node.is-life .dreamscape-node-badge { width: 60px; height: 60px; }
-.dreamscape-node.is-micro .dreamscape-node-badge { width: 44px; height: 44px; }
+.dreamscape-node.is-life .dreamscape-node-badge { width: 72px; height: 72px; }
+.dreamscape-node.is-micro .dreamscape-node-badge { width: 52px; height: 52px; }
 .dreamscape-node-badge::before {
   content: "";
   position: absolute; inset: -4px; border-radius: inherit;
