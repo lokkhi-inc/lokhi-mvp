@@ -6,26 +6,25 @@ opportunities, and steady progress instead of spreadsheets and jargon.
 
 ## Running locally
 
-No build step. From this directory:
-
 ```
-python3 -m http.server 8080
+make            # list targets
+make check      # verify tooling is installed and logged in
+make run        # serve at http://127.0.0.1:8080
 ```
 
-Then open `http://localhost:8080/onboarding.html` (first run) or
-`http://localhost:8080/index.html`.
-
-Opening `index.html` directly via `file://` also works, except the service
-worker (`sw.js`) won't register under `file://` — serve over HTTP for the
-full PWA experience.
+Then open `/onboarding.html` (first run) or `/index.html`. Serve over HTTP —
+the service worker (`sw.js`) won't register under `file://`.
 
 ## Deploying
 
-Zero-config static deploy:
+```
+make deploy     # preview for the current branch
+```
 
-```
-vercel deploy
-```
+Uploads the working tree to whichever Vercel account you are logged into
+(`vercel login`), prints a preview URL, and refuses to run on `main` — `main`
+ships separately. Each developer deploys into their own Vercel account, so
+`.vercel/` is gitignored.
 
 `vercel.json` only sets two headers (no-cache on `sw.js`, correct content
 type on the manifest) — no build command is needed.

@@ -1,0 +1,9 @@
+# Per-developer Vercel project link — never share via git.
+.vercel
+.vercel-preview-url
+
+# Machine-local; .claude/settings.json and .claude/skills/ are shared.
+.claude/settings.local.json
+
+.DS_Store
+node_modules/
