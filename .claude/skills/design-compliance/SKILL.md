@@ -63,7 +63,7 @@ Run from the repo root. Each maps to a rule in `DESIGN.md § Do's and Don'ts` �
 | Minimum radius 14px | `grep -nE 'border-radius: *([0-9]\|1[0-3])px'` — `50%` on a true circle is fine |
 | No red/green state | any hex or token with hue 0–40° or 90–160° used for state |
 | `100dvh` not `100vh` | `grep -n '100vh' *.css *.html` |
-| No gradient on border/button/glyph | `grep -n 'gradient' *.css` — only the two bloom recipes are legal |
+| No gradient on border/button/glyph | `grep -n 'gradient' *.css` — only the page wash, bloom card and corner glow recipes are legal |
 | Motion budget | durations outside 160–240ms; anything animating a property other than `transform`/`opacity` |
 | Reduced motion | `prefers-reduced-motion` present in each stylesheet that declares motion |
 | No emoji in UI | `grep -nP '[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]' *.js` |
@@ -81,7 +81,7 @@ Follow the `lokhi-dev` skill: `make run` with `run_in_background: true`, drive C
 At 390px, for `home`, `grow`, `optimize`, `dreamlab`, `profile` and `onboarding.html`:
 
 - **Greyscale survival.** Apply `filter: grayscale(1)` via `evaluate_script` and confirm every state is still distinguishable. `DESIGN.md` requires state to be carried by ink first and colour second. This is the highest-value check in the whole skill.
-- **One bloom per screen.** Count elements with a radial-gradient background. More than one, or any bloom behind text, is a violation.
+- **Colour budget.** At most one bloom card per screen; no glow on small tiles, list rows or ink-filled elements; no glow behind a semantic dot or underline; neighbouring glows don't repeat a colour.
 - **One big number, one verdict.** Exactly one `numeral-xl`-scale figure per screen, at most one italic verdict.
 - **No horizontal overflow** at 390px.
 - **Contrast.** `micro-mono` at 11px against its background is the first thing to fail.

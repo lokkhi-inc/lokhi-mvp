@@ -31,18 +31,20 @@
 .dl-toolbar { display: flex; align-items: center; gap: var(--space-3); }
 .dl-view-toggle {
   flex: 1; display: flex; gap: 4px;
-  background: var(--surface-alt); border-radius: var(--radius-pill); padding: 4px;
+  background: var(--paper); border: var(--rule); border-radius: var(--radius-pill); padding: 3px;
 }
 .dl-view-btn {
-  flex: 1; padding: 9px 10px; border-radius: var(--radius-pill);
-  background: transparent; border: none; font-size: 13px; font-weight: 700;
-  color: var(--ink-soft); cursor: pointer;
+  flex: 1; padding: 8px 10px; border-radius: var(--radius-pill);
+  background: transparent; border: none; font-size: 11px; letter-spacing: 0.1em;
+  color: var(--ink); cursor: pointer;
+  transition: background-color 160ms var(--ease), color 160ms var(--ease);
 }
-.dl-view-btn.is-active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+.dl-view-btn.is-active { background: var(--ink); color: var(--paper); }
+.dl-view-btn, .dl-toolbar .btn { filter: grayscale(1); }
 
 .dl-empty-state { text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-7) var(--space-5); }
-.dl-empty-state .title { font-size: 17px; font-weight: 700; }
-.dl-empty-state .sub { font-size: 13px; color: var(--ink-soft); max-width: 260px; }
+.dl-empty-state .title { font-family: var(--font-display); font-style: italic; font-size: 36px; line-height: 1; letter-spacing: 0; text-transform: none; }
+.dl-empty-state .sub { font-size: 12px; line-height: 1.7; color: var(--ink); max-width: 260px; }
 .dl-empty-state .btn { margin-top: var(--space-2); }
 
 /* ---- Dreamscape ------------------------------------------------------- */
@@ -64,8 +66,9 @@
      just a floor for unusually short viewports. */
   flex: 1;
   min-height: 420px;
-  background: var(--surface-alt);
-  border-radius: var(--radius-lg);
+  background: var(--bloom-card);
+  border: var(--rule);
+  border-radius: var(--radius-card);
 }
 
 .dreamscape-canvas {
@@ -78,8 +81,8 @@
 .dreamscape-orbit-track {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 1px dashed var(--border-strong);
-  opacity: 0.5;
+  border: var(--stroke) dashed var(--ink);
+  opacity: 0.3;
 }
 
 .dreamscape-avatar {
@@ -89,12 +92,12 @@
 }
 .dreamscape-avatar-badge {
   width: 64px; height: 64px; border-radius: 50%;
-  background: var(--primary); display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-lg);
-  border: 3px solid var(--surface);
+  background: var(--paper); display: flex; align-items: center; justify-content: center;
+  border: var(--rule);
+  outline: var(--rule); outline-offset: 4px;
   overflow: hidden;
 }
-.dreamscape-avatar-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+.dreamscape-avatar-label { font-size: 11px; letter-spacing: 0.12em; color: var(--ink); background: var(--paper); padding: 0 6px; }
 
 /* Dreams hold a fixed position and gently bob in place — no orbiting.
    Each keyframe bakes in the same translate(-50%,-50%) centering used to
@@ -127,8 +130,8 @@
 .dreamscape-node-badge {
   width: 52px; height: 52px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--surface);
-  border: 2px solid var(--border-strong);
+  background: var(--paper);
+  border: var(--rule);
   position: relative;
 }
 .dreamscape-node.is-life .dreamscape-node-badge { width: 72px; height: 72px; }
@@ -136,23 +139,23 @@
 .dreamscape-node-badge::before {
   content: "";
   position: absolute; inset: -4px; border-radius: inherit;
-  background: conic-gradient(var(--moss) var(--ring, 0deg), var(--surface-alt) 0);
+  background: conic-gradient(var(--ink) var(--ring, 0deg), var(--wash) 0);
   z-index: -1;
 }
-.dreamscape-node.status-active .dreamscape-node-badge::before { background: conic-gradient(var(--primary) var(--ring, 0deg), var(--surface-alt) 0); }
 .dreamscape-node.status-exploring .dreamscape-node-badge { border-style: dashed; opacity: 0.75; }
-.dreamscape-node.status-exploring .dreamscape-node-badge::before { background: var(--surface-alt); }
-.dreamscape-node.status-completed .dreamscape-node-badge { border-color: var(--moss); box-shadow: 0 0 0 3px var(--moss-tint); }
+.dreamscape-node.status-exploring .dreamscape-node-badge::before { background: transparent; }
+.dreamscape-node.status-completed .dreamscape-node-badge { outline: var(--rule); outline-offset: 6px; }
 .dreamscape-node-label {
-  font-size: 11px; font-weight: 700; text-align: center; line-height: 1.2;
+  font-family: var(--font-display); font-size: 16px; letter-spacing: 0; text-transform: none;
+  text-align: center; line-height: 1.1;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.dreamscape-node-type { font-size: 8px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
-.dreamscape-node-meta { font-size: 10px; color: var(--ink-faint); font-weight: 600; }
+.dreamscape-node-type { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+.dreamscape-node-meta { font-size: 10px; letter-spacing: 0.08em; color: var(--ink-muted); }
 
 
 
-.dl-canvas-caption { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: var(--space-2); }
+.dl-canvas-caption { text-align: center; font-size: 11px; letter-spacing: 0.1em; color: var(--ink-muted); margin-top: var(--space-2); }
 
 /* ---- Plan view ---------------------------------------------------------- */
 
@@ -162,8 +165,8 @@
 .dl-plan-card { display: flex; flex-direction: column; gap: var(--space-2); width: 100%; }
 .dl-plan-card-head { display: flex; align-items: center; gap: var(--space-3); }
 .dl-plan-card-title-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
-.dl-plan-card-title { font-size: 15px; font-weight: 700; }
-.dl-plan-card-meta { font-size: 12px; color: var(--ink-soft); }
+.dl-plan-card-title { font-family: var(--font-display); font-size: 22px; line-height: 1.15; letter-spacing: 0; text-transform: none; }
+.dl-plan-card-meta { font-size: 11px; letter-spacing: 0.1em; color: var(--ink-muted); }
 
 .dl-plan-card-super { gap: var(--space-3); }
 .dl-plan-card-toggle {
@@ -171,11 +174,11 @@
   background: none; border: none; padding: 0;
   display: flex; align-items: center; gap: var(--space-3);
 }
-.dl-plan-chevron { color: var(--ink-faint); font-size: 14px; transition: transform 0.15s ease; }
-.dl-plan-chevron.is-open { transform: rotate(180deg); color: var(--primary); }
+.dl-plan-chevron { color: var(--ink); font-size: 13px; transition: transform 160ms var(--ease); }
+.dl-plan-chevron.is-open { transform: rotate(180deg); }
 .dl-plan-children {
   display: flex; flex-direction: column; gap: var(--space-2);
-  padding-left: var(--space-3); border-left: 2px dashed var(--border-strong);
+  padding-left: var(--space-3); border-left: var(--stroke) dashed var(--ink);
 }
 
 
@@ -184,8 +187,8 @@
 .dl-detail-body { gap: var(--space-4); }
 .dl-type-row { display: flex; gap: var(--space-2); }
 .dl-section { display: flex; flex-direction: column; gap: var(--space-2); }
-.dl-dream-statement { font-size: 16px; font-weight: 600; line-height: 1.4; }
-.dl-back-arrow { font-size: 18px; font-weight: 700; }
+.dl-dream-statement { font-family: var(--font-display); font-size: 28px; line-height: 1.15; letter-spacing: 0; text-transform: none; text-wrap: balance; }
+.dl-back-arrow { font-size: 15px; }
 
 .dl-children-list { display: flex; flex-direction: column; gap: var(--space-2); }
 
@@ -194,14 +197,14 @@
 .dl-editable-list { display: flex; flex-direction: column; gap: 6px; }
 .dl-editable-row {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
-  background: var(--surface-alt); border-radius: var(--radius-sm); padding: 8px 10px;
-  font-size: 13px;
+  background: var(--paper); border: var(--rule); border-radius: var(--radius-input); padding: 8px 14px;
+  font-size: 12px;
 }
 .dl-add-input {
-  padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px dashed var(--border-strong);
-  background: transparent; font-size: 13px;
+  padding: 10px 14px; border-radius: var(--radius-input); border: var(--stroke) dashed var(--ink);
+  background: var(--paper);
 }
-.dl-add-input:focus { outline: none; border-color: var(--primary); border-style: solid; }
+.dl-add-input:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-style: solid; }
 .dl-chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
 .dl-removable-chip { display: inline-flex; align-items: center; gap: 4px; }
 .dl-removable-chip button { background: none; border: none; color: inherit; cursor: pointer; display: flex; }
@@ -210,111 +213,112 @@
 
 .dl-baseline-card { align-items: flex-start; }
 .dl-baseline-value { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-.dl-baseline-caption { font-size: 12px; color: var(--ink-soft); }
+.dl-baseline-caption { font-size: 11px; letter-spacing: 0.1em; color: var(--ink-muted); }
 .dl-inline-form { display: flex; gap: var(--space-2); align-items: center; margin-top: 6px; }
 .dl-inline-form input {
-  flex: 1; padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
-  font-size: 14px;
+  flex: 1; padding: 10px 14px; border-radius: var(--radius-input); border: var(--rule);
+  background: var(--paper);
 }
-.dl-inline-form input:focus { outline: none; border-color: var(--primary); }
+.dl-inline-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- Quests ---------------------------------------------------------- */
 
-.dl-next-quest { background: var(--primary-tint); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: 4px; }
-.dl-next-quest-done { font-size: 13px; color: var(--moss); font-weight: 600; }
-.dl-quest-row { display: flex; align-items: center; gap: var(--space-2); font-size: 14px; padding: 6px 2px; cursor: pointer; }
-.dl-quest-row.is-done span { text-decoration: line-through; color: var(--ink-faint); }
+.dl-next-quest { background: var(--paper); border: var(--rule); border-radius: var(--radius-input); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: 4px; }
+.dl-next-quest-done { font-size: 12px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--state-on-track); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.dl-quest-row { display: flex; align-items: center; gap: var(--space-2); font-size: 12px; padding: 6px 2px; cursor: pointer; }
+.dl-quest-row.is-done span { text-decoration: line-through; color: var(--ink-muted); }
 .dl-quest-list { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
 
 /* ---- Variable visualization -------------------------------------------- */
 
 .dl-var-groups { display: flex; flex-direction: column; gap: var(--space-3); }
-.dl-var-group-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.dl-var-group-label { font-size: 11px; letter-spacing: 0.12em; color: var(--ink-muted); }
 .dl-var-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .dl-var-chip {
   display: flex; flex-direction: column; gap: 2px; align-items: flex-start;
-  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  padding: 8px 12px; cursor: pointer; text-align: left;
+  background: var(--paper); border: var(--rule); border-radius: var(--radius-input);
+  padding: 8px 14px; cursor: pointer; text-align: left;
 }
-.dl-var-chip .name { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
-.dl-var-chip .value { font-size: 14px; font-weight: 700; }
+.dl-var-chip .name { font-size: 10px; letter-spacing: 0.1em; color: var(--ink-muted); }
+.dl-var-chip .value { font-size: 13px; letter-spacing: 0.02em; }
 
 .dl-var-tree { display: flex; flex-direction: column; align-items: center; gap: 0; }
 .dl-var-tree-row { display: flex; justify-content: center; gap: var(--space-3); flex-wrap: wrap; width: 100%; }
 .dl-var-tree-row.dl-var-tree-single { justify-content: center; }
-.dl-var-tree-connector { width: 2px; height: 16px; background: var(--border-strong); }
+.dl-var-tree-connector { width: 1px; height: 16px; background: var(--ink); }
 
-.dl-var-detail-value { font-size: 26px; font-weight: 700; }
+.dl-var-detail-value { font-family: var(--font-display); font-size: 44px; line-height: 1; letter-spacing: 0; }
 .dl-var-source-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
 /* ---- Simulation sliders + consequences --------------------------------- */
 
 .dl-slider-groups { display: flex; flex-direction: column; gap: var(--space-4); }
-.dl-consequence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.dl-consequence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 
 /* ---- Sensitivity --------------------------------------------------------- */
 
 .dl-sensitivity-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.dl-sensitivity-row { display: grid; grid-template-columns: 18px 1fr 2fr; align-items: center; gap: var(--space-2); font-size: 13px; }
-.dl-sensitivity-row .rank { font-weight: 700; color: var(--ink-faint); }
-.dl-sensitivity-row .name { font-weight: 600; }
-.dl-sensitivity-bar-track { height: 8px; border-radius: var(--radius-pill); background: var(--surface-alt); overflow: hidden; }
-.dl-sensitivity-bar { height: 100%; border-radius: var(--radius-pill); background: var(--gold); }
+.dl-sensitivity-row { display: grid; grid-template-columns: 18px 1fr 2fr; align-items: center; gap: var(--space-2); font-size: 11px; letter-spacing: 0.08em; }
+.dl-sensitivity-row .rank { color: var(--ink-muted); }
+.dl-sensitivity-bar-track { height: 6px; border-radius: var(--radius-pill); border: var(--rule); background: var(--paper); overflow: hidden; }
+.dl-sensitivity-bar { height: 100%; border-radius: var(--radius-pill); background: var(--ink); }
 
 /* ---- Scenarios ----------------------------------------------------------- */
 
 .dl-scenario-presets { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .dl-scenario-chip {
-  padding: 9px 14px; border-radius: var(--radius-pill); background: var(--surface-alt);
-  border: 1.5px solid var(--border); font-size: 13px; font-weight: 700; cursor: pointer;
+  padding: 7px 14px; border-radius: var(--radius-pill); background: var(--paper);
+  border: var(--rule); font-size: 11px; letter-spacing: 0.1em; cursor: pointer;
 }
 .dl-scenario-list { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
 .dl-scenario-card { display: flex; flex-direction: column; gap: 6px; }
 .dl-scenario-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
-.dl-scenario-card-head .name { font-size: 14px; font-weight: 700; }
-.dl-compare-check { font-size: 12px; color: var(--ink-soft); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.dl-scenario-card-head .name { font-family: var(--font-display); font-size: 22px; line-height: 1.15; letter-spacing: 0; text-transform: none; }
+.dl-compare-check { font-size: 11px; letter-spacing: 0.1em; color: var(--ink); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .dl-scenario-actions { display: flex; gap: var(--space-3); }
 
 /* ---- Considerations -------------------------------------------------- */
 
 .dl-consideration-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .dl-consideration-row {
-  background: var(--surface-alt); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+  background: var(--paper); border: var(--rule); border-radius: var(--radius-card); padding: 14px 22px;
   display: flex; flex-direction: column; gap: 4px;
 }
-.dl-consideration-row.is-considered { opacity: 0.7; }
+.dl-consideration-row.is-considered { opacity: 0.6; }
 .dl-consideration-head { display: flex; align-items: center; justify-content: space-between; }
-.dl-consideration-head .title { font-size: 14px; font-weight: 700; }
-.dl-consideration-row .desc { font-size: 12px; color: var(--ink-soft); }
-.dl-star-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--gold); }
-.dl-consideration-actions { display: flex; align-items: center; gap: var(--space-4); font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; margin-top: 2px; }
+.dl-consideration-head .title { font-family: var(--font-display); font-size: 20px; line-height: 1.15; letter-spacing: 0; text-transform: none; }
+.dl-consideration-row .desc { font-size: 11px; letter-spacing: 0.08em; line-height: 1.6; color: var(--ink-muted); }
+.dl-star-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--ink); }
+.dl-consideration-actions { display: flex; align-items: center; gap: var(--space-4); font-size: 11px; letter-spacing: 0.1em; color: var(--ink); flex-wrap: wrap; margin-top: 2px; }
 .dl-consideration-actions label { display: flex; align-items: center; gap: 4px; }
 .dl-note-form { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .dl-note-form textarea {
-  padding: 8px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
-  font: inherit; font-size: 13px; resize: vertical;
+  padding: 10px 14px; border-radius: var(--radius-input); border: var(--rule);
+  font: inherit; font-size: 13px; letter-spacing: 0.02em; text-transform: none; resize: vertical;
+  background: var(--paper);
 }
 
 /* ---- Decision journal --------------------------------------------------- */
 
 .dl-decision-list { display: flex; flex-direction: column; gap: var(--space-2); }
 .dl-decision-card { display: flex; flex-direction: column; gap: 6px; }
-.dl-decision-card .decision { font-size: 14px; font-weight: 700; }
-.dl-decision-card .why { font-size: 13px; color: var(--ink-soft); }
+.dl-decision-card .decision { font-family: var(--font-display); font-size: 20px; line-height: 1.15; letter-spacing: 0; text-transform: none; }
+.dl-decision-card .why { font-size: 11px; letter-spacing: 0.08em; line-height: 1.6; color: var(--ink-muted); }
 .dl-decision-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .dl-decision-form input {
-  padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); font-size: 13px;
+  padding: 10px 14px; border-radius: var(--radius-input); border: var(--rule); background: var(--paper);
 }
-.dl-decision-form input:focus { outline: none; border-color: var(--primary); }
+.dl-decision-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- Saved items ---------------------------------------------------------- */
 
 .dl-saved-list { display: flex; flex-direction: column; gap: 6px; }
 .dl-saved-row {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
-  background: var(--surface-alt); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 13px;
+  background: var(--paper); border: var(--rule); border-radius: var(--radius-input); padding: 8px 14px; font-size: 12px;
 }
-.dl-saved-row a { color: var(--primary); text-decoration: underline; }
+.dl-saved-row a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .dl-saved-row a:hover { color: var(--accent); } }
 
 /* ---- Memory panel ----------------------------------------------------- */
 
@@ -323,56 +327,57 @@
 
 /* ---- Fairy Godmother: dream-context card + chat --------------------- */
 
-.dl-fairy-card { flex-direction: row; align-items: center; gap: var(--space-3); background: var(--primary-tint); border: none; }
-.dl-fairy-card .icon { font-size: 24px; }
-.dl-fairy-card p { flex: 1; font-size: 13px; line-height: 1.4; color: var(--primary-dark); }
+.dl-fairy-card { flex-direction: row; align-items: center; gap: var(--space-3); }
+.dl-fairy-card .icon { font-size: 20px; filter: grayscale(1) contrast(1.15); }
+.dl-fairy-card p { flex: 1; font-size: 12px; line-height: 1.7; color: var(--ink); }
 
-.fairy-convo-messages { display: flex; flex-direction: column; gap: 8px; max-height: 40vh; overflow-y: auto; padding: 4px 2px; }
-.fairy-msg { max-width: 82%; padding: 10px 14px; border-radius: var(--radius-md); font-size: 14px; line-height: 1.4; }
-.fairy-msg.is-fairy { align-self: flex-start; background: var(--primary-tint); color: var(--primary-dark); border-bottom-left-radius: 4px; }
-.fairy-msg.is-user { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 4px; }
+.fairy-convo-messages { display: flex; flex-direction: column; gap: 8px; max-height: 40dvh; overflow-y: auto; padding: 4px 2px; }
+.fairy-msg { max-width: 82%; padding: 10px 16px; border-radius: var(--radius-input); border: var(--rule); font-size: 12px; line-height: 1.7; }
+.fairy-msg.is-fairy { align-self: flex-start; background: var(--paper); color: var(--ink); }
+.fairy-msg.is-user { align-self: flex-end; background: var(--ink); color: var(--paper); }
 .dl-fc-input-row { display: flex; gap: var(--space-2); }
 .dl-fc-input-row input {
-  flex: 1; padding: 12px 14px; border-radius: var(--radius-pill); border: 1.5px solid var(--border); font-size: 14px;
+  flex: 1; padding: 11px 18px; border-radius: var(--radius-pill); border: var(--rule); background: var(--paper);
 }
-.dl-fc-input-row input:focus { outline: none; border-color: var(--primary); }
+.dl-fc-input-row input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- Create Dream flow: free-text answer step -------------------------- */
 
 .dl-answer-textarea {
-  width: 100%; padding: 14px 16px; border-radius: var(--radius-md); border: 1.5px solid var(--border);
-  font: inherit; font-size: 16px; resize: vertical; min-height: 100px;
-  background: var(--surface);
+  width: 100%; padding: 12px 16px; border-radius: var(--radius-input); border: var(--rule);
+  font: inherit; font-size: 13px; letter-spacing: 0.02em; text-transform: none; resize: vertical; min-height: 100px;
+  background: var(--paper);
 }
-.dl-answer-textarea:focus { outline: none; border-color: var(--primary); }
+.dl-answer-textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 .dl-review-block { display: flex; flex-direction: column; gap: 4px; }
 
 /* ---- Dream Detail categories: no visible label, just an icon + remove -- */
 
 .dl-category { position: relative; display: flex; flex-direction: column; gap: var(--space-3); }
 .dl-category-head { display: flex; align-items: center; justify-content: space-between; }
-.dl-category-title { font-size: 18px; line-height: 1; }
+.dl-category-title { font-size: 16px; line-height: 1; filter: grayscale(1) contrast(1.15); }
 .dl-category-remove {
-  width: 26px; height: 26px; border-radius: 50%; background: var(--surface-alt);
-  border: none; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--ink-faint); flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: 50%; background: var(--paper);
+  border: var(--rule); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--ink); flex-shrink: 0;
 }
-.dl-category-remove:hover { background: var(--coral-tint); color: var(--coral); }
+@media (hover: hover) { .dl-category-remove:hover { background: var(--wash); } }
 .dl-category-body { display: flex; flex-direction: column; gap: var(--space-4); }
 
 .dl-hidden-tabs { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; }
 .dl-hidden-tab {
-  padding: 6px 10px; border-radius: var(--radius-pill); background: var(--surface-alt);
-  border: 1.5px dashed var(--border-strong); font-size: 14px;
+  padding: 5px 12px; border-radius: var(--radius-pill); background: var(--paper);
+  border: var(--stroke) dashed var(--ink); font-size: 14px;
   cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  filter: grayscale(1) contrast(1.15);
 }
-.dl-hidden-tab-plus { color: var(--primary); font-weight: 800; font-size: 11px; }
+.dl-hidden-tab-plus { color: var(--ink); font-size: 11px; }
 
 /* Pixie-dust vanish, when a category is dismissed */
 .dl-pixie-burst { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 5; }
 .dl-pixie-particle {
   position: absolute; width: 7px; height: 7px; border-radius: 50%;
-  background: var(--gold); box-shadow: 0 0 6px 1px var(--gold);
+  background: var(--ink);
   transform: translate(-50%, -50%);
   animation: dl-pixie-fly 650ms ease-out forwards;
 }
@@ -398,7 +403,7 @@
 
 .dl-link-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .dl-link-form input {
-  padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); font-size: 13px;
+  padding: 10px 14px; border-radius: var(--radius-input); border: var(--rule); background: var(--paper);
 }
-.dl-link-form input:focus { outline: none; border-color: var(--primary); }
+.dl-link-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 

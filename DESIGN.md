@@ -165,7 +165,7 @@ The palette is two layers that never mix jobs.
 
 **Structure is achromatic.** Every border, rule, tick, fill, glyph and icon is ink, muted ink, or paper. If a thing conveys information, it is black on white.
 
-**Colour is atmosphere.** The blooms are decoration. They sit behind content at the bottom edge of a page or inside one feature card per screen, and they never appear under body copy, never tint a border, and never mean anything.
+**Colour is atmosphere.** The blooms are decoration, and there is a dash of them on every screen at three strengths: the page wash at the bottom edge, one bloom card per screen, and a soft corner glow on most panels. They rise from a bottom edge, never tint a border or a glyph, and never mean anything.
 
 - **Ink** (#111111) — All text, all 1px strokes, all filled progress. The only text colour.
 - **Ink Muted** (#666666) — Secondary metadata only: counts, timestamps, "of 100", "26 days left". Never a full sentence.
@@ -188,7 +188,7 @@ Rules for semantic colour, in order:
 2. **Semantic colour appears as a 2px underline, a dot, or a bar fill — never a background panel, never text colour.**
 3. **No red. No green.** Red reads as failure and green as permission; Lokhi does neither. Over-budget is rose, not alarm.
 
-Bloom recipes, verbatim from the reference:
+Bloom recipes. The first two are verbatim from the reference; the corner glow is ours.
 
 ```css
 /* Page bottom wash — behind everything, pointer-events:none, height ~520px */
@@ -197,14 +197,24 @@ background:
   radial-gradient(55% 80% at 60% 115%, #ffb3c8 0%, rgba(255,179,200,0) 70%),
   radial-gradient(50% 90% at 95% 110%, #ffe1a1 0%, rgba(255,225,161,0) 70%);
 
-/* Feature card — one per screen, maximum */
+/* Bloom card — the screen's hero panel, one per screen */
 background:
   radial-gradient(80% 70% at 10% 100%, #ffa8cc 0%, rgba(255,168,204,0) 70%),
   radial-gradient(70% 70% at 100% 100%, #ffe1a1 0%, rgba(255,225,161,0) 70%),
   #fff;
+
+/* Corner glow — one per panel, a single colour from one bottom corner */
+background:
+  radial-gradient(85% 75% at 0% 110%, rgba(255,120,180,0.45) 0%, rgba(255,120,180,0) 70%),  /* rose, bottom-left */
+  #fff;
+/* amber: #ffe1a1 at full strength, bottom-right · blush: #ffb3c8 at 0.7, bottom-right */
 ```
 
-Both recipes anchor their gradient centres *below* the box (at 100–115% vertical) so colour rises from an edge and fades out before it reaches the type. Keep that. A bloom centred in a box looks like a bug.
+Every recipe anchors its gradient centres *below* the box (at 100–115% vertical) so colour rises from an edge and thins out by the time it reaches the type. Keep that. A bloom centred in a box looks like a bug.
+
+**Corner glows cycle rose → amber → blush in document order** within a group (a stat grid, a stack of cards), so neighbouring panels never repeat a colour and the screen reads as warm overall rather than as one colour. A glow may sit behind text — every bloom tone keeps ink above 10:1 — but it never sits behind a semantic dot or underline, which would muddy the one colour that means something.
+
+**Where colour goes.** Full-width cards glow. Small tiles — the stat grid, garden tiles, two-up compare tiles, quest tiles, badges — stay paper; a glow in a small box reads as a smudge, not light. List rows — missions, checklists, explorer and theme rows, journey rows — stay plain paper; they are the quiet layer, and their plainness is what makes the panels above them read as warm. Inverted (ink-filled) elements never glow.
 
 ## Typography
 
@@ -251,7 +261,7 @@ The PWA is mobile-first. The reference is a desktop dashboard; translate it, do 
 - **Vertical order on every screen:** header → the one big thing → supporting cards → quiet list rows. Never two big things.
 - **Chrome:** header 56px, tab bar 64px plus `env(safe-area-inset-bottom)`. Both sit on paper with a single 1px ink rule, no shadow, no blur.
 - **Asymmetry is required.** No three-equal-column rows. The reference runs a tall score card, a medium quest stack, and a short stat cluster — different heights, same gutter.
-- **One bloom per screen.** The page wash at the bottom, or a feature card, not both competing.
+- **Colour budget per screen:** the page wash, one bloom card (the hero panel), and corner glows on the remaining full-width cards. Never two bloom cards, never a glow on a small tile.
 - **z-index contract:** base 0 / sticky chrome 100 / overlay 200 / sheet 300 / toast 500.
 
 ## Elevation & Depth
@@ -285,7 +295,7 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 - **Input radius:** 14px.
 - **Nothing square.** There is no 0px corner anywhere.
 - **The diamond.** A 8–9px square filled ink, rotated 45°. It terminates hairline rules and marks list rows. It is the only decorative glyph in the system; use it sparingly and never more than three to a screen.
-- **Icons:** 1px stroke, round caps, 20px box, drawn not imported. If an icon needs a fill to read, it is the wrong icon — use a word in `micro-mono` instead.
+- **Icons:** the line set in `lokhi-assets/icons/line/` — Feather paths thinned to a 1.5 stroke on the 24px grid, which lands at about 1px at the 18–20px sizes the UI uses. Round caps, `currentColor` via CSS mask. If an icon needs a fill to read, it is the wrong icon — use a word in `micro-mono` instead.
 
 ## Components
 
@@ -293,7 +303,7 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 
 **Card** — 1px #111, radius 28px, paper fill, padding 28px (22px for compact stat cards, `24px 28px` for wide short ones), `display: flex; flex-direction: column; gap: 18–22px`. No shadow. Label row at the top in `label-mono`, muted on the right.
 
-**Bloom card** — a Card whose background is the feature-card gradient above. One per screen. Its content is a `micro-mono` eyebrow, a `display-lg` headline, then `margin-top: auto` pushing a `numeral-xl` amount and a `body-mono` line to the bottom. The bloom must stay in the lower half, behind nothing but whitespace.
+**Bloom card** — a Card whose background is the bloom-card gradient above. One per screen: the hero panel. Its content is a `micro-mono` eyebrow, a `display-lg` headline, then `margin-top: auto` pushing a `numeral-xl` amount and a `body-mono` line to the bottom. The bloom must stay in the lower half, behind nothing but whitespace.
 
 **Dial** — the signature component. SVG, `viewBox="0 0 260 260"`, centre 130,130:
 
@@ -315,7 +325,9 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 
 **Input** — 1px border, radius 14px, `12px 16px`, paper fill, `numeric-inline`, placeholder in muted ink with an ellipsis ("A note for future you…"). Label above in `label-mono`. Focus: 2px `accent` ring at 2px offset. No floating labels.
 
-**Nav / tab bar** — five pills in `label-mono` uppercase on paper, 1px ink rule along the top edge. Active: ink fill, paper text. No icons-with-labels; the word alone.
+**Glow panel** — any other full-width Card with one corner glow, cycling rose → amber → blush. Small tiles and list rows stay plain.
+
+**Nav / tab bar** — icon over label, as in the original app: a 20px line icon above a 10px `micro-mono` uppercase label, on paper with a 1px ink rule along the top edge. No pills, no fills. Inactive: muted ink. Active: ink, with a 5px accent diamond under the label.
 
 **List row** — a single-line pill, `18px 24px`, 1px border: `diamond · flex-1 text in body-mono · muted value right`. The quiet layer at the bottom of a screen.
 
@@ -331,10 +343,10 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 - No square corners. Minimum radius in the system is 14px.
 - No red or green. Over-budget is rose; on-track is ink plus yolk.
 - No colour as the sole carrier of state — the screen must survive greyscale.
-- No bloom under text, no bloom centred in a box, no bloom on more than one element per screen.
+- No bloom centred in a box, no glow behind a semantic dot or underline, no more than one bloom card per screen, no glow on list rows or inverted elements.
 - No gradient on a border, a button, or a glyph.
 - No emoji in UI. Use `micro-mono` words or the diamond.
-- No icon fonts and no imported icon sets — 1px stroked SVG, round caps, drawn to match.
+- No icon fonts and no new icon sets — use the thinned line set in `lokhi-assets/icons/line/`, and draw additions to match it.
 - No three-equal-column grids. Vary height and span.
 - No `h-screen` / `100vh` — use `100dvh`.
 - No mono paragraph over ~46ch or 3 lines.
@@ -349,10 +361,10 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 
 The system governs every pixel a user sees in this repo. Per-screen interpretation:
 
-- **Home** (`index.html`, `data-screen="home"`) — closest to the reference. Greeting in `display-xl` between diamond-terminated rules; the Dial as the one big thing; Meters for pots; one Bloom card for the next dated money event; List rows beneath.
+- **Home** (`index.html`, `data-screen="home"`) — closest to the reference. Greeting in `display-xl` between diamond-terminated rules; the Dial as the one big thing; Meters for pots; the net-worth card is the Bloom card; the character card and insight panels glow; the stat tiles stay paper; journey and mission rows beneath stay plain.
 - **Grow** (`data-screen="grow"`) — the quest stack. `display-md` section head with a muted "N of M · skip anytime" to its right, then one Card per quest: chip + duration on the label row, `display-lg` title, `body-mono` body, a row of ghost buttons with one primary.
-- **Optimize** (`data-screen="optimize"`) — Segment rows and stat Cards. Two-up `numeral-lg` figures with `micro-mono` captions. This is the densest screen; it earns no bloom.
-- **Dreamlab** (`data-screen="dreamlab"`) — the one place the bloom can take a full-bleed panel, because the screen is aspirational rather than factual. Still one bloom, still no shadow. Goals render as Meters, not as charts.
+- **Optimize** (`data-screen="optimize"`) — the "found so far" card is the bloom card; opportunity cards glow. Two-up figures with `micro-mono` captions.
+- **Dreamlab** (`data-screen="dreamlab"`) — the Dreamscape viewport is the bloom card, the one place it takes a full-bleed panel, because the screen is aspirational rather than factual. Still no shadow. Goals render as Meters, not as charts.
 - **Profile** (`data-screen="profile"`) — hairline rules and List rows almost exclusively. Level, streak and badges as `numeral-lg` plus `micro-mono`, not as badges-with-fills. The avatar sits in a 1px circle.
 - **Onboarding** (`onboarding.html`) — full page bloom wash, one `display-xl` line per step, one ghost + one primary. No progress bar; use a Segment row.
 - **Share target** (`share-target.html`) — a single Card on the page wash. Nothing else.
@@ -388,4 +400,4 @@ Design decisions live here first and in code second. The order is not bureaucrac
 
 **Step 5 is the test.** If the change cannot be made by editing custom properties alone, one of two things is true: component CSS has hardcoded values that should be tokenised first, or the change is structural rather than surface — see the two-layer split in `design/migration.md` — and needs a conversation, not a find-and-replace.
 
-**Some changes are not token edits at all.** Reintroducing shadows, adding a font weight above 400, adding a second display family, using red or green for state, or putting a bloom behind text each break a rule the rest of the system is built on. Those are rewrites of Hairline Almanac, not adjustments to it. Say so out loud rather than landing them as a diff.
+**Some changes are not token edits at all.** Reintroducing shadows, adding a font weight above 400, adding a second display family, using red or green for state, or putting a glow behind a semantic mark each break a rule the rest of the system is built on. Those are rewrites of Hairline Almanac, not adjustments to it. Say so out loud rather than landing them as a diff.

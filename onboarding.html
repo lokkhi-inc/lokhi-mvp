@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#FAFAFA">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
@@ -24,6 +24,9 @@
 <link rel="apple-touch-startup-image" href="./icons/splash/splash-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3)">
 <link rel="apple-touch-startup-image" href="./icons/splash/splash-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital@0;1&family=IBM+Plex+Mono&display=swap">
 <link rel="stylesheet" href="./app-styles.css">
 </head>
 <body>
@@ -250,7 +253,7 @@
       stepShell("You're all set", "Welcome to Lokhi, " + (answers.name || "friend"), "We'll walk you through your first financial plan next — it takes about 10 minutes, and you can save and continue anytime.",
         `<div class="card-flat" style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding:32px 16px;">
           <img class="icon-comic" src="./lokhi-assets/icons/comic/magic-wand.svg" alt="" style="width:40px;height:40px;">
-          <p style="font-size:14px;color:var(--ink-soft);">Your Fairy Godmother will ask a few more questions along the way — always optional, always in context.</p>
+          <p style="color:var(--ink-muted);">Your Fairy Godmother will ask a few more questions along the way — always optional, always in context.</p>
         </div>`,
         `<button class="btn btn-primary btn-block" id="ob-finish">Enter Lokhi</button>`,
         true);

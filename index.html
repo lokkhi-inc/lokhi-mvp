@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#FAFAFA">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
@@ -27,6 +27,9 @@
 <link rel="apple-touch-startup-image" href="./icons/splash/splash-1206x2622.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3)">
 <link rel="apple-touch-startup-image" href="./icons/splash/splash-1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital@0;1&family=IBM+Plex+Mono&display=swap">
 <link rel="stylesheet" href="./app-styles.css">
 <link rel="stylesheet" href="./dreamlab-styles.css">
 </head>
@@ -177,7 +180,7 @@
     <div class="profile-section" data-profile-section="archetype" style="display:none;">
       <p class="screen-subtitle" style="margin-top:0;">Pick the personality that feels most like you — this can change anytime.</p>
       <div class="archetype-grid" id="archetype-grid"></div>
-      <p id="archetype-description" style="font-size:13px;color:var(--ink-soft);margin-top:12px;"></p>
+      <p id="archetype-description" style="font-size:13px;color:var(--ink-muted);margin-top:12px;"></p>
     </div>
 
     <div class="profile-section" data-profile-section="badges" style="display:none;">
@@ -221,7 +224,7 @@
         <span class="title" id="sim-title">Quest</span>
         <button class="close-btn" data-close-overlay="simulator-overlay"><span class="icon-line icon-line-x"></span></button>
       </div>
-      <p id="sim-description" style="font-size:13px;color:var(--ink-soft);margin-top:-8px;"></p>
+      <p id="sim-description" style="font-size:13px;color:var(--ink-muted);margin-top:-8px;"></p>
       <span id="sim-is-investing" class="visually-hidden"></span>
       <div id="simulator-body" style="display:flex;flex-direction:column;gap:16px;"></div>
     </div>
@@ -234,7 +237,7 @@
 
   <!-- ===================== Level up overlay ===================== -->
   <div class="overlay-scrim is-centered" id="levelup-overlay">
-    <div class="sheet-modal levelup-modal" style="border-radius: 24px;">
+    <div class="sheet-modal levelup-modal" style="border-radius: var(--radius-card);">
       <div class="levelup-badge"><img class="icon-comic" src="./lokhi-assets/icons/comic/party-popper.svg" alt="" style="width:56px;height:56px;"></div>
       <h2 id="levelup-value">Level up</h2>
       <p>New powers unlocked. Keep going.</p>

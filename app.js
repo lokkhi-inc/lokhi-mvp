@@ -240,9 +240,9 @@
     return "dormant";
   }
   const OWL_META = {
-    dormant: { src: "./lokhi-assets/owl-dormant.svg", label: "Behind pace — still early days.", halo: "var(--coral)" },
-    ontrack: { src: "./lokhi-assets/owl-ontrack.svg", label: "On track for your Golden Path.", halo: "var(--gold)" },
-    crowned: { src: "./lokhi-assets/owl-crowned.svg", label: "Ahead of your Golden Path.", halo: "var(--moss)" }
+    dormant: { src: "./lokhi-assets/owl-dormant.svg", label: "Behind pace — still early days.", halo: "var(--state-over)" },
+    ontrack: { src: "./lokhi-assets/owl-ontrack.svg", label: "On track for your Golden Path.", halo: "var(--state-on-track)" },
+    crowned: { src: "./lokhi-assets/owl-crowned.svg", label: "Ahead of your Golden Path.", halo: "var(--ink)" }
   };
 
   function renderGoldenPathSvg(points, currentAge) {
@@ -257,11 +257,11 @@
     const targetPts = points.map((p) => `${x(p.age)},${y(p.target)}`).join(" ");
     const actualPts = points.filter((p) => p.actual != null).map((p) => `${x(p.age)},${y(p.actual)}`).join(" ");
     const current = points.find((p) => p.age === currentAge);
-    const dot = current ? `<circle cx="${x(current.age)}" cy="${y(current.actual != null ? current.actual : current.target)}" r="4" fill="var(--primary)" />` : "";
+    const dot = current ? `<circle cx="${x(current.age)}" cy="${y(current.actual != null ? current.actual : current.target)}" r="3.5" fill="var(--ink)" />` : "";
 
     return `<svg class="golden-path-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-      <polyline points="${targetPts}" fill="none" stroke="var(--ink-faint)" stroke-width="2" stroke-dasharray="5 5" />
-      <polyline points="${actualPts}" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <polyline points="${targetPts}" fill="none" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" />
+      <polyline points="${actualPts}" fill="none" stroke="var(--ink)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
       ${dot}
     </svg>`;
   }
@@ -346,7 +346,7 @@
     if (journey.status === "in_progress") {
       continueWrap.style.display = "";
       continueWrap.innerHTML = `
-        <button class="card continue-plan-card" id="continue-plan-btn" style="border:none;width:100%;cursor:pointer;">
+        <button class="card continue-plan-card" id="continue-plan-btn" style="width:100%;cursor:pointer;">
           <span class="icon">${comicIcon("compass")}</span>
           <span class="body">
             <span class="title">Continue building your plan</span>
@@ -369,7 +369,7 @@
       return `
       <div class="journey-item is-${status === "active" && progress >= 1 ? "completed" : status}">
         <div class="journey-node">${status === "locked" ? lineIcon("lock") : (progress >= 1 ? lineIcon("check") : "")}</div>
-        <button class="card journey-card" data-quest="${q.id}" style="border:none;width:100%;cursor:pointer;">
+        <button class="card journey-card" data-quest="${q.id}" style="width:100%;cursor:pointer;">
           <span class="icon">${comicIcon(q.icon)}</span>
           <span class="body">
             <span class="title">${q.title}</span>
@@ -384,7 +384,7 @@
     root.querySelector("#mission-list").innerHTML = DATA.weeklyMissions.map((m) => {
       const done = state.missions[m.id].completed;
       return `
-      <button class="mission-item ${done ? "is-done" : ""}" data-mission="${m.id}" style="border:none;">
+      <button class="mission-item ${done ? "is-done" : ""}" data-mission="${m.id}">
         <span class="mission-check">${done ? lineIcon("check") : ""}</span>
         <span class="mission-title">${m.title}</span>
         <span class="mission-xp">+${m.xpReward} XP</span>
@@ -472,7 +472,7 @@
           ${showReturn ? `<button class="quick-question-btn" data-bump="return:0.01">+1% return</button>` : ""}
         </div>
       </div>
-      <p style="font-size:12px;color:var(--ink-soft);">This is a scenario based on your inputs, not a guaranteed outcome.</p>
+      <p style="font-size:12px;color:var(--ink-muted);">This is a scenario based on your inputs, not a guaranteed outcome.</p>
       <button class="btn btn-primary btn-block" id="sim-save-btn">Save this plan · +${q.xpReward} XP</button>
     `;
 
@@ -573,17 +573,17 @@
       </div>`).join("");
 
     root.querySelector("#theme-grid").innerHTML = DATA.marketThemes.map((t) => `
-      <button class="theme-card" data-theme="${t.id}" style="border:none;">
+      <button class="theme-card" data-theme="${t.id}">
         <span class="icon">${comicIcon(t.icon)}</span>
         <span class="body"><span class="title">${t.title}</span><span class="summary">${t.summary}</span></span>
-        <span class="exposure">${pct(t.userExposurePct)}<br><span style="font-weight:600;color:var(--ink-faint);">exposure</span></span>
+        <span class="exposure">${pct(t.userExposurePct)}<br><span style="font-size:10px;letter-spacing:0.1em;color:var(--ink-muted);">exposure</span></span>
       </button>`).join("");
     root.querySelectorAll("[data-theme]").forEach((b) => b.addEventListener("click", () => openThemeDetail(b.dataset.theme)));
 
     root.querySelector("#investment-quests").innerHTML = DATA.investmentQuests.map((q) => {
       const done = state.investmentQuests[q.id].completed;
       return `
-      <button class="mission-item ${done ? "is-done" : ""}" data-iquest="${q.id}" style="border:none;">
+      <button class="mission-item ${done ? "is-done" : ""}" data-iquest="${q.id}">
         <span class="mission-check">${done ? lineIcon("check") : ""}</span>
         <span class="mission-title">${comicIcon(q.icon)} ${q.title} · ${q.estMinutes} min</span>
         <span class="mission-xp">+${q.xpReward} XP</span>
@@ -604,16 +604,16 @@
     document.getElementById("theme-detail-body").innerHTML = `
       <div class="sheet-modal-handle"></div>
       <div class="sheet-modal-head"><span class="title">${comicIcon(t.icon)} ${t.title}</span><button class="close-btn" data-close-overlay="theme-detail-overlay">${lineIcon("x")}</button></div>
-      <p style="font-size:14px;line-height:1.6;">${t.summary}</p>
+      <p>${t.summary}</p>
       <div class="card-flat">
         <div class="card-eyebrow">Why it matters</div>
-        <p style="font-size:14px;line-height:1.6;margin-top:6px;">${t.whyItMatters}</p>
+        <p style="margin-top:6px;">${t.whyItMatters}</p>
       </div>
       <div class="compare-grid">
         <div class="compare-tile"><div class="label">Your exposure</div><div class="value">${pct(t.userExposurePct)}</div></div>
-        <div class="compare-tile"><div class="label">Risk level</div><div class="value" style="font-size:15px;">${t.riskLevel}</div></div>
+        <div class="compare-tile"><div class="label">Risk level</div><div class="value" style="font-size:22px;">${t.riskLevel}</div></div>
       </div>
-      <p style="font-size:12px;color:var(--ink-soft);">Educational only — this is not a recommendation to buy or sell.</p>
+      <p style="font-size:12px;color:var(--ink-muted);">Educational only — this is not a recommendation to buy or sell.</p>
     `;
     document.getElementById("theme-detail-body").querySelector("[data-close-overlay]").addEventListener("click", () => closeOverlay("theme-detail-overlay"));
     openOverlay("theme-detail-overlay");

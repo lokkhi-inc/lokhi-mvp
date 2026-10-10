@@ -8,18 +8,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lokhi">
-<meta name="theme-color" content="#FAFAFA">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital@0;1&family=IBM+Plex+Mono&display=swap">
 <link rel="stylesheet" href="./app-styles.css">
 <style>
-  .share-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; padding: 24px 20px 32px; display: flex; flex-direction: column; }
+  .share-shell { max-width: 480px; margin: 0 auto; min-height: 100dvh; position: relative; z-index: 1; padding: 24px 20px 32px; display: flex; flex-direction: column; }
   .share-file-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
-  .share-file-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface-alt); }
-  .share-file-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; }
-  .share-file-item .name { font-size: 13px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .share-file-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: var(--radius-input); border: var(--rule); background: var(--paper); }
+  .share-file-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: var(--rule); filter: grayscale(1); }
+  .share-file-item .name { font-size: 11px; letter-spacing: 0.08em; color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .share-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 24px; }
 </style>
 </head>
@@ -28,7 +31,7 @@
 <div class="share-shell">
   <div class="brand-mark" style="margin-bottom: 24px;">
     <img src="./lokhi-assets/fairy-mark.svg" alt="" style="width:28px;height:28px;">
-    <span style="font-weight:700;">Lokhi</span>
+    <span>Lokhi</span>
   </div>
 
   <div id="share-content">
@@ -58,7 +61,7 @@
   function renderShare(meta, fileBlobs) {
     var rows = "";
     if (meta.title) rows += "<p><strong>" + escapeHtml(meta.title) + "</strong></p>";
-    if (meta.text) rows += "<p style=\"color:var(--ink-soft);\">" + escapeHtml(meta.text) + "</p>";
+    if (meta.text) rows += "<p style=\"color:var(--ink-muted);\">" + escapeHtml(meta.text) + "</p>";
     if (meta.url) rows += "<p><a href=\"" + escapeHtml(meta.url) + "\" target=\"_blank\" rel=\"noopener\">" + escapeHtml(meta.url) + "</a></p>";
 
     var fileRows = fileBlobs.map(function (f) {
@@ -70,7 +73,7 @@
 
     content.innerHTML =
       '<h1 class="screen-title" style="padding-top:0;">Shared to Lokhi</h1>' +
-      '<div class="card" style="margin-top:12px;">' + (rows || "<p style=\"color:var(--ink-soft);\">No text — see attachments below.</p>") + "</div>" +
+      '<div class="card" style="margin-top:12px;">' + (rows || "<p style=\"color:var(--ink-muted);\">No text — see attachments below.</p>") + "</div>" +
       (fileRows ? '<div class="share-file-list">' + fileRows + "</div>" : "") +
       '<div class="share-actions">' +
       '<button class="btn btn-primary btn-block" id="share-save-btn">Add to Lokhi</button>' +
