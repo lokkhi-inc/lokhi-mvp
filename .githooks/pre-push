@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Refuse direct pushes to main.
+#
+# Active only once per clone:  git config core.hooksPath .githooks
+set -euo pipefail
+
+PROTECTED=main
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$remote_ref" = "refs/heads/$PROTECTED" ]; then
+    printf '\n  Refusing to push directly to %s.\n\n' "$PROTECTED" >&2
+    printf '  main is deploy-on-merge and reviewed by PR. Branch instead:\n\n' >&2
+    printf '    git switch -c your-name/what-changed\n' >&2
+    printf '    git push -u origin HEAD\n' >&2
+    printf '    gh pr create\n\n' >&2
+    exit 1
+  fi
+done
+
+exit 0

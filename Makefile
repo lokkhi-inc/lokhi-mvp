@@ -2,7 +2,7 @@
 # shell. Multi-step logic uses \ continuations.
 
 .DEFAULT_GOAL := help
-.PHONY: help check check-quiet run stop open deploy
+.PHONY: help check check-quiet run stop open deploy _setup
 
 PORT   ?= 8080
 HOST   ?= 127.0.0.1
@@ -10,7 +10,22 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)
 SHA    := $(shell git rev-parse --short HEAD 2>/dev/null || echo nogit)
 DIRTY  := $(shell git status --porcelain 2>/dev/null | head -1)
 
-help: ## Show this help
+# Per-clone setup. Git will not enable a cloned hook by itself and there is no
+# clone-time hook that could, so every target routes through here: the first
+# make command anyone runs fixes both of these.
+_setup:
+	@[ "$$(git config core.hooksPath 2>/dev/null)" = '.githooks' ] \
+	  || { git config core.hooksPath .githooks 2>/dev/null \
+	       && printf '  Enabled .githooks — direct pushes to main are now blocked.\n'; } \
+	  || true
+	@# This repo is a fork, so gh targets the upstream parent unless told otherwise.
+	@[ "$$(git config --get remote.origin.gh-resolved 2>/dev/null)" = 'base' ] \
+	  || { command -v gh >/dev/null 2>&1 \
+	       && gh repo set-default lokkhi-inc/lokkhi-mvp >/dev/null 2>&1 \
+	       && printf '  Pointed gh at lokkhi-inc/lokkhi-mvp (not the upstream fork parent).\n'; } \
+	  || true
+
+help: _setup ## Show this help
 	@printf '\n  Lokhi — make targets\n\n'
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 	  | awk 'BEGIN {FS = ":.*?## "}; {printf "    %-9s %s\n", $$1, $$2}'
@@ -20,7 +35,7 @@ help: ## Show this help
 # check
 # ---------------------------------------------------------------------------
 
-check: ## Verify local tooling is installed and authenticated
+check: _setup ## Verify local tooling is installed and authenticated
 	@fail=0; \
 	printf '\n  Lokhi local setup\n\n'; \
 	printf '  run    — serve the app locally\n'; \
@@ -73,6 +88,15 @@ check: ## Verify local tooling is installed and authenticated
 	  printf '    %-18s %s\n' 'gh cli' 'MISSING'; \
 	  printf '    %-18s   fix: brew install gh && gh auth login\n' ''; \
 	fi; \
+	printf '\n  repo — guard against pushing straight to main\n'; \
+	if [ "$$(git config core.hooksPath 2>/dev/null)" = '.githooks' ]; then \
+	  printf '    %-18s %s\n' 'pre-push hook' 'ok'; \
+	else \
+	  printf '    %-18s %s\n' 'pre-push hook' 'NOT ENABLED'; \
+	  printf '    %-18s   git will not enable a cloned hook on its own.\n' ''; \
+	  printf '    %-18s   fix: git config core.hooksPath .githooks\n' ''; \
+	  fail=1; \
+	fi; \
 	printf '\n'; \
 	if [ $$fail -ne 0 ]; then \
 	  printf '  Not ready yet — run the fix command(s) above, then "make check".\n\n'; \
@@ -98,7 +122,7 @@ check-quiet:
 # run
 # ---------------------------------------------------------------------------
 
-run: ## Serve the app locally on port 8080 (Ctrl-C to stop)
+run: _setup ## Serve the app locally on port 8080 (Ctrl-C to stop)
 	@command -v python3 >/dev/null 2>&1 \
 	  || { printf 'python3 is missing. Run: make check\n'; exit 1; }
 	@if lsof -ti tcp:$(PORT) >/dev/null 2>&1; then \
@@ -113,7 +137,7 @@ run: ## Serve the app locally on port 8080 (Ctrl-C to stop)
 	@printf '  rather than opening index.html as a file.\n\n'
 	@python3 -m http.server $(PORT) --bind $(HOST)
 
-stop: ## Stop a server left running on that port
+stop: _setup ## Stop a server left running on that port
 	@pid=$$(lsof -ti tcp:$(PORT) 2>/dev/null); \
 	if [ -n "$$pid" ]; then \
 	  kill $$pid && printf 'Stopped pid %s on port $(PORT).\n' "$$pid"; \
@@ -121,7 +145,7 @@ stop: ## Stop a server left running on that port
 	  printf 'Nothing listening on port $(PORT).\n'; \
 	fi
 
-open: ## Open the running app in your browser
+open: _setup ## Open the running app in your browser
 	@open 'http://$(HOST):$(PORT)/index.html' 2>/dev/null \
 	  || printf 'Could not open a browser. Visit http://$(HOST):$(PORT)/index.html\n'
 
@@ -129,5 +153,5 @@ open: ## Open the running app in your browser
 # deploy
 # ---------------------------------------------------------------------------
 
-deploy: ## Deploy this branch as a preview to YOUR Vercel account
+deploy: _setup ## Deploy this branch as a preview to YOUR Vercel account
 	@ALLOW_MAIN='$(ALLOW_MAIN)' GITLESS='$(GITLESS)' ./scripts/deploy.sh
