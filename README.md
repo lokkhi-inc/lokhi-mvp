@@ -55,7 +55,7 @@ Capacitor/Xcode), which is outside the scope of a static web app.
 
 ## Structure
 
-- `index.html` — the main app shell: all five tabs (Home, Playground,
+- `index.html` — the main app shell: all five tabs (Home, Dream Lab,
   Optimize, Grow, Profile), modals, the Fairy Godmother widget, and the
   guided financial plan journey overlay.
 - `onboarding.html` — the minimal-facts onboarding flow plus the financial
@@ -96,7 +96,7 @@ app to the default mock profile in `app-data.js`.
 
 - All money values use `font-variant-numeric: tabular-nums` so figures stay
   aligned wherever they appear.
-- Every Optimize opportunity and Playground recommendation states *why* it
+- Every Optimize opportunity and Dream Lab recommendation states *why* it
   was generated. Every projection in the simulator is labeled a scenario,
   not a promise.
 - The gamification layer (XP, levels, streaks, badges) never scores or

@@ -44,7 +44,7 @@ jobs:
           # down with no commit. The CLI already emits JSON on a non-TTY stdout
           # despite the docs promising a bare URL, so the parse below tolerates
           # both shapes and fails loudly rather than deploying to nowhere.
-          out=$(npx --yes vercel@60 deploy --prod --yes --json \
+          out=$(npx --yes "vercel@$(awk '$1=="vercel"{print $2}' .tool-versions)" deploy --prod --yes --json \
                   --token="$VERCEL_TOKEN" \
                   --meta branch=main \
                   --meta sha="${GITHUB_SHA:0:7}")

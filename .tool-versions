@@ -1,0 +1,4 @@
+# Pinned CLI versions. asdf/mise-native format (<tool> <version>), so adopting
+# `mise` later needs no migration. Checked generically by `make check`;
+# scripts/deploy.sh enforces the major only. Pin to what brew ships.
+vercel 63.1.0

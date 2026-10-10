@@ -75,6 +75,22 @@ check: _setup ## Verify local tooling is installed and authenticated
 	  printf '    %-18s   then: vercel login\n' ''; \
 	  fail=1; \
 	fi; \
+	printf '\n  pinned versions (.tool-versions)\n'; \
+	while read -r tool want; do \
+	  case "$$tool" in ''|\#*) continue;; esac; \
+	  have=$$("$$tool" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1); \
+	  if [ -z "$$have" ]; then \
+	    printf '    %-18s %s\n' "$$tool" 'NOT INSTALLED'; \
+	    printf '    %-18s   fix: brew install %s\n' '' "$$tool"; \
+	    fail=1; \
+	  elif [ "$${have%%.*}" != "$${want%%.*}" ]; then \
+	    printf '    %-18s %s (pinned %s)  MAJOR MISMATCH\n' "$$tool" "$$have" "$$want"; \
+	    printf '    %-18s   fix: brew upgrade %s   (need %s)\n' '' "$$tool" "$$want"; \
+	    fail=1; \
+	  else \
+	    printf '    %-18s %s (pinned %s)\n' "$$tool" "$$have" "$$want"; \
+	  fi; \
+	done < .tool-versions; \
 	printf '\n  optional — PR comments and repo access\n'; \
 	if command -v gh >/dev/null 2>&1; then \
 	  printf '    %-18s %s\n' 'gh cli' 'ok'; \

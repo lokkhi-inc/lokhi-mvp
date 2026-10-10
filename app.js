@@ -37,8 +37,7 @@
       laterPrompts: Object.assign({}, autoMap(DATA.laterPrompts, "status"), saved.laterPrompts || {}),
       investmentQuests: Object.assign({}, autoMap(DATA.investmentQuests, "completed"), saved.investmentQuests || {}),
       activeTab: "home",
-      activeProfileTab: "info",
-      activePlaygroundTab: "quests"
+      activeProfileTab: "info"
     };
   }
 
@@ -107,6 +106,17 @@
     opts = opts || {};
     const size = opts.size ? `width:${opts.size}px;height:${opts.size}px;` : "";
     return `<span class="icon-line icon-line-${name} ${opts.cls || ""}" style="${size}"></span>`;
+  }
+  // Profile avatar — a DiceBear SVG keyed by archetype (lokhi-assets/avatars/),
+  // reflecting whichever archetype the user was classified with during
+  // onboarding. Fills its container edge-to-edge like a profile photo (see
+  // .avatar-img in app-styles.css) rather than floating small like an emoji
+  // icon — falls back to the flat comic icon if the id is unknown.
+  function avatarImg(avatarId, opts) {
+    opts = opts || {};
+    const avatar = DATA.avatars.find((a) => a.id === avatarId);
+    if (!avatar || !avatar.avatarImage) return comicIcon((avatar && avatar.icon) || "compass", opts);
+    return `<img class="avatar-img ${opts.cls || ""}" src="${avatar.avatarImage}" alt="">`;
   }
 
   // ---------------------------------------------------------------------
@@ -266,8 +276,7 @@
     document.getElementById("header-streak").textContent = p.streakWeeks + "w";
 
     // character card
-    const avatarIcon = (DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "compass";
-    root.querySelector("#character-avatar").innerHTML = comicIcon(avatarIcon);
+    root.querySelector("#character-avatar").innerHTML = avatarImg(p.avatar);
     root.querySelector("#character-level").textContent = "Level " + p.level;
     root.querySelector("#character-archetype").textContent = capitalize(p.archetype) + " · " + p.streakWeeks + "-week streak";
     root.querySelector("#xp-fill").style.width = pct(p.xp / p.xpForNextLevel);
@@ -399,50 +408,9 @@
   }
 
   // ---------------------------------------------------------------------
-  // PLAYGROUND
+  // DREAM LAB — owned entirely by dreamlab.js (screen-dreamlab is just a
+  // mount point). See dreamlab.js, dream-engine.js, dream-calculations.js.
   // ---------------------------------------------------------------------
-  function renderPlayground() {
-    const root = document.getElementById("screen-playground");
-    root.querySelectorAll(".section-tab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.section === state.activePlaygroundTab));
-    root.querySelectorAll(".pg-section").forEach((s) => s.style.display = s.dataset.section === state.activePlaygroundTab ? "" : "none");
-
-    root.querySelector("#quest-grid").innerHTML = DATA.quests.map((q) => {
-      const qs = state.quests[q.id];
-      const progress = Math.min(1, qs.currentAmount / q.goalAmount);
-      const locked = qs.status === "locked";
-      return `
-      <button class="quest-card ${locked ? "is-locked" : ""}" data-quest="${q.id}" ${locked ? "disabled" : ""}>
-        <span class="icon">${comicIcon(q.icon)}</span>
-        <span class="title">${q.title}</span>
-        <div class="progress-track"><div class="progress-fill" style="width:${pct(progress)}"></div></div>
-        <span class="progress-label">${yen(qs.currentAmount)} / ${yen(q.goalAmount)}</span>
-        <div class="quest-card-foot">
-          <span class="chip chip-${q.difficulty.toLowerCase()}">${q.difficulty}</span>
-          <span class="xp-reward">+${q.xpReward} XP</span>
-        </div>
-      </button>`;
-    }).join("");
-    root.querySelectorAll("#quest-grid [data-quest]").forEach((b) => b.addEventListener("click", () => openQuestSimulator(b.dataset.quest)));
-
-    root.querySelector("#suggested-goals").innerHTML = DATA.suggestedGoals.map((g) => `
-      <div class="card goal-card">
-        <div class="card-row"><span class="icon">${comicIcon(g.icon)}</span><span class="card-title">${g.title}</span></div>
-        <span class="chip chip-neutral">${g.category}</span>
-      </div>`).join("");
-
-    root.querySelector("#personalized-goals").innerHTML = DATA.personalizedGoals.map((g) => `
-      <div class="card goal-card">
-        <div class="card-row"><span class="icon">${comicIcon(g.icon)}</span><span class="card-title">${g.title}</span></div>
-        <p class="why">${g.why}</p>
-        <div class="card-row">
-          <span class="chip chip-neutral">${g.recommendedAction}</span>
-        </div>
-      </div>`).join("");
-  }
-
-  document.querySelectorAll("#screen-playground .section-tab-btn").forEach((b) => {
-    b.addEventListener("click", () => { state.activePlaygroundTab = b.dataset.section; renderPlayground(); });
-  });
 
   // ---- Simulator modal ---------------------------------------------------
   let simState = null;
@@ -659,7 +627,7 @@
     const p = state.profile;
     root.querySelector("#profile-name").textContent = p.name;
     root.querySelector("#profile-archetype-label").textContent = capitalize(p.archetype);
-    root.querySelector("#profile-avatar-icon").innerHTML = comicIcon((DATA.avatars.find((a) => a.id === p.avatar) || {}).icon || "compass");
+    root.querySelector("#profile-avatar-icon").innerHTML = avatarImg(p.avatar);
 
     root.querySelectorAll(".profile-subtab-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.profileTab === state.activeProfileTab));
     root.querySelectorAll(".profile-section").forEach((s) => s.style.display = s.dataset.profileSection === state.activeProfileTab ? "" : "none");
@@ -768,7 +736,7 @@
       }));
     } else if (step.actionType === "simulate") {
       choiceWrap.style.display = "";
-      choiceWrap.innerHTML = `<div class="insight-banner"><span class="icon">${comicIcon("video-game")}</span><p>Try this in the Playground simulator anytime — for now, tap Continue to keep your plan moving.</p></div>`;
+      choiceWrap.innerHTML = `<div class="insight-banner"><span class="icon">${comicIcon("video-game")}</span><p>Try this in the Dream Lab simulator anytime — for now, tap Continue to keep your plan moving.</p></div>`;
     } else {
       choiceWrap.style.display = "none";
       choiceWrap.innerHTML = "";
@@ -817,7 +785,6 @@
   function init() {
     document.getElementById("levelup-value").textContent = "";
     renderHome();
-    renderPlayground();
     renderOptimize();
     renderGrow();
     renderProfile();
