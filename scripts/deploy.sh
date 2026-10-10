@@ -22,6 +22,19 @@ command -v vercel >/dev/null 2>&1 || {
 vercel whoami >/dev/null 2>&1 || {
   printf '\n  Not logged in to Vercel. Run: vercel login\n\n'; exit 1; }
 
+# The CLI's --json shape differs across majors: 60.x nests the deployment under
+# .deployment, other majors put id/url at the top level. The parse below handles
+# both, but a major mismatch can break more than parsing, so gate on it.
+PINNED=$(awk '$1=="vercel"{print $2}' "$(dirname "$0")/../.tool-versions" 2>/dev/null || echo "")
+LOCAL=$(vercel --version 2>/dev/null | tr -d '[:space:]')
+if [ -n "$PINNED" ] && [ "${LOCAL%%.*}" != "${PINNED%%.*}" ]; then
+  printf '\n  Vercel CLI major version mismatch.\n\n'
+  printf '    pinned     %s  (.vercel-cli-version)\n' "$PINNED"
+  printf '    installed  %s\n\n' "${LOCAL:-unknown}"
+  printf '  Fix: npm install -g vercel@%s\n\n' "$PINNED"
+  exit 1
+fi
+
 if [ "$BRANCH" = main ] && [ -z "$ALLOW_MAIN" ]; then
   printf '\n  Refusing to deploy from main. Previews are for branches.\n'
   printf '  Override: make deploy ALLOW_MAIN=1\n\n'
@@ -31,11 +44,25 @@ fi
 VMAIL=$(vercel whoami --json 2>/dev/null \
   | python3 -c 'import sys,json;print(json.load(sys.stdin).get("email",""))' 2>/dev/null || echo "")
 
-# One stable URL per branch. Deployments are immutable, so the alias is what
-# moves; the deployment it used to point at is reaped below if it was healthy.
-SLUG=$(printf '%s' "$BRANCH" | tr '[:upper:]' '[:lower:]' \
-  | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
-ALIAS="lokkhi-$SLUG.vercel.app"
+# One stable URL per branch PER PERSON. *.vercel.app is a global namespace, so
+# an alias of just lokkhi-<branch> collides when two people deploy the same
+# branch from different Vercel accounts — first claim wins, everyone else
+# silently loses their stable URL. Scoping by account makes that impossible.
+# Deployments are immutable, so the alias is what moves; the deployment it used
+# to point at is reaped below if it was healthy.
+slugify() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
+  | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//'; }
+
+SLUG=$(slugify "$BRANCH")
+WHO=$(slugify "${VMAIL%%@*}")
+[ -n "$WHO" ] || WHO=$(slugify "$USER")
+ALIAS="lokkhi-$SLUG-$WHO"
+# A DNS label caps at 63 chars; trim the branch half, never the identity half.
+while [ ${#ALIAS} -gt 63 ] && [ -n "$SLUG" ]; do
+  SLUG=${SLUG%?}
+  ALIAS="lokkhi-${SLUG%-}-$WHO"
+done
+ALIAS="$ALIAS.vercel.app"
 
 # Never let a branch alias collide with a production domain.
 case "$ALIAS" in
@@ -95,7 +122,7 @@ out=$(cd "$dir" && vercel deploy --yes --json --no-wait \
   --meta branch="$BRANCH" --meta sha="$SHA")
 
 read -r id url <<EOF
-$(printf '%s' "$out" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d.get("id",""),d.get("url",""))')
+$(printf '%s' "$out" | python3 -c 'import sys,json;d=json.load(sys.stdin);d=d.get("deployment") or d;print(d.get("id",""),d.get("url",""))')
 EOF
 
 if [ -z "$url" ]; then
