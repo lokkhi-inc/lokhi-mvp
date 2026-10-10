@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<svg viewBox="-10 -14 220 250" style="width:100%;height:100%;display:block;overflow:visible">
+<defs>
+<filter id="wob" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"></feDisplacementMap></filter>
+<pattern id="cY" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><rect width="6" height="6" fill="#f9e27c"></rect><line x1="1" y1="0" x2="1" y2="6" style="stroke:#efc22b;stroke-width:2.4"></line></pattern>
+<pattern id="cP" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><rect width="6" height="6" fill="#f9e2c6"></rect><line x1="1" y1="0" x2="1" y2="6" style="stroke:#f1bf88;stroke-width:2.4"></line></pattern>
+</defs>
+<g filter="{{ filt }}" fill="#fffdf8" style="stroke:#3a3a38;stroke-width:3;stroke-linecap:round;stroke-linejoin:round">
+<path d="M90 206 V224 Q90 228 82 228 M110 206 V224 Q110 228 118 228" fill="none"></path>
+<sc-if value="{{ lUp }}" hint-placeholder-val="{{ false }}"><path d="M62 150 C44 140 30 122 26 102 C40 106 52 120 62 134"></path></sc-if>
+<sc-if value="{{ rUp }}" hint-placeholder-val="{{ false }}"><path d="M138 150 C156 140 170 122 174 102 C160 106 148 120 138 134"></path></sc-if>
+<ellipse cx="100" cy="166" rx="44" ry="44"></ellipse>
+<sc-if value="{{ lDown }}" hint-placeholder-val="{{ true }}"><path d="M58 146 C42 158 38 178 42 192 C50 186 56 178 60 168"></path></sc-if>
+<sc-if value="{{ rDown }}" hint-placeholder-val="{{ true }}"><path d="M142 146 C158 158 162 178 158 192 C150 186 144 178 140 168"></path></sc-if>
+<path d="M62 128 Q70 150 82 140 Q91 154 100 142 Q109 154 118 140 Q130 150 138 128" fill="{{ yF }}"></path>
+<circle cx="100" cy="82" r="56"></circle>
+<sc-if value="{{ noHat }}" hint-placeholder-val="{{ true }}"><path d="M100 27 C94 16 100 8 108 12" fill="none"></path></sc-if>
+<sc-if value="{{ hat }}" hint-placeholder-val="{{ false }}">
+<ellipse cx="100" cy="30" rx="42" ry="7"></ellipse>
+<path d="M78 30 V2 Q100 -3 122 2 V30"></path>
+<path d="M78 22 Q100 26 122 22 V14 Q100 18 78 14 Z" fill="{{ pF }}"></path>
+</sc-if>
+<circle cx="72" cy="96" r="11" fill="{{ yF }}"></circle>
+<circle cx="128" cy="96" r="11" fill="{{ yF }}"></circle>
+<sc-if value="{{ closedBeak }}" hint-placeholder-val="{{ true }}"><path d="M91 95 Q100 86 109 95 Q100 105 91 95 Z" fill="{{ yF }}"></path></sc-if>
+<sc-if value="{{ openBeak }}" hint-placeholder-val="{{ false }}"><path d="M90 93 Q100 83 110 93 Z" fill="{{ yF }}"></path><path d="M92 98 Q100 111 108 98 Z" fill="{{ yF }}"></path></sc-if>
+<sc-if value="{{ neutral }}" hint-placeholder-val="{{ false }}"><circle cx="80" cy="74" r="4" fill="#3a3a38"></circle><circle cx="120" cy="74" r="4" fill="#3a3a38"></circle></sc-if>
+<sc-if value="{{ happy }}" hint-placeholder-val="{{ true }}"><path d="M73 77 Q80 68 87 77 M113 77 Q120 68 127 77" fill="none"></path></sc-if>
+<sc-if value="{{ nervous }}" hint-placeholder-val="{{ false }}">
+<path d="M75 72 H85 M115 72 H125" fill="none"></path>
+<path d="M70 62 L84 60 M130 62 L116 60" fill="none" style="stroke-width:2"></path>
+<path d="M156 48 Q147 62 156 66 Q165 62 156 48 Z" style="stroke-width:2.2"></path>
+<path d="M166 92 L176 88 M168 102 L178 102" fill="none" style="stroke-width:2"></path>
+</sc-if>
+<sc-if value="{{ sad }}" hint-placeholder-val="{{ false }}">
+<circle cx="80" cy="78" r="3.5" fill="#3a3a38"></circle><circle cx="120" cy="78" r="3.5" fill="#3a3a38"></circle>
+<path d="M70 68 L86 62 M130 68 L114 62" fill="none" style="stroke-width:2.4"></path>
+<path d="M70 112 Q66 120 70 124 Q75 120 70 112 Z" style="stroke-width:2"></path>
+</sc-if>
+<sc-if value="{{ excited }}" hint-placeholder-val="{{ false }}">
+<path d="M80 66 L82 72 L88 74 L82 76 L80 82 L78 76 L72 74 L78 72 Z M120 66 L122 72 L128 74 L122 76 L120 82 L118 76 L112 74 L118 72 Z" fill="#3a3a38" style="stroke-width:1.5"></path>
+<path d="M30 46 L38 54 M22 72 H32 M170 46 L162 54 M178 72 H168" fill="none" style="stroke-width:2.4"></path>
+</sc-if>
+<sc-if value="{{ thinking }}" hint-placeholder-val="{{ false }}">
+<circle cx="84" cy="70" r="3.6" fill="#3a3a38"></circle><circle cx="124" cy="70" r="3.6" fill="#3a3a38"></circle>
+<circle cx="160" cy="38" r="3" style="stroke-width:2"></circle><circle cx="172" cy="24" r="4.5" style="stroke-width:2"></circle><circle cx="186" cy="6" r="6.5" style="stroke-width:2"></circle>
+</sc-if>
+<sc-if value="{{ surprised }}" hint-placeholder-val="{{ false }}">
+<circle cx="80" cy="73" r="6.5"></circle><circle cx="120" cy="73" r="6.5"></circle>
+<circle cx="80" cy="73" r="2" fill="#3a3a38"></circle><circle cx="120" cy="73" r="2" fill="#3a3a38"></circle>
+<path d="M168 10 L164 34 M162 44 L162 45" fill="none" style="stroke-width:3.5"></path>
+</sc-if>
+<sc-if value="{{ determined }}" hint-placeholder-val="{{ false }}">
+<circle cx="80" cy="76" r="4" fill="#3a3a38"></circle><circle cx="120" cy="76" r="4" fill="#3a3a38"></circle>
+<path d="M70 62 L88 68 M130 62 L112 68" fill="none" style="stroke-width:2.6"></path>
+</sc-if>
+<sc-if value="{{ phone }}" hint-placeholder-val="{{ false }}">
+<g transform="rotate(-6 100 168)"><rect x="86" y="148" width="28" height="40" rx="5"></rect><rect x="91" y="154" width="18" height="26" rx="2" fill="{{ yF }}" style="stroke-width:2"></rect></g>
+<path d="M60 156 C70 150 84 156 90 166 C82 174 68 172 62 166"></path>
+<path d="M140 156 C130 150 116 156 110 166 C118 174 132 172 138 166"></path>
+</sc-if>
+<sc-if value="{{ letter }}" hint-placeholder-val="{{ false }}">
+<g transform="rotate(8 150 178)"><rect x="132" y="166" width="38" height="26" rx="2"></rect><path d="M132 166 L151 181 L170 166" fill="none"></path></g>
+<path d="M142 146 C156 154 160 166 154 178 C146 176 140 170 138 162"></path>
+</sc-if>
+</g>
+</svg>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:220,&quot;height&quot;:250},&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;happy&quot;,&quot;neutral&quot;,&quot;nervous&quot;,&quot;sad&quot;,&quot;thinking&quot;,&quot;excited&quot;,&quot;surprised&quot;,&quot;determined&quot;],&quot;default&quot;:&quot;happy&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;pose&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;stand&quot;,&quot;wave&quot;,&quot;cheer&quot;,&quot;phone&quot;,&quot;letter&quot;],&quot;default&quot;:&quot;stand&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;hat&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;colored&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;wobble&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const mood = this.props.mood ?? 'happy', pose = this.props.pose ?? 'stand', c = this.props.colored ?? true;
+    const is = m => mood === m;
+    const open = ['happy', 'excited', 'surprised'].includes(mood);
+    const hat = !!this.props.hat;
+    return {
+      filt: (this.props.wobble ?? true) ? 'url(#wob)' : 'none',
+      yF: c ? 'url(#cY)' : '#fffdf8', pF: c ? 'url(#cP)' : '#fffdf8',
+      hat, noHat: !hat,
+      neutral: is('neutral'), happy: is('happy'), nervous: is('nervous'), sad: is('sad'), excited: is('excited'),
+      thinking: is('thinking'), surprised: is('surprised'), determined: is('determined'),
+      openBeak: open, closedBeak: !open,
+      lDown: pose !== 'cheer' && pose !== 'phone', rDown: pose === 'stand',
+      rUp: pose === 'wave' || pose === 'cheer', lUp: pose === 'cheer',
+      phone: pose === 'phone', letter: pose === 'letter'
+    };
+  }
+}
+</script>
+</body>
+</html>

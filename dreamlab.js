@@ -586,7 +586,7 @@
           <span class="dl-plan-chevron ${expanded ? "is-open" : ""}">▾</span>
         </button>
         <span class="dl-plan-card-meta">${activeQuestCount(d.id)} active quests across ${kids.length} dream${kids.length === 1 ? "" : "s"}</span>
-        ${expanded ? `<div class="dl-plan-children">${kids.map((k) => planCardHtml(k)).join("") || `<p style="font-size:13px;color:var(--ink-soft);">No dreams inside this goal yet.</p>`}</div>` : ""}
+        ${expanded ? `<div class="dl-plan-children">${kids.map((k) => planCardHtml(k)).join("") || `<p style="font-size:13px;color:var(--ink-muted);">No dreams inside this goal yet.</p>`}</div>` : ""}
       </div>`;
   }
 
@@ -890,7 +890,7 @@
         <button class="close-btn dl-back-arrow" id="dl-dd-back">←</button>
         <div style="flex:1;display:flex;align-items:center;gap:8px;">
           <span class="icon">${comicIcon(dream.icon, 26)}</span>
-          <span style="font-weight:700;font-size:16px;">${escapeHtml(dream.title)}</span>
+          <span style="font-family:var(--font-display);font-size:22px;line-height:1.1;letter-spacing:0;text-transform:none;">${escapeHtml(dream.title)}</span>
         </div>
         <button class="btn btn-secondary btn-sm" id="dl-dd-fairy-btn">🧚 Ask</button>
         <button class="close-btn" id="dl-dd-close">${lineIcon("x")}</button>
@@ -972,7 +972,7 @@
     return `
       <div class="card dl-section">
         <div class="card-eyebrow">Inside this goal</div>
-        <p style="font-size:13px;color:var(--ink-soft);margin:-4px 0 4px;">${activeQuestCount(id)} active quests across ${kids.length} dream${kids.length === 1 ? "" : "s"}.</p>
+        <p style="font-size:13px;color:var(--ink-muted);margin:-4px 0 4px;">${activeQuestCount(id)} active quests across ${kids.length} dream${kids.length === 1 ? "" : "s"}.</p>
         <div class="dl-children-list">
           ${kids.map((k) => `
             <button class="card dl-plan-card" data-child-dream="${k.id}" style="text-align:left;cursor:pointer;">
@@ -984,7 +984,7 @@
                 </div>
               </div>
               <div class="progress-track"><div class="progress-fill" style="width:${pct(computeProgress(k.id))}"></div></div>
-            </button>`).join("") || `<p style="font-size:13px;color:var(--ink-soft);">No dreams inside this goal yet.</p>`}
+            </button>`).join("") || `<p style="font-size:13px;color:var(--ink-muted);">No dreams inside this goal yet.</p>`}
         </div>
       </div>`;
   }
@@ -1023,7 +1023,7 @@
       </div>
       <div class="card dl-section">
         <div class="card-eyebrow">What's shaping this dream</div>
-        <p style="font-size:12px;color:var(--ink-soft);margin-top:-4px;">Curated by your Dream Engine — tap anything to see why it's here.</p>
+        <p style="font-size:12px;color:var(--ink-muted);margin-top:-4px;">Curated by your Dream Engine — tap anything to see why it's here.</p>
         <div id="dl-vartree-region">${variableVisualizationHtml(dream, variables)}</div>
       </div>
       <div class="card dl-section">
@@ -1058,7 +1058,7 @@
       return `
         <div class="card dl-section dl-baseline-card">
           <div class="card-eyebrow">Baseline</div>
-          <p style="font-size:13px;color:var(--ink-soft);">This dream doesn't have a cost estimate yet.</p>
+          <p style="font-size:13px;color:var(--ink-muted);">This dream doesn't have a cost estimate yet.</p>
           <button class="btn btn-secondary btn-sm" id="dl-add-cost-btn">Add estimated cost</button>
           <div id="dl-add-cost-form" style="display:none;"></div>
         </div>`;
@@ -1117,7 +1117,7 @@
   // ---- Quests ---------------------------------------------------------------
   function questsHtml(id) {
     const quests = (DL.quests[id] || []).slice().sort((a, b) => a.order - b.order);
-    if (!quests.length) return `<p style="font-size:13px;color:var(--ink-soft);">No quests yet.</p>`;
+    if (!quests.length) return `<p style="font-size:13px;color:var(--ink-muted);">No quests yet.</p>`;
     const next = quests.find((q) => !q.done);
     return `
       ${next ? `
@@ -1204,7 +1204,7 @@
       <div class="sheet-modal-handle"></div>
       <div class="sheet-modal-head"><span class="title">${escapeHtml(v.name)}</span><button class="close-btn" id="dl-sheet-close">${lineIcon("x")}</button></div>
       <div class="dl-var-detail-value">${fmtVar(v)}</div>
-      <p style="font-size:14px;line-height:1.5;">${escapeHtml(v.description)}</p>
+      <p>${escapeHtml(v.description)}</p>
       <div class="card-flat">
         <div class="card-eyebrow">Why it matters</div>
         <p style="font-size:13px;line-height:1.5;margin-top:6px;">${escapeHtml(v.why_it_matters)}</p>
@@ -1213,11 +1213,11 @@
         <span class="chip ${v.source_type === "user_input" ? "chip-easy" : "chip-medium"}">${v.source_type === "user_input" ? "Your input" : "Placeholder"}</span>
         <span class="chip chip-neutral">Priority: ${v.priority}</span>
       </div>
-      ${v.source_type !== "user_input" ? `<p style="font-size:12px;color:var(--ink-soft);">${escapeHtml(v.source || "Not yet researched")}${v.source_date ? " · " + v.source_date : ""} — not verified market data.</p>` : ""}
+      ${v.source_type !== "user_input" ? `<p style="font-size:12px;color:var(--ink-muted);">${escapeHtml(v.source || "Not yet researched")}${v.source_date ? " · " + v.source_date : ""} — not verified market data.</p>` : ""}
       ${v.editable ? `
       <div class="dl-inline-form">
         <input type="number" id="dl-var-edit-input" step="any" value="${v.unit === "percent" ? (v.value * 100).toFixed(2) : v.value}">
-        ${v.unit === "percent" ? `<span style="font-size:14px;color:var(--ink-soft);">%</span>` : ""}
+        ${v.unit === "percent" ? `<span style="font-size:11px;color:var(--ink-muted);">%</span>` : ""}
         <button class="btn btn-primary btn-sm" id="dl-var-edit-save">Save</button>
       </div>` : ""}
     `;
@@ -1280,14 +1280,14 @@
           <div class="compare-tile"><div class="label">After rental income</div><div class="value">${yen(r.monthlyAfterRental)}/mo</div></div>
         </div>
         <div class="insight-banner"><span class="icon">🧚</span><p>${gapLine}</p></div>
-        <p style="font-size:11px;color:var(--ink-faint);">Assumes a ${r.loanTermYears}-year loan — an example assumption, editable later.</p>`;
+        <p style="font-size:11px;color:var(--ink-muted);">Assumes a ${r.loanTermYears}-year loan — an example assumption, editable later.</p>`;
     }
     const r = CALC.computeGenericGoalSimulation(varsMap);
     const timeLine = r.monthsToGoal === 0 ? "You're already there!" : r.monthsToGoal == null ? "Not within the modeled range yet — try adjusting the pace above." : `About ${r.yearsToGoal} years (${r.monthsToGoal} months) at this pace.`;
     return `
       <div class="dl-consequence-grid">
         <div class="compare-tile"><div class="label">Remaining to save</div><div class="value">${yen(r.gapToGoal)}</div></div>
-        <div class="compare-tile is-optimized"><div class="label">Time to reach this</div><div class="value" style="font-size:15px;">${timeLine}</div></div>
+        <div class="compare-tile is-optimized"><div class="label">Time to reach this</div><div class="value" style="font-size:22px;">${timeLine}</div></div>
         <div class="compare-tile"><div class="label">Projected in 3 years</div><div class="value">${yen(r.projected3yr)}</div></div>
       </div>`;
   }
@@ -1303,14 +1303,14 @@
       };
       ranked = CALC.computeSensitivity(variables, toVarsMap(variables), wrap, "monthsToGoal");
     }
-    if (!ranked.length) return `<p style="font-size:13px;color:var(--ink-soft);">Not enough editable variables yet to rank.</p>`;
+    if (!ranked.length) return `<p style="font-size:13px;color:var(--ink-muted);">Not enough editable variables yet to rank.</p>`;
     return `<div class="dl-sensitivity-list">${ranked.slice(0, 6).map((r) => `
       <div class="dl-sensitivity-row">
         <span class="rank">${r.rank}</span>
         <span class="name">${escapeHtml(r.name)}</span>
         <div class="dl-sensitivity-bar-track"><div class="dl-sensitivity-bar" style="width:${Math.max(4, r.impactPct)}%"></div></div>
       </div>`).join("")}</div>
-      <p style="font-size:11px;color:var(--ink-faint);margin-top:6px;">A placeholder ranking — swap in a real sensitivity engine later.</p>`;
+      <p style="font-size:11px;color:var(--ink-muted);margin-top:6px;">A placeholder ranking — swap in a real sensitivity engine later.</p>`;
   }
 
   function refreshComputedRegions(dreamId) {
@@ -1348,7 +1348,7 @@
     const presets = ENGINE.generatePlans(dream);
     const saved = DL.scenarios[id] || [];
     return `
-      <p style="font-size:12px;color:var(--ink-soft);margin-top:-4px;">Try a quick-start, then save what you like. No option here is "the best" — just different tradeoffs.</p>
+      <p style="font-size:12px;color:var(--ink-muted);margin-top:-4px;">Try a quick-start, then save what you like. No option here is "the best" — just different tradeoffs.</p>
       <div class="dl-scenario-presets">
         ${presets.map((p) => `<button class="dl-scenario-chip" data-preset="${p.id}">${p.emoji} ${escapeHtml(p.name)}</button>`).join("")}
       </div>
@@ -1389,7 +1389,7 @@
           ${pair.map((s, i) => `
             <div class="compare-tile">
               <div class="label">${escapeHtml(s.name)}</div>
-              ${outKeys.map(([k, label]) => `<div style="font-size:12px;color:var(--ink-soft);margin-top:6px;">${label}<br><strong style="color:var(--ink);">${results[i][k] == null ? "—" : (typeof results[i][k] === "number" && k !== "monthsToGoal" ? yen(results[i][k]) : results[i][k])}</strong></div>`).join("")}
+              ${outKeys.map(([k, label]) => `<div style="font-size:12px;color:var(--ink-muted);margin-top:6px;">${label}<br><strong style="color:var(--ink);">${results[i][k] == null ? "—" : (typeof results[i][k] === "number" && k !== "monthsToGoal" ? yen(results[i][k]) : results[i][k])}</strong></div>`).join("")}
             </div>`).join("")}
         </div>
       </div>`;
@@ -1452,7 +1452,7 @@
   // ---- Considerations ---------------------------------------------------
   function considerationsHtml(id) {
     const list = DL.considerations[id] || [];
-    if (!list.length) return `<p style="font-size:13px;color:var(--ink-soft);">Nothing surfaced yet.</p>`;
+    if (!list.length) return `<p style="font-size:13px;color:var(--ink-muted);">Nothing surfaced yet.</p>`;
     return `<div class="dl-consideration-list">${list.map((c) => `
       <div class="dl-consideration-row ${c.considered ? "is-considered" : ""}">
         <div class="dl-consideration-head">
@@ -1512,7 +1512,7 @@
             <p class="decision">${escapeHtml(d.decision)}</p>
             <p class="why"><strong>Why:</strong> ${escapeHtml(d.why)}</p>
             ${d.alternatives && d.alternatives.length ? `<div class="dl-chip-list">${d.alternatives.map((a) => `<span class="chip chip-neutral">${escapeHtml(a)}</span>`).join("")}</div>` : ""}
-          </div>`).join("") || `<p style="font-size:13px;color:var(--ink-soft);">No decisions logged yet.</p>`}
+          </div>`).join("") || `<p style="font-size:13px;color:var(--ink-muted);">No decisions logged yet.</p>`}
       </div>
       <button class="btn btn-secondary btn-sm" id="dl-add-decision-btn" style="margin-top:8px;">+ Add a decision</button>
       <div id="dl-add-decision-form"></div>`;
@@ -1554,7 +1554,7 @@
             ${s.url ? `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a>` : `<span>${escapeHtml(s.label)}</span>`}
             <button class="skip-link" data-remove-saved="${s.kind}:${s.id}">Remove</button>
           </div>`).join("")}</div>`
-      : `<p style="font-size:13px;color:var(--ink-soft);">Nothing bookmarked yet — bookmark a link, a scenario, or a consideration, and it'll show up here.</p>`;
+      : `<p style="font-size:13px;color:var(--ink-muted);">Nothing bookmarked yet — bookmark a link, a scenario, or a consideration, and it'll show up here.</p>`;
     return `
       ${listHtml}
       <button class="btn btn-secondary btn-sm" id="dl-add-link-btn" style="margin-top:8px;">+ Bookmark a link</button>

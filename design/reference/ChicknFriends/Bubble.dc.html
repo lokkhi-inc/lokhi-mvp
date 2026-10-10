@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;display:inline-flex;max-width:100%;font-family:'Gaegu',cursive;color:#2e2e2c">
+<sc-if value="{{ speech }}" hint-placeholder-val="{{ true }}">
+<div style="position:relative;padding:14px 24px;border:2.5px solid #3a3a38;border-radius:50% 46% 52% 48% / 56% 50% 50% 44%;background:{{ bg }};font-size:{{ size }}px;line-height:1.05;text-align:center;text-wrap:balance">{{ text }}</div>
+<sc-if value="{{ tailLeft }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 30 26" style="position:absolute;bottom:-19px;left:26%;width:28px;height:24px;overflow:visible"><path d="M2 0 L5 24 L20 2" fill="{{ bg }}" style="stroke:#3a3a38;stroke-width:2.5;stroke-linejoin:round"></path></svg></sc-if>
+<sc-if value="{{ tailRight }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 30 26" style="position:absolute;bottom:-19px;right:26%;width:28px;height:24px;overflow:visible"><path d="M28 0 L25 24 L10 2" fill="{{ bg }}" style="stroke:#3a3a38;stroke-width:2.5;stroke-linejoin:round"></path></svg></sc-if>
+</sc-if>
+<sc-if value="{{ thought }}" hint-placeholder-val="{{ false }}">
+<div style="padding:16px 26px;border:2.5px solid #3a3a38;border-radius:999px;background:{{ bg }};font-size:{{ size }}px;line-height:1.05;text-align:center;text-wrap:balance">{{ text }}</div>
+<div style="position:absolute;bottom:-14px;left:22%;width:12px;height:12px;border:2px solid #3a3a38;border-radius:50%;background:{{ bg }}"></div>
+<div style="position:absolute;bottom:-26px;left:15%;width:7px;height:7px;border:2px solid #3a3a38;border-radius:50%;background:{{ bg }}"></div>
+</sc-if>
+<sc-if value="{{ shout }}" hint-placeholder-val="{{ false }}">
+<svg viewBox="0 0 100 60" preserveAspectRatio="none" style="position:absolute;inset:-12px -16px;width:calc(100% + 32px);height:calc(100% + 24px);overflow:visible"><path d="M8 14 L20 10 L24 0 L36 8 L50 2 L58 9 L74 1 L78 11 L94 8 L90 22 L100 30 L90 38 L96 52 L80 50 L74 60 L60 52 L48 59 L38 51 L22 58 L20 48 L4 50 L10 38 L0 30 L10 22 Z" fill="{{ bg }}" style="stroke:#3a3a38;stroke-width:2.5;stroke-linejoin:round;vector-effect:non-scaling-stroke"></path></svg>
+<div style="position:relative;padding:12px 20px;font-size:{{ size }}px;font-weight:700;line-height:1;text-align:center;text-transform:uppercase;letter-spacing:0.02em">{{ text }}</div>
+</sc-if>
+<sc-if value="{{ caption }}" hint-placeholder-val="{{ false }}">
+<div style="padding:10px 16px;border:2.5px solid #3a3a38;border-radius:4px 7px 3px 6px;background:{{ capBg }};font-size:{{ size }}px;line-height:1.1;transform:rotate(-0.8deg);text-wrap:pretty">{{ text }}</div>
+</sc-if>
+<sc-if value="{{ banner }}" hint-placeholder-val="{{ false }}">
+<div style="padding:12px 26px;border-radius:40px 18px 36px 22px / 24px 30px 18px 34px;background:repeating-linear-gradient(115deg,#f6d6ad 0 2px,#fae5cb 2px 5px);font-size:{{ size }}px;line-height:1.1;text-wrap:pretty">{{ text }}</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:320,&quot;height&quot;:140},&quot;kind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;speech&quot;,&quot;thought&quot;,&quot;shout&quot;,&quot;caption&quot;,&quot;banner&quot;],&quot;default&quot;:&quot;speech&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;text&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;This is how you do it&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;left&quot;,&quot;right&quot;,&quot;none&quot;],&quot;default&quot;:&quot;left&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tinted&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:22,&quot;min&quot;:14,&quot;max&quot;:48,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const k = this.props.kind ?? 'speech', t = this.props.tinted ?? false;
+    return {
+      text: this.props.text ?? 'This is how you do it',
+      size: this.props.size ?? 22,
+      speech: k === 'speech', thought: k === 'thought', shout: k === 'shout', caption: k === 'caption', banner: k === 'banner',
+      tailLeft: (this.props.tail ?? 'left') === 'left', tailRight: this.props.tail === 'right',
+      bg: t ? '#f9e0c2' : '#fffdf8',
+      capBg: t ? 'repeating-linear-gradient(115deg,#f6d6ad 0 2px,#fae5cb 2px 5px)' : '#fffdf8'
+    };
+  }
+}
+</script>
+</body>
+</html>
