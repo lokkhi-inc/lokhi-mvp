@@ -22,3 +22,5 @@ Static HTML/CSS/JS PWA. Running and deploying go through `make`; the `lokhi-dev`
 - Comment only what the code can't say itself. No comment restating the next line.
 - Match surrounding style; don't reformat untouched code.
 - Mock data lives in `app-data.js`. Change it there, not in screen code.
+- Every styling decision comes from `DESIGN.md` — colors, type, spacing, radii,
+  component anatomy. Don't invent a value; if it isn't there, ask.

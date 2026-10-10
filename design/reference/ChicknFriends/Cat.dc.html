@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<svg viewBox="-10 -6 220 226" style="width:100%;height:100%;display:block;overflow:visible">
+<defs>
+<filter id="wob" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="7" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"></feDisplacementMap></filter>
+<pattern id="cY" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><rect width="6" height="6" fill="#f9e27c"></rect><line x1="1" y1="0" x2="1" y2="6" style="stroke:#efc22b;stroke-width:2.4"></line></pattern>
+</defs>
+<g filter="{{ filt }}" fill="#fffdf8" style="stroke:#3a3a38;stroke-width:3;stroke-linecap:round;stroke-linejoin:round">
+<path d="M126 196 C156 202 172 186 162 166 C158 158 164 150 172 152" fill="none"></path>
+<path d="M70 128 C58 160 60 194 74 206 L126 206 C140 194 142 160 130 128"></path>
+<path d="M80 206 Q89 194 98 206 M102 206 Q111 194 120 206"></path>
+<path d="M48 100 Q46 60 62 46 L60 18 L86 38 Q100 34 114 38 L140 18 L138 46 Q154 60 152 100 Q150 136 100 138 Q50 136 48 100 Z"></path>
+<sc-if value="{{ colored }}" hint-placeholder-val="{{ true }}">
+<path d="M64 42 L63 26 L80 38 Z M136 42 L137 26 L120 38 Z M88 46 Q100 34 112 46 Q100 54 88 46 Z" fill="url(#cY)" style="stroke-width:0"></path>
+<circle cx="66" cy="106" r="12" fill="url(#cY)" style="stroke-width:0"></circle><circle cx="134" cy="106" r="12" fill="url(#cY)" style="stroke-width:0"></circle>
+</sc-if>
+<sc-if value="{{ neutral }}" hint-placeholder-val="{{ true }}"><circle cx="82" cy="92" r="4" fill="#3a3a38"></circle><circle cx="118" cy="92" r="4" fill="#3a3a38"></circle><path d="M92 108 Q96 114 100 108 Q104 114 108 108" fill="none" style="stroke-width:2.4"></path></sc-if>
+<sc-if value="{{ happy }}" hint-placeholder-val="{{ false }}"><path d="M75 95 Q82 86 89 95 M111 95 Q118 86 125 95" fill="none"></path><path d="M90 106 Q95 116 100 106 Q105 116 110 106" fill="none" style="stroke-width:2.4"></path></sc-if>
+<sc-if value="{{ grumpy }}" hint-placeholder-val="{{ false }}"><circle cx="82" cy="94" r="4" fill="#3a3a38"></circle><circle cx="118" cy="94" r="4" fill="#3a3a38"></circle><path d="M72 82 L90 86 M128 82 L110 86" fill="none" style="stroke-width:2.4"></path><path d="M92 114 Q100 106 108 114" fill="none" style="stroke-width:2.4"></path></sc-if>
+<sc-if value="{{ smug }}" hint-placeholder-val="{{ false }}"><path d="M74 90 H90 M110 90 H126" fill="none" style="stroke-width:2.4"></path><circle cx="83" cy="94" r="3" fill="#3a3a38"></circle><circle cx="119" cy="94" r="3" fill="#3a3a38"></circle><path d="M93 108 Q100 114 109 104" fill="none" style="stroke-width:2.4"></path><path d="M168 30 L170 38 L178 40 L170 42 L168 50 L166 42 L158 40 L166 38 Z" style="stroke-width:2"></path></sc-if>
+<sc-if value="{{ phone }}" hint-placeholder-val="{{ false }}">
+<g transform="rotate(-12 50 168)"><rect x="38" y="150" width="24" height="36" rx="4"></rect><rect x="42" y="155" width="16" height="24" rx="2" fill="{{ yF }}" style="stroke-width:2"></rect></g>
+<path d="M76 146 C68 156 62 162 58 166" fill="none"></path><circle cx="58" cy="168" r="6"></circle>
+</sc-if>
+</g>
+</svg>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:220,&quot;height&quot;:226},&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;neutral&quot;,&quot;happy&quot;,&quot;grumpy&quot;,&quot;smug&quot;],&quot;default&quot;:&quot;neutral&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;pose&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;sit&quot;,&quot;phone&quot;],&quot;default&quot;:&quot;sit&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;colored&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;wobble&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const mood = this.props.mood ?? 'neutral', c = this.props.colored ?? true;
+    return {
+      filt: (this.props.wobble ?? true) ? 'url(#wob)' : 'none',
+      colored: c, yF: c ? 'url(#cY)' : '#fffdf8',
+      neutral: mood === 'neutral', happy: mood === 'happy', grumpy: mood === 'grumpy', smug: mood === 'smug',
+      phone: this.props.pose === 'phone'
+    };
+  }
+}
+</script>
+</body>
+</html>
