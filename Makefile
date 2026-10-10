@@ -2,7 +2,7 @@
 # shell. Multi-step logic uses \ continuations.
 
 .DEFAULT_GOAL := help
-.PHONY: help check check-quiet run stop open deploy _setup
+.PHONY: help check check-quiet run stop open deploy prune _setup
 
 PORT   ?= 8080
 HOST   ?= 127.0.0.1
@@ -171,3 +171,6 @@ open: _setup ## Open the running app in your browser
 
 deploy: _setup ## Deploy this branch as a preview to YOUR Vercel account
 	@ALLOW_MAIN='$(ALLOW_MAIN)' GITLESS='$(GITLESS)' ./scripts/deploy.sh
+
+prune: _setup ## List previews whose branch is gone; DELETE=1 to remove them
+	@./scripts/prune-previews.sh $(if $(DELETE),--delete,)

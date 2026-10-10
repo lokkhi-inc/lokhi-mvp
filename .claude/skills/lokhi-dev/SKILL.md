@@ -48,11 +48,16 @@ To test a first-run experience, clear site data via `evaluate_script` running
 are logged into locally**.
 
 Vercel deployments are immutable, so each deploy is a new artifact with its own
-URL. The script points a stable per-branch alias — `lokkhi-<branch-slug>.vercel.app`
+URL. The script points a stable alias — `lokkhi-<branch>-<vercel-account>.vercel.app`
 — at the newest one, then deletes the deployment that alias previously pointed
 at, but only when that one was READY. BLOCKED and ERROR builds are kept so they
 can be inspected. **Share the alias, not the per-deploy URL**; the alias is what
 lands in `.vercel-preview-url`.
+
+The alias carries the deploying account because `*.vercel.app` is a global
+namespace: without it, two people deploying the same branch collide and the
+second silently gets no stable URL. So the same branch has a different preview
+URL per person — say whose it is when you report one.
 
 - It refuses to run on `main` on purpose. `main` ships separately; previews are
   for branches. Don't pass `ALLOW_MAIN=1` unless the user explicitly asks.
@@ -72,6 +77,22 @@ lands in `.vercel-preview-url`.
   so nobody is surprised that a preview contains unpushed work.
 - Deploys count against a shared **100/day** Vercel Hobby cap. Don't deploy to
   check something you could check with `make run` locally.
+
+## Cleaning up after a merge
+
+When a PR merges its branch is deleted, which strands that branch's preview
+deployments. After a merge — and occasionally otherwise — run:
+
+```
+make prune
+```
+
+It only lists; it never deletes, and it skips production entirely. If it finds
+anything, tell the user what is stranded and that `make prune DELETE=1` will remove it
+after they confirm. **Never run `make prune DELETE=1` yourself to clear them** — deletion
+is irreversible and the confirmation prompt is the user's, not yours. It is
+untidiness, not cost: Vercel does not bill for stored deployments, so there is
+never a reason to push.
 
 ## Setup checks
 
