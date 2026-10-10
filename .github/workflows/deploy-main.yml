@@ -33,6 +33,12 @@ jobs:
           VERCEL_PROJECT_ID: prj_JjwPc6FDVCJKhr7TcgkD2Nvy2g9v
         run: |
           set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN secret is not set. Create one with"\
+                 "'vercel tokens add lokkhi-ci', then"\
+                 "'gh secret set VERCEL_TOKEN --repo lokkhi-inc/lokkhi-mvp'."
+            exit 1
+          fi
           # Major pin only. Exact pinning drifts from the unpinned CLI everyone
           # runs locally; no pin lets a breaking output change take production
           # down with no commit. The CLI already emits JSON on a non-TTY stdout
