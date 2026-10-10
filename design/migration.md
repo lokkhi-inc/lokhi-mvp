@@ -50,3 +50,5 @@ The semantic colours are deliberately identical across both rows. They were chos
 6. Re-check contrast: graphite on sketch paper is a lower ratio than ink on white, and `micro-mono` at 11px is the first thing to fail.
 
 Until then, `design/hand-drawn.md` is reference only. Build against `DESIGN.md`.
+
+For changes *within* the active layer rather than a swap between layers, see `## Changing this system` in `DESIGN.md`. The seam table above is step 3 of that process.

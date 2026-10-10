@@ -364,3 +364,28 @@ The fairy, owl and avatar assets in `lokhi-assets/` predate this system. Until t
 Mobile-first PWA for personal finance. Dashboards, goal tracking, onboarding flows, and any surface where numbers need to feel considered rather than alarming.
 
 This is the **placeholder** surface layer. The hand-drawn direction that will replace it is described in `design/hand-drawn.md`, and the seam between them — what changes, what does not — is in `design/migration.md`. Build against the structural rules (hairline, geometry, scale, layout, no shadow) and the swap stays cheap.
+
+## Changing this system
+
+Design decisions live here first and in code second. The order is not bureaucracy — this file is the only written record of *intent*. Code edited first turns it into a lie, and the next person or agent to read it will faithfully follow the lie.
+
+**It is a system change if it does any one of these:**
+
+- edits a value in the front matter
+- introduces a value the front matter doesn't already have — a new hex, a font, a radius, a weight, a duration
+- affects more than one component or more than one screen
+- contradicts a line in Do's and Don'ts
+
+**It is not a system change** to write copy, to compose a new screen from existing components, or to pick a different value *from* an existing scale. Those need no ceremony.
+
+**Order of operations:**
+
+1. **Edit the token.** The front matter is normative; everything else describes it.
+2. **Edit every prose rule the old value held up.** This is the step that gets skipped. A palette change usually invalidates sentences in Colors *and* Do's and Don'ts. A typeface change usually invalidates the scale table, the hard rules under it, and the Google Fonts line. Grep the file for the old value before you declare it done.
+3. **Update the seam table** in `design/migration.md` if the value appears there — every Layer 2 value does.
+4. **Get it agreed.** A change to the system is a product decision, not a refactor. One person changing the accent colour changes every screen.
+5. **Then change `:root` in `app-styles.css`.** Only `:root`.
+
+**Step 5 is the test.** If the change cannot be made by editing custom properties alone, one of two things is true: component CSS has hardcoded values that should be tokenised first, or the change is structural rather than surface — see the two-layer split in `design/migration.md` — and needs a conversation, not a find-and-replace.
+
+**Some changes are not token edits at all.** Reintroducing shadows, adding a font weight above 400, adding a second display family, using red or green for state, or putting a bloom behind text each break a rule the rest of the system is built on. Those are rewrites of Hairline Almanac, not adjustments to it. Say so out loud rather than landing them as a diff.

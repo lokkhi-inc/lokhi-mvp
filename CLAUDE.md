@@ -24,3 +24,7 @@ Static HTML/CSS/JS PWA. Running and deploying go through `make`; the `lokhi-dev`
 - Mock data lives in `app-data.js`. Change it there, not in screen code.
 - Every styling decision comes from `DESIGN.md` — colors, type, spacing, radii,
   component anatomy. Don't invent a value; if it isn't there, ask.
+- A change that edits a `DESIGN.md` token, adds a value that isn't in one, or
+  touches more than one screen is a system change: update `DESIGN.md` first,
+  get it agreed, then write code. Never the reverse — see `## Changing this
+  system`.
