@@ -14,6 +14,8 @@ Static HTML/CSS/JS PWA. Running and deploying go through `make`; the `lokhi-dev`
 - `make check` runs at session start and is silent when healthy. No report means
   the setup is fine; don't re-run it to confirm.
 - Check locally with `make run` before spending a deploy (100/day, shared).
+- After a PR merges, run `make prune` (lists only) and report any
+  stranded previews. Never delete them yourself; `make prune DELETE=1` is the user's.
 
 ## Code
 

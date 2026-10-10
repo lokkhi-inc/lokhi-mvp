@@ -8,7 +8,6 @@
       "Bash(make stop*)",
       "Bash(make open*)",
       "Bash(make deploy*)",
-
       "Bash(vercel deploy*)",
       "Bash(vercel build*)",
       "Bash(vercel whoami*)",
@@ -18,9 +17,6 @@
       "Bash(vercel alias*)",
       "Bash(vercel domains*)",
       "Bash(vercel env*)",
-      "Bash(vercel remove*)",
-      "Bash(vercel rm*)",
-
       "Bash(gh pr comment*)",
       "Bash(gh pr list*)",
       "Bash(gh pr view*)",
@@ -33,34 +29,35 @@
       "Bash(gh run view*)",
       "Bash(gh auth status*)",
       "Bash(gh repo view*)",
-
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
       "Bash(git show*)",
       "Bash(git branch*)",
       "Bash(git rev-parse*)",
-
       "mcp__plugin_chrome-devtools-mcp_chrome-devtools",
-      "mcp__chrome-devtools"
+      "mcp__chrome-devtools",
+      "Bash(make prune)",
+      "Bash(./scripts/prune-previews.sh)"
     ],
-
     "ask": [
       "Bash(make deploy ALLOW_MAIN*)",
       "Bash(make deploy GITLESS*)",
       "Bash(vercel deploy --prod*)",
       "Bash(gh pr merge*)",
-      "Bash(gh pr close*)"
+      "Bash(gh pr close*)",
+      "Bash(vercel remove*)",
+      "Bash(vercel rm*)"
     ],
-
     "deny": [
       "Bash(vercel project rm*)",
       "Bash(gh repo delete*)",
       "Bash(gh secret*)",
-      "Bash(gh auth logout*)"
+      "Bash(gh auth logout*)",
+      "Bash(make prune DELETE*)",
+      "Bash(./scripts/prune-previews.sh --delete*)"
     ]
   },
-
   "hooks": {
     "SessionStart": [
       {
