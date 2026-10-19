@@ -266,132 +266,397 @@
     </svg>`;
   }
 
+  // ---------------------------------------------------------------------
+  // Money-flow Sankey (Home). Hand-drawn on purpose: seeded jitter keeps the
+  // wobble stable between renders, SVG filters give ink and watercolour edges.
+  // ---------------------------------------------------------------------
+  function seededRandom(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Mock data is monthly, so a longer range scales the monthly figures by the
+  // number of months it covers; the split stays the same shape.
+  function periodMonths(period) {
+    const now = new Date();
+    const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
+    if (period.kind === "ytd") return now.getMonth() + now.getDate() / daysIn(now.getFullYear(), now.getMonth());
+    if (period.kind === "lastyear") return 12;
+    if (period.kind === "custom") {
+      const days = (new Date(period.to) - new Date(period.from)) / 864e5 + 1;
+      return Math.max(1, days) / (365.25 / 12);
+    }
+    return 1;
+  }
+
+  function periodPhrase(period) {
+    const year = new Date().getFullYear();
+    if (period.kind === "ytd") return `in ${year} so far`;
+    if (period.kind === "lastyear") return `in ${year - 1}`;
+    if (period.kind === "custom") return `from ${period.from} to ${period.to}`;
+    return "this month";
+  }
+
+  function moneyFlows(p, months) {
+    const declared = p.incomeSources || [];
+    const declaredTotal = declared.reduce((s, x) => s + x.amount, 0);
+    // An onboarded income that no longer matches the mock sources is shown as one source.
+    const monthly = declaredTotal === p.income && declared.length
+      ? declared
+      : [{ id: "income", label: "Income", amount: p.income }];
+    const scale = (n) => Math.round(n * months);
+    const sources = monthly.map((x) => ({ id: x.id, label: x.label, amount: scale(x.amount) }));
+    const income = sources.reduce((s, x) => s + x.amount, 0);
+    const spent = scale(p.monthlyExpenses);
+    const expenses = Math.min(spent, income);
+    const grow = Math.max(0, Math.min(scale(p.monthlyGrow || 0), income - expenses));
+    const idle = income - expenses - grow;
+    const outflows = [
+      { id: "expenses", label: "Expenses", amount: expenses, wash: "var(--bloom-rose)", strength: 0.5 },
+      { id: "grow", label: "Grow", amount: grow, wash: "var(--sprout)", strength: 0.9 },
+      { id: "idle", label: "Idle", amount: idle, wash: null }
+    ].filter((f) => f.amount > 0);
+    return { sources, outflows, income, shortfall: Math.max(0, spent - income) };
+  }
+
+  function setupSankeyPeriod() {
+    const select = document.getElementById("sankey-period");
+    const range = document.getElementById("sankey-range");
+    const from = document.getElementById("sankey-from");
+    const to = document.getElementById("sankey-to");
+    const now = new Date();
+    const iso = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+    const year = now.getFullYear();
+
+    select.innerHTML = [
+      ["month", now.toLocaleString("en-US", { month: "short" })], ["ytd", String(year)], ["lastyear", String(year - 1)], ["custom", "Custom"]
+    ].map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+    from.value = iso(new Date(year, now.getMonth() - 2, 1));
+    to.value = iso(now);
+    from.max = to.max = iso(now);
+
+    const apply = () => {
+      if (from.value > to.value) to.value = from.value;
+      state.sankeyPeriod = { kind: select.value, from: from.value, to: to.value };
+      range.hidden = select.value !== "custom";
+      renderSankey(state.profile);
+    };
+    select.addEventListener("change", apply);
+    from.addEventListener("change", apply);
+    to.addEventListener("change", apply);
+  }
+
+  function stack(items, k, minCentreGap, minGap) {
+    let y = 0, prevH = null;
+    items.forEach((it) => {
+      it.h = Math.max(3, it.amount * k);
+      if (prevH !== null) y += Math.max(minGap, minCentreGap - (prevH + it.h) / 2);
+      it.y0 = y; it.y1 = y + it.h;
+      y = it.y1; prevH = it.h;
+    });
+    return y;
+  }
+
+  // Left stack: an outside label must clear a neighbouring band that runs
+  // through the label column.
+  function stackSources(items, k) {
+    let y = 0, prev = null;
+    items.forEach((it) => {
+      it.h = Math.max(3, it.amount * k);
+      if (prev) {
+        let gap = Math.max(4, 32 - (prev.h + it.h) / 2);
+        if (prev.inside !== it.inside) gap = Math.max(gap, 22 - (it.inside ? prev.h : it.h) / 2);
+        y += gap;
+      }
+      it.y0 = y; it.y1 = y + it.h;
+      y = it.y1; prev = it;
+    });
+    return y;
+  }
+
+  function shortYen(n) {
+    if (n >= 1e6) return "¥" + (Math.round(n / 1e5) / 10) + "M";
+    if (n >= 1000) return "¥" + Math.round(n / 1000) + "k";
+    return yen(n);
+  }
+
+  function renderSankey(p) {
+    const wrap = document.getElementById("sankey-wrap");
+    const caption = document.getElementById("sankey-caption");
+    if (!wrap) return;
+    const period = state.sankeyPeriod || { kind: "month" };
+    const phrase = periodPhrase(period);
+    const { sources, outflows, income, shortfall } = moneyFlows(p, periodMonths(period));
+    const rand = seededRandom(income);
+    const j = (n) => (rand() - 0.5) * 2 * n;
+
+    const W = 300, XP = 142, X1 = 212, TIP = 7, PAD = 14;
+    const k = 140 / income;
+    // Bands thick enough to hold their own label run out to the card edge and
+    // carry it inside, as in the sketch; thin ones are labelled in a column
+    // sized to the widest of those labels.
+    sources.forEach((s) => { s.inside = Math.max(3, s.amount * k) >= 34; });
+    const outside = sources.filter((s) => !s.inside);
+    const X0 = outside.length
+      ? Math.ceil(Math.max(...outside.map((s) => Math.max(s.label.length * 5.95, shortYen(s.amount).length * 7.6)))) + 8
+      : 0;
+    const leftH = stackSources(sources, k);
+    const rightH = stack(outflows, k, 54, 16);
+    const pinchH = income * k;
+    const H = Math.max(leftH, rightH, pinchH) + PAD * 2;
+    const offL = (H - leftH) / 2, offR = (H - rightH) / 2, offP = (H - pinchH) / 2;
+
+    let cursor = offP;
+    const slot = (amount) => { const s = [cursor, cursor + amount * k]; cursor += amount * k; return s; };
+    const curve = (xa, ya, xb, yb) => {
+      const cx = (xa + xb) / 2 + j(3);
+      return `C ${cx} ${ya + j(1.5)}, ${cx} ${yb + j(1.5)}, ${xb} ${yb}`;
+    };
+
+    const flows = [];
+    sources.forEach((s) => {
+      const [p0, p1] = slot(s.amount);
+      const a0 = offL + s.y0, a1 = offL + s.y1, xs = s.inside ? 0 : X0;
+      flows.push({
+        side: "in", item: s, wash: "var(--bloom-amber)", strength: 0.95,
+        fill: `M ${xs} ${a0} ${curve(xs, a0, XP, p0)} L ${XP} ${p1} ${curve(XP, p1, xs, a1)} Z`,
+        ink: `M ${xs + j(2)} ${a0} ${curve(xs, a0, XP, p0)} M ${XP} ${p1} ${curve(XP, p1, xs + j(2), a1)}`,
+        label: s.inside
+          ? { x: 8, y: offL + (s.y0 + s.y1) / 2, anchor: "start" }
+          : { x: X0 - 6, y: offL + (s.y0 + s.y1) / 2, anchor: "end" }
+      });
+    });
+    cursor = offP;
+    outflows.forEach((o) => {
+      const [p0, p1] = slot(o.amount);
+      const b0 = offR + o.y0, b1 = offR + o.y1, mid = (b0 + b1) / 2;
+      const tip = `L ${X1 + TIP} ${mid + j(1)} L ${X1} ${b1}`;
+      flows.push({
+        side: "out", item: o, wash: o.wash, strength: o.strength,
+        fill: `M ${XP} ${p0} ${curve(XP, p0, X1, b0)} ${tip} ${curve(X1, b1, XP, p1)} Z`,
+        ink: `M ${XP} ${p0} ${curve(XP, p0, X1, b0)} ${tip} ${curve(X1, b1, XP, p1)}`,
+        label: { x: X1 + TIP + 7, y: mid, anchor: "start" }
+      });
+    });
+
+    const share = (n) => pct(n / income);
+    const labelSvg = (f) => {
+      const { x, y, anchor } = f.label;
+      const lines = f.side === "in"
+        ? [["sk-name", f.item.label, -7], ["sk-amount", shortYen(f.item.amount), 10]]
+        : [["sk-name", f.item.label, -13], ["sk-amount", shortYen(f.item.amount), 5], ["sk-share", share(f.item.amount) + " of income", 19]];
+      return lines.map(([cls, t, dy]) => `<text class="${cls}" x="${x}" y="${y + dy}" text-anchor="${anchor}">${escapeHtml(t)}</text>`).join("");
+    };
+
+    const flowSvg = flows.map((f) => `
+      <g class="sk-flow">
+        ${f.wash ? `<path class="sk-wash" d="${f.fill}" style="fill:${f.wash};fill-opacity:${f.strength}" filter="url(#sk-wash)"/>` : ""}
+        <path class="sk-ink" d="${f.ink}" filter="url(#sk-ink)"/>
+        ${labelSvg(f)}
+      </g>`).join("");
+
+    const pinch = `M ${XP + j(0.6)} ${offP - 7} L ${XP + j(0.6)} ${offP + pinchH + 7} M ${XP + 1.2} ${offP - 4} L ${XP + 0.8} ${offP + pinchH + 5}`;
+
+    wrap.innerHTML = `
+      <svg class="sankey" viewBox="0 0 ${W} ${H}" role="img" aria-label="Where your income goes ${phrase}">
+        <defs>
+          <filter id="sk-ink" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="sk-wash" x="-6%" y="-12%" width="112%" height="124%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="7" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="11" result="grain"/>
+            <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.3 0.72" result="mask"/>
+            <feComposite in="d" in2="mask" operator="in"/>
+          </filter>
+        </defs>
+        ${flowSvg}
+        <path class="sk-ink sk-pinch" d="${pinch}" filter="url(#sk-ink)"/>
+      </svg>
+      <div class="visually-hidden"><table>
+        <caption>Where your income goes ${phrase}</caption>
+        <tr><th>Flow</th><th>Amount</th><th>Share of income</th></tr>
+        ${flows.map((f) => `<tr><td>${f.side === "in" ? "Income: " : ""}${escapeHtml(f.item.label)}</td><td>${yen(f.item.amount)}</td><td>${share(f.item.amount)}</td></tr>`).join("")}
+      </table></div>`;
+
+    caption.hidden = shortfall === 0;
+    caption.textContent = shortfall > 0 ? `Spending is ${yen(shortfall)} over income ${phrase}.` : "";
+  }
+
+  // ---------------------------------------------------------------------
+  // Expenses card (Home): last three complete months as hand-drawn stacked
+  // columns, plus the trend fitted over twelve — the personal inflation rate.
+  // ---------------------------------------------------------------------
+  const EXPENSE_GROUPS = [
+    { key: "taxes", label: "Taxes & insurance", fill: "url(#ex-hatch)" },
+    { key: "housing", label: "Rent & loans", fill: "var(--bloom-rose)", strength: 0.5 },
+    { key: "card", label: "Card spending", fill: "var(--bloom-amber)", strength: 0.95 },
+    { key: "other", label: "Utilities & other", fill: null }
+  ];
+
+  function monthName(iso, style) {
+    const [y, m] = iso.split("-").map(Number);
+    return new Date(y, m - 1, 1).toLocaleString("en-US", { month: style || "short" });
+  }
+
+  function niceStep(raw) {
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    return [1, 2, 2.5, 5, 10].map((f) => f * mag).find((v) => v >= raw);
+  }
+
+  function renderExpenses(p) {
+    const card = document.querySelector(".expense-card");
+    const hist = p.expenseHistory || [];
+    if (!card) return;
+    card.hidden = hist.length < 3;
+    if (card.hidden) return;
+
+    const total = (m) => EXPENSE_GROUPS.reduce((s, g) => s + (m[g.key] || 0), 0);
+    const totals = hist.map(total);
+    const n = totals.length;
+    const meanX = (n - 1) / 2, meanY = totals.reduce((a, b) => a + b, 0) / n;
+    const slope = totals.reduce((s, y, i) => s + (i - meanX) * (y - meanY), 0) /
+      totals.reduce((s, _, i) => s + (i - meanX) ** 2, 0);
+    const fit = (i) => meanY + slope * (i - meanX);
+    const yearlyRate = (slope * 12) / meanY;
+
+    const recent = hist.slice(-3);
+    const latest = recent[recent.length - 1];
+    document.getElementById("expense-period").textContent =
+      `${monthName(recent[0].month)} – ${monthName(latest.month)}`;
+    document.getElementById("expense-stats").innerHTML = `
+      <div class="chart-stat">
+        <span class="chart-stat-value">${shortYen(total(latest))}</span>
+        <span class="chart-stat-label">Spent in ${monthName(latest.month, "long")}</span>
+      </div>
+      <div class="chart-stat chart-stat-end">
+        <span class="chart-stat-value">${yearlyRate >= 0 ? "+" : "−"}${Math.abs(yearlyRate * 100).toFixed(1)}%</span>
+        <span class="chart-stat-label">Your inflation · 12 mo</span>
+      </div>`;
+
+    const rand = seededRandom(totals[n - 1]);
+    const j = (v) => (rand() - 0.5) * 2 * v;
+    const W = 300, H = 206, PL = 34, PR = 300, PT = 24, PB = 184, BAR = 46;
+    const recentMax = Math.max(...recent.map(total), fit(n - 1), fit(n - 3));
+    const step = niceStep(recentMax / 3);
+    const yMax = Math.ceil((recentMax * 1.12) / step) * step;
+    const y = (v) => PB - (v / yMax) * (PB - PT);
+    const slotW = (PR - PL) / recent.length;
+    const cx = (i) => PL + slotW * (i + 0.5);
+    const box = (x0, y0, x1, y1) =>
+      `M ${x0 + j(0.8)} ${y0 + j(0.8)} L ${x1 + j(0.8)} ${y0 + j(0.8)} L ${x1 + j(0.8)} ${y1} L ${x0 + j(0.8)} ${y1} Z`;
+
+    const ticks = [];
+    for (let v = 0; v <= yMax; v += step) ticks.push(v);
+    const grid = ticks.map((v) => `
+      <line class="ex-grid${v === 0 ? " is-base" : ""}" x1="${PL}" x2="${PR}" y1="${y(v)}" y2="${y(v)}"/>
+      <text class="ex-tick" x="${PL - 6}" y="${y(v) + 3}" text-anchor="end">${v === 0 ? "0" : shortYen(v).slice(1)}</text>`).join("");
+
+    const columns = recent.map((m, i) => {
+      const x0 = cx(i) - BAR / 2, x1 = cx(i) + BAR / 2;
+      let base = 0;
+      const segs = EXPENSE_GROUPS.map((g, gi) => {
+        const v = m[g.key] || 0;
+        const yb = y(base), yt = y(base + v);
+        base += v;
+        const top = yt + 1, bottom = gi === 0 ? yb : yb - 1;
+        const fill = g.fill
+          ? `<path d="${box(x0, top, x1, bottom)}" style="fill:${g.fill};fill-opacity:${g.strength || 1}"${g.key === "taxes" ? "" : ' filter="url(#ex-wash)"'}/>`
+          : "";
+        const label = bottom - top >= 15
+          ? `<text class="ex-seg" x="${cx(i)}" y="${(top + bottom) / 2 + 3}" text-anchor="middle">${shortYen(v)}</text>`
+          : "";
+        return fill + label;
+      }).join("");
+      const capY = y(total(m));
+      return `
+        ${segs}
+        <path class="sk-ink" d="M ${x0} ${y(0)} L ${x0 + j(1)} ${capY + j(1)} L ${x1 + j(1)} ${capY + j(1)} L ${x1} ${y(0)}" filter="url(#ex-ink)"/>
+        <text class="ex-cap" x="${cx(i)}" y="${capY - 9}" text-anchor="middle">${shortYen(total(m))}</text>
+        <text class="ex-month" x="${cx(i)}" y="${H - 4}" text-anchor="middle">${monthName(m.month)}</text>`;
+    }).join("");
+
+    // The fitted line, carried a little past the first and last columns.
+    const idx = (x) => n - 3 + (x - cx(0)) / slotW;
+    const tx0 = PL + 6, tx1 = PR - 6;
+    const trend = `<path class="ex-trend" d="M ${tx0} ${y(fit(idx(tx0)))} L ${tx1} ${y(fit(idx(tx1)))}"/>`;
+
+    document.getElementById("expense-chart").innerHTML = `
+      <svg class="expense-svg" viewBox="0 0 ${W} ${H}" role="img"
+        aria-label="Expenses for the last three months, rising about ${Math.abs(yearlyRate * 100).toFixed(1)}% a year">
+        <defs>
+          <pattern id="ex-hatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--ink);stroke-width:0.9;opacity:0.6"/>
+          </pattern>
+          <filter id="ex-ink" x="-10%" y="-5%" width="120%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="5" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="ex-wash" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="9" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G" result="d"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="13" result="grain"/>
+            <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.3 0.72" result="mask"/>
+            <feComposite in="d" in2="mask" operator="in"/>
+          </filter>
+        </defs>
+        ${grid}
+        ${columns}
+        ${trend}
+      </svg>
+      <div class="visually-hidden"><table>
+        <caption>Expenses by month</caption>
+        <tr><th>Month</th>${EXPENSE_GROUPS.map((g) => `<th>${g.label}</th>`).join("")}<th>Total</th></tr>
+        ${recent.map((m) => `<tr><td>${monthName(m.month, "long")}</td>${EXPENSE_GROUPS.map((g) => `<td>${yen(m[g.key] || 0)}</td>`).join("")}<td>${yen(total(m))}</td></tr>`).join("")}
+      </table></div>`;
+
+    document.getElementById("expense-legend").innerHTML = EXPENSE_GROUPS.map((g) => `
+      <span class="chart-legend-item">
+        <svg class="chart-swatch" viewBox="0 0 14 10" aria-hidden="true">
+          <rect x="0.5" y="0.5" width="13" height="9" rx="2" style="fill:${g.fill || "var(--paper)"};fill-opacity:${g.strength || 1};stroke:var(--ink);stroke-width:1"/>
+        </svg>${g.label}
+      </span>`).join("") + `
+      <span class="chart-legend-item">
+        <svg class="chart-swatch" viewBox="0 0 14 10" aria-hidden="true"><path class="ex-trend" d="M 1 5 L 13 5"/></svg>12-month trend
+      </span>`;
+  }
+
+  // Shown only when something has been shared into Lokhi from another app.
+  function renderShareNotice() {
+    const wrap = document.getElementById("share-notice");
+    const shared = getPendingShare();
+    if (!shared) { wrap.innerHTML = ""; return; }
+    const label = shared.title || shared.text || shared.url || (shared.fileCount ? shared.fileCount + " file(s)" : "content");
+    wrap.innerHTML = `
+      <div class="insight-banner"><span class="icon">${comicIcon("paperclip")}</span>
+        <p>Received from Share Sheet: “${escapeHtml(label)}”</p>
+        <button class="close-btn" data-dismiss-share>${lineIcon("x")}</button>
+      </div>`;
+    wrap.querySelector("[data-dismiss-share]").addEventListener("click", () => {
+      clearPendingShare();
+      renderShareNotice();
+    });
+  }
+
   function renderHome() {
     const p = state.profile;
-    const derived = computeDerived(p);
-    const root = document.getElementById("screen-home");
-
     document.getElementById("greeting-name").textContent = p.preferredName || p.name;
     document.getElementById("header-level").textContent = "Lv " + p.level;
     document.getElementById("header-streak").textContent = p.streakWeeks + "w";
 
-    // character card
-    root.querySelector("#character-avatar").innerHTML = avatarImg(p.avatar);
-    root.querySelector("#character-level").textContent = "Level " + p.level;
-    root.querySelector("#character-archetype").textContent = capitalize(p.archetype) + " · " + p.streakWeeks + "-week streak";
-    root.querySelector("#xp-fill").style.width = pct(p.xp / p.xpForNextLevel);
-    root.querySelector("#xp-label").textContent = p.xp + " / " + p.xpForNextLevel + " XP";
-    root.querySelector("#health-value").textContent = p.financialHealth;
-
-    const powerLabels = { savings: "Savings", investing: "Investing", optimization: "Optimization", goalReadiness: "Goal readiness", freedom: "Freedom" };
-    root.querySelector("#power-bars").innerHTML = Object.keys(p.powers).map((k) => `
-      <div class="power-row">
-        <div class="power-row-head"><span class="label">${powerLabels[k] || k}</span><span class="value">${p.powers[k]}</span></div>
-        <div class="power-track"><div class="power-fill" style="width:${p.powers[k]}%"></div></div>
-      </div>`).join("");
-
-    // net worth / owl / golden path
-    const owl = owlState(p);
-    const meta = OWL_META[owl];
-    root.querySelector("#owl-img").src = meta.src;
-    root.querySelector("#owl-figure").style.setProperty("--halo-color", meta.halo);
-    root.querySelector("#owl-status-line").textContent = meta.label;
-    root.querySelector("#networth-value").textContent = yen(derived.netWorth);
-    root.querySelector("#golden-path-wrap").innerHTML = renderGoldenPathSvg(p.netWorthPath.points, p.netWorthPath.currentAge);
-
-    // stat grid
-    const stats = [
-      { label: "Monthly income", value: yen(p.income) },
-      { label: "Monthly spending", value: yen(p.monthlyExpenses) },
-      { label: "Monthly surplus", value: yen(derived.surplus), cls: derived.surplus >= 0 ? "positive" : "negative" },
-      { label: "Cash savings", value: yen(p.savings) },
-      { label: "Investments", value: yen(p.investments) },
-      { label: "Debt", value: yen(p.debt), cls: p.debt > 0 ? "negative" : "" },
-      { label: "Net worth", value: yen(derived.netWorth), cls: "positive" },
-      { label: "Investable capacity", value: yen(derived.investableCapacity) + "/mo" }
-    ];
-    root.querySelector("#stat-grid").innerHTML = stats.map((s) => `
-      <div class="stat-tile">
-        <div class="stat-label">${s.label}</div>
-        <div class="stat-value ${s.cls || ""}">${s.value}</div>
-      </div>`).join("");
-
-    // insights
-    const insights = DATA.homeInsights.slice();
-    if (getJourneyState().status === "completed") {
-      insights.push({ id: "hi_plan", icon: "star", text: "Your personalized financial plan is live — check your journey below." });
-    }
-    const shared = getPendingShare();
-    if (shared) {
-      const label = shared.title || shared.text || shared.url || (shared.fileCount ? shared.fileCount + " file(s)" : "content");
-      insights.unshift({
-        id: "hi_shared",
-        icon: "paperclip",
-        text: "Received from Share Sheet: “" + escapeHtml(label) + "”",
-        dismissable: true
-      });
-    }
-    root.querySelector("#insights-list").innerHTML = insights.map((i) => `
-      <div class="insight-banner"><span class="icon">${comicIcon(i.icon)}</span><p>${i.text}</p>${i.dismissable ? '<button class="close-btn" data-dismiss-insight="' + i.id + '">' + lineIcon("x") + "</button>" : ""}</div>`).join("");
-    root.querySelectorAll("[data-dismiss-insight]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (btn.dataset.dismissInsight === "hi_shared") clearPendingShare();
-        renderHome();
-      });
-    });
-
-    // continue plan card
-    const journey = getJourneyState();
-    const continueWrap = root.querySelector("#continue-plan-wrap");
-    if (journey.status === "in_progress") {
-      continueWrap.style.display = "";
-      continueWrap.innerHTML = `
-        <button class="card continue-plan-card" id="continue-plan-btn" style="width:100%;cursor:pointer;">
-          <span class="icon">${comicIcon("compass")}</span>
-          <span class="body">
-            <span class="title">Continue building your plan</span>
-            <span class="meta">Step ${journey.currentStep + 1} of ${DATA.guidedPlanJourney.steps.length}</span>
-          </span>
-          <span>${lineIcon("arrow-right")}</span>
-        </button>`;
-      continueWrap.querySelector("#continue-plan-btn").addEventListener("click", () => openGuidedJourney(journey.currentStep));
-    } else {
-      continueWrap.style.display = "none";
-      continueWrap.innerHTML = "";
-    }
-
-    // journey map (quests)
-    const quests = DATA.quests.slice().sort((a, b) => a.order - b.order);
-    root.querySelector("#journey-map").innerHTML = quests.map((q) => {
-      const qs = state.quests[q.id];
-      const progress = qs.currentAmount / q.goalAmount;
-      const status = qs.status;
-      return `
-      <div class="journey-item is-${status === "active" && progress >= 1 ? "completed" : status}">
-        <div class="journey-node">${status === "locked" ? lineIcon("lock") : (progress >= 1 ? lineIcon("check") : "")}</div>
-        <button class="card journey-card" data-quest="${q.id}" style="width:100%;cursor:pointer;">
-          <span class="icon">${comicIcon(q.icon)}</span>
-          <span class="body">
-            <span class="title">${q.title}</span>
-            <span class="meta">${yen(qs.currentAmount)} of ${yen(q.goalAmount)}</span>
-          </span>
-        </button>
-      </div>`;
-    }).join("");
-    root.querySelectorAll("[data-quest]").forEach((b) => b.addEventListener("click", () => openQuestSimulator(b.dataset.quest)));
-
-    // this week missions
-    root.querySelector("#mission-list").innerHTML = DATA.weeklyMissions.map((m) => {
-      const done = state.missions[m.id].completed;
-      return `
-      <button class="mission-item ${done ? "is-done" : ""}" data-mission="${m.id}">
-        <span class="mission-check">${done ? lineIcon("check") : ""}</span>
-        <span class="mission-title">${m.title}</span>
-        <span class="mission-xp">+${m.xpReward} XP</span>
-      </button>`;
-    }).join("");
-    root.querySelectorAll("[data-mission]").forEach((b) => b.addEventListener("click", () => toggleMission(b.dataset.mission)));
+    renderShareNotice();
+    renderSankey(p);
+    renderExpenses(p);
   }
+
 
   function toggleMission(id) {
     const m = state.missions[id];
@@ -784,6 +1049,7 @@
   // ---------------------------------------------------------------------
   function init() {
     document.getElementById("levelup-value").textContent = "";
+    setupSankeyPeriod();
     renderHome();
     renderOptimize();
     renderGrow();

@@ -53,58 +53,32 @@
   <main class="screen" data-screen="home" id="screen-home">
     <h1 class="screen-title">Hi, <span id="greeting-name">there</span></h1>
 
-    <section class="card character-card">
-      <div class="character-head">
-        <div class="character-avatar" id="character-avatar"><img class="icon-comic" src="./lokhi-assets/icons/comic/compass.svg" alt=""></div>
-        <div class="character-meta">
-          <div class="name" id="character-level">Level 1</div>
-          <div class="sub" id="character-archetype">Explorer</div>
-        </div>
-      </div>
-      <div class="xp-bar-wrap">
-        <div class="progress-track"><div class="progress-fill gold" id="xp-fill" style="width:0%"></div></div>
-        <span class="xp-label" id="xp-label">0 / 0 XP</span>
-      </div>
+    <div id="share-notice"></div>
+
+    <section class="card sankey-card" aria-labelledby="sankey-title">
       <div class="card-row">
-        <span class="card-eyebrow">Financial Health</span>
-        <div class="health-score"><span class="value" id="health-value">0</span><span class="max">/100</span></div>
+        <span class="card-eyebrow" id="sankey-title">Where your money goes</span>
+        <label class="select-pill">
+          <span class="visually-hidden">Time range</span>
+          <select id="sankey-period"></select>
+        </label>
       </div>
-      <div id="power-bars"></div>
-    </section>
-
-    <section class="card networth-card">
-      <div class="networth-top">
-        <div class="owl-figure" id="owl-figure"><img id="owl-img" src="./lokhi-assets/owl-ontrack.svg" alt=""></div>
-        <div class="networth-value">
-          <div class="label">Net worth</div>
-          <div class="hero-number" id="networth-value">¥0</div>
-          <div class="owl-status-line" id="owl-status-line"></div>
-        </div>
+      <div class="sankey-range" id="sankey-range" hidden>
+        <label class="sankey-range-field"><span>From</span><input type="date" id="sankey-from"></label>
+        <label class="sankey-range-field"><span>To</span><input type="date" id="sankey-to"></label>
       </div>
-      <div id="golden-path-wrap"></div>
-      <div class="golden-path-legend">
-        <span><span class="dot actual"></span>Actual</span>
-        <span><span class="dot target"></span>Golden Path (scenario)</span>
+      <div class="sankey-wrap" id="sankey-wrap"></div>
+      <p class="sankey-caption" id="sankey-caption" hidden></p>
+    </section>
+
+    <section class="card expense-card" aria-labelledby="expense-title">
+      <div class="card-row">
+        <span class="card-eyebrow" id="expense-title">Expenses</span>
+        <span class="chart-period" id="expense-period"></span>
       </div>
-    </section>
-
-    <section>
-      <div class="card-eyebrow" style="margin-bottom:8px;">Your current world</div>
-      <div class="stat-grid" id="stat-grid"></div>
-    </section>
-
-    <section id="insights-list" style="display:flex;flex-direction:column;gap:12px;"></section>
-
-    <div id="continue-plan-wrap"></div>
-
-    <section>
-      <div class="card-eyebrow" style="margin-bottom:8px;">Your journey</div>
-      <div class="journey-map" id="journey-map"></div>
-    </section>
-
-    <section>
-      <div class="card-eyebrow" style="margin-bottom:8px;">This week</div>
-      <div class="mission-list" id="mission-list"></div>
+      <div class="chart-stats" id="expense-stats"></div>
+      <div class="expense-chart" id="expense-chart"></div>
+      <div class="chart-legend" id="expense-legend"></div>
     </section>
   </main>
 

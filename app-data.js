@@ -20,7 +20,29 @@ window.APP_DATA = {
 
     // monthly figures, JPY
     income: 900000,
+    incomeSources: [
+      { id: "salary", label: "Salary", amount: 820000 },
+      { id: "freelance", label: "Freelance", amount: 50000 },
+      { id: "rental", label: "Rental", amount: 30000 }
+    ],
     monthlyExpenses: 470000,
+    // set aside each month to invest (NISA + brokerage); idle = income − expenses − this
+    monthlyGrow: 250000,
+    // last 12 complete months, oldest first; the latest total matches monthlyExpenses
+    expenseHistory: [
+      { month: "2025-10", taxes: 138000, housing: 178000, card: 92000, other: 44000 },
+      { month: "2025-11", taxes: 138000, housing: 178000, card: 95000, other: 44000 },
+      { month: "2025-12", taxes: 138000, housing: 178000, card: 110000, other: 44000 },
+      { month: "2026-01", taxes: 138000, housing: 178000, card: 98000, other: 47000 },
+      { month: "2026-02", taxes: 138000, housing: 178000, card: 95000, other: 47000 },
+      { month: "2026-03", taxes: 140000, housing: 178000, card: 98000, other: 47000 },
+      { month: "2026-04", taxes: 140000, housing: 178000, card: 101000, other: 47000 },
+      { month: "2026-05", taxes: 140000, housing: 178000, card: 95000, other: 47000 },
+      { month: "2026-06", taxes: 142000, housing: 178000, card: 101000, other: 47000 },
+      { month: "2026-07", taxes: 142000, housing: 178000, card: 98000, other: 47000 },
+      { month: "2026-08", taxes: 142000, housing: 178000, card: 113000, other: 49000 },
+      { month: "2026-09", taxes: 142000, housing: 178000, card: 101000, other: 49000 }
+    ],
 
     savings: 8000000,
     investments: 3200000,
