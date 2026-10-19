@@ -629,6 +629,16 @@
       </span>`;
   }
 
+  function renderNetWorth(p) {
+    const root = document.getElementById("screen-home");
+    const meta = OWL_META[owlState(p)];
+    root.querySelector("#owl-img").src = meta.src;
+    root.querySelector("#owl-figure").style.setProperty("--halo-color", meta.halo);
+    root.querySelector("#owl-status-line").textContent = meta.label;
+    root.querySelector("#networth-value").textContent = yen(computeDerived(p).netWorth);
+    root.querySelector("#golden-path-wrap").innerHTML = renderGoldenPathSvg(p.netWorthPath.points, p.netWorthPath.currentAge);
+  }
+
   // Shown only when something has been shared into Lokhi from another app.
   function renderShareNotice() {
     const wrap = document.getElementById("share-notice");
@@ -653,6 +663,7 @@
     document.getElementById("header-streak").textContent = p.streakWeeks + "w";
 
     renderShareNotice();
+    renderNetWorth(p);
     renderSankey(p);
     renderExpenses(p);
   }

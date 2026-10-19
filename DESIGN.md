@@ -380,7 +380,7 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 
 The system governs every pixel a user sees in this repo. Per-screen interpretation:
 
-- **Home** (`index.html`, `data-screen="home"`) — the Visualize pillar: the Sankey overview under the greeting, then the detailed breakdown cards — Expenses first; Income, Bank account and Growth to follow. Chart cards are plain paper — the colour lives in the charts — so Home has no bloom card. A share-received notice appears above the Sankey only when something has been shared into Lokhi.
+- **Home** (`index.html`, `data-screen="home"`) — the Visualize pillar: the net-worth card first under the greeting, then the Sankey overview, then the detailed breakdown cards — Expenses first; Income, Bank account and Growth to follow. The net-worth card is Home's Bloom card; chart cards are plain paper — the colour lives in the charts. A share-received notice appears under the greeting only when something has been shared into Lokhi.
 - **Grow** (`data-screen="grow"`) — the quest stack. `display-md` section head with a muted "N of M · skip anytime" to its right, then one Card per quest: chip + duration on the label row, `display-lg` title, `body-mono` body, a row of ghost buttons with one primary.
 - **Optimize** (`data-screen="optimize"`) — the "found so far" card is the bloom card; opportunity cards glow. Two-up figures with `micro-mono` captions.
 - **Dreamlab** (`data-screen="dreamlab"`) — the Dreamscape viewport is the bloom card, the one place it takes a full-bleed panel, because the screen is aspirational rather than factual. Still no shadow. Goals render as Meters, not as charts.
