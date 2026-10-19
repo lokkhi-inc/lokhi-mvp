@@ -87,14 +87,52 @@
       <p class="sankey-caption" id="sankey-caption" hidden></p>
     </section>
 
-    <section class="card expense-card" aria-labelledby="expense-title">
-      <div class="card-row">
-        <span class="card-eyebrow" id="expense-title">Expenses</span>
-        <span class="chart-period" id="expense-period"></span>
+    <section class="card income-card" aria-labelledby="income-title">
+      <button class="chart-toggle" type="button" aria-expanded="false" aria-controls="income-body">
+        <span class="card-row">
+          <span class="card-eyebrow" id="income-title">Income</span>
+          <span class="chart-period-wrap"><span class="chart-period" id="income-period"></span><span class="chart-chevron" aria-hidden="true"></span></span>
+        </span>
+        <span class="chart-stats" id="income-stats"></span>
+      </button>
+      <div class="chart-body" id="income-body" hidden>
+        <div class="chart-controls">
+          <label class="select-pill">
+            <span class="visually-hidden">Time range</span>
+            <select id="income-range" data-chart="income"></select>
+          </label>
+        </div>
+        <div class="chart-range" id="income-custom" hidden>
+          <label class="sankey-range-field"><span>From</span><input type="month" id="income-from" data-chart="income"></label>
+          <label class="sankey-range-field"><span>To</span><input type="month" id="income-to" data-chart="income"></label>
+        </div>
+        <div class="column-chart" id="income-chart"></div>
+        <div class="chart-legend" id="income-legend"></div>
       </div>
-      <div class="chart-stats" id="expense-stats"></div>
-      <div class="expense-chart" id="expense-chart"></div>
-      <div class="chart-legend" id="expense-legend"></div>
+    </section>
+
+    <section class="card expense-card" aria-labelledby="expense-title">
+      <button class="chart-toggle" type="button" aria-expanded="false" aria-controls="expense-body">
+        <span class="card-row">
+          <span class="card-eyebrow" id="expense-title">Expenses</span>
+          <span class="chart-period-wrap"><span class="chart-period" id="expense-period"></span><span class="chart-chevron" aria-hidden="true"></span></span>
+        </span>
+        <span class="chart-stats" id="expense-stats"></span>
+      </button>
+      <div class="chart-body" id="expense-body" hidden>
+        <div class="chart-controls">
+          <label class="select-pill">
+            <span class="visually-hidden">Time range</span>
+            <select id="expense-range" data-chart="expense"></select>
+          </label>
+        </div>
+        <div class="chart-range" id="expense-custom" hidden>
+          <label class="sankey-range-field"><span>From</span><input type="month" id="expense-from" data-chart="expense"></label>
+          <label class="sankey-range-field"><span>To</span><input type="month" id="expense-to" data-chart="expense"></label>
+        </div>
+        <div class="column-chart" id="expense-chart"></div>
+        <div class="chart-legend" id="expense-legend"></div>
+      </div>
     </section>
   </main>
 

@@ -246,7 +246,7 @@
   };
 
   function renderGoldenPathSvg(points, currentAge) {
-    const w = 320, h = 120, pad = 8;
+    const w = 300, h = 64, pad = 6;
     const ages = points.map((p) => p.age);
     const vals = points.flatMap((p) => [p.target, p.actual].filter((v) => v != null));
     const minAge = Math.min(...ages), maxAge = Math.max(...ages);
@@ -492,19 +492,19 @@
   }
 
   // ---------------------------------------------------------------------
-  // Expenses card (Home): last three complete months as hand-drawn stacked
-  // columns, plus the trend fitted over twelve — the personal inflation rate.
+  // Hand-drawn stacked columns, shared by the Income and Expenses cards.
+  // Groups pick a wash and/or a texture; textures keep groups apart in
+  // greyscale. Optional: a fitted trend line, or a dotted projected column.
   // ---------------------------------------------------------------------
-  const EXPENSE_GROUPS = [
-    { key: "taxes", label: "Taxes & insurance", fill: "url(#ex-hatch)" },
-    { key: "housing", label: "Rent & loans", fill: "var(--bloom-rose)", strength: 0.5 },
-    { key: "card", label: "Card spending", fill: "var(--bloom-amber)", strength: 0.95 },
-    { key: "other", label: "Utilities & other", fill: null }
-  ];
-
   function monthName(iso, style) {
     const [y, m] = iso.split("-").map(Number);
     return new Date(y, m - 1, 1).toLocaleString("en-US", { month: style || "short" });
+  }
+
+  function nextMonth(iso) {
+    const [y, m] = iso.split("-").map(Number);
+    const d = new Date(y, m, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   }
 
   function niceStep(raw) {
@@ -512,95 +512,115 @@
     return [1, 2, 2.5, 5, 10].map((f) => f * mag).find((v) => v >= raw);
   }
 
-  function renderExpenses(p) {
-    const card = document.querySelector(".expense-card");
-    const hist = p.expenseHistory || [];
-    if (!card) return;
-    card.hidden = hist.length < 3;
-    if (card.hidden) return;
-
-    const total = (m) => EXPENSE_GROUPS.reduce((s, g) => s + (m[g.key] || 0), 0);
-    const totals = hist.map(total);
-    const n = totals.length;
-    const meanX = (n - 1) / 2, meanY = totals.reduce((a, b) => a + b, 0) / n;
-    const slope = totals.reduce((s, y, i) => s + (i - meanX) * (y - meanY), 0) /
-      totals.reduce((s, _, i) => s + (i - meanX) ** 2, 0);
-    const fit = (i) => meanY + slope * (i - meanX);
-    const yearlyRate = (slope * 12) / meanY;
-
-    const recent = hist.slice(-3);
-    const latest = recent[recent.length - 1];
-    document.getElementById("expense-period").textContent =
-      `${monthName(recent[0].month)} – ${monthName(latest.month)}`;
-    document.getElementById("expense-stats").innerHTML = `
-      <div class="chart-stat">
-        <span class="chart-stat-value">${shortYen(total(latest))}</span>
-        <span class="chart-stat-label">Spent in ${monthName(latest.month, "long")}</span>
-      </div>
-      <div class="chart-stat chart-stat-end">
-        <span class="chart-stat-value">${yearlyRate >= 0 ? "+" : "−"}${Math.abs(yearlyRate * 100).toFixed(1)}%</span>
-        <span class="chart-stat-label">Your inflation · 12 mo</span>
-      </div>`;
-
-    const rand = seededRandom(totals[n - 1]);
+  function columnChart(cfg) {
+    const { id, rows, groups, projection, trend } = cfg;
+    const total = (m) => groups.reduce((s, g) => s + (m[g.key] || 0), 0);
+    const tex = (name) => `url(#${id}-${name})`;
+    const rand = seededRandom(total(rows[rows.length - 1]));
     const j = (v) => (rand() - 0.5) * 2 * v;
-    const W = 300, H = 206, PL = 34, PR = 300, PT = 24, PB = 184, BAR = 46;
-    const recentMax = Math.max(...recent.map(total), fit(n - 1), fit(n - 3));
-    const step = niceStep(recentMax / 3);
-    const yMax = Math.ceil((recentMax * 1.12) / step) * step;
+
+    // Four columns fit the card; anything older scrolls in from the left. A
+    // sliver of the fifth peeks at the edge so it reads as scrollable. The
+    // axis and the strip share these units, so they line up at any width.
+    const AXIS = 34, PLOT = 266, H = 206, PT = 24, PB = 184;
+    const slots = rows.length + (projection ? 1 : 0);
+    const visible = slots > 4 ? 4.35 : slots;
+    const slotW = PLOT / visible;
+    const IW = slots * slotW;
+    const BAR = Math.min(46, slotW * 0.7);
+    const cx = (i) => slotW * (i + 0.5);
+    const lastMonth = projection ? projection.month : rows[rows.length - 1].month;
+    const multiYear = rows[0].month.slice(0, 4) !== lastMonth.slice(0, 4);
+    // Years only where they change (each January) and on the first column.
+    const monthLabel = (i, iso) => monthName(iso) + (multiYear && (i === 0 || iso.endsWith("-01")) ? ` ’${iso.slice(2, 4)}` : "");
+    const monthText = (i, iso) => `<text class="ex-month" x="${cx(i)}" y="${H - 4}" text-anchor="middle">${monthLabel(i, iso)}</text>`;
+
+    let trendSpan = null;
+    if (trend) {
+      const cols = rows.map((_, i) => trend.firstIndex + i);
+      const a = cols.findIndex((h) => h >= trend.lo), b = cols.length - 1 - [...cols].reverse().findIndex((h) => h <= trend.hi);
+      if (a !== -1 && b >= a) {
+        const idx = (x) => trend.firstIndex + (x - cx(0)) / slotW;
+        const x0 = a === 0 ? 6 : cx(a) - slotW / 2, x1 = b === rows.length - 1 ? rows.length * slotW - 6 : cx(b) + slotW / 2;
+        trendSpan = { x0, x1, v0: trend.fit(idx(x0)), v1: trend.fit(idx(x1)) };
+      }
+    }
+    const peaks = rows.map(total).concat(projection ? [projection.amount] : [], trendSpan ? [trendSpan.v0, trendSpan.v1] : []);
+    const top = Math.max(...peaks);
+    const step = niceStep(top / 3);
+    const yMax = Math.ceil((top * 1.12) / step) * step;
     const y = (v) => PB - (v / yMax) * (PB - PT);
-    const slotW = (PR - PL) / recent.length;
-    const cx = (i) => PL + slotW * (i + 0.5);
     const box = (x0, y0, x1, y1) =>
       `M ${x0 + j(0.8)} ${y0 + j(0.8)} L ${x1 + j(0.8)} ${y0 + j(0.8)} L ${x1 + j(0.8)} ${y1} L ${x0 + j(0.8)} ${y1} Z`;
 
     const ticks = [];
     for (let v = 0; v <= yMax; v += step) ticks.push(v);
-    const grid = ticks.map((v) => `
-      <line class="ex-grid${v === 0 ? " is-base" : ""}" x1="${PL}" x2="${PR}" y1="${y(v)}" y2="${y(v)}"/>
-      <text class="ex-tick" x="${PL - 6}" y="${y(v) + 3}" text-anchor="end">${v === 0 ? "0" : shortYen(v).slice(1)}</text>`).join("");
+    const tickLabels = ticks.map((v) =>
+      `<text class="ex-tick" x="${AXIS - 6}" y="${y(v) + 3}" text-anchor="end">${v === 0 ? "0" : shortYen(v).slice(1)}</text>`).join("");
+    const grid = ticks.map((v) =>
+      `<line class="ex-grid${v === 0 ? " is-base" : ""}" x1="0" x2="${IW}" y1="${y(v)}" y2="${y(v)}"/>`).join("");
 
-    const columns = recent.map((m, i) => {
+    const columns = rows.map((m, i) => {
       const x0 = cx(i) - BAR / 2, x1 = cx(i) + BAR / 2;
       let base = 0;
-      const segs = EXPENSE_GROUPS.map((g, gi) => {
+      const segs = groups.map((g, gi) => {
         const v = m[g.key] || 0;
+        if (!v) return "";
         const yb = y(base), yt = y(base + v);
         base += v;
-        const top = yt + 1, bottom = gi === 0 ? yb : yb - 1;
-        const fill = g.fill
-          ? `<path d="${box(x0, top, x1, bottom)}" style="fill:${g.fill};fill-opacity:${g.strength || 1}"${g.key === "taxes" ? "" : ' filter="url(#ex-wash)"'}/>`
+        const t = yt + 1, b = gi === 0 ? yb : yb - 1;
+        const d = box(x0, t, x1, b);
+        const wash = g.wash ? `<path d="${d}" style="fill:${g.wash};fill-opacity:${g.strength || 1}" filter="url(#${id}-wash)"/>` : "";
+        const texture = g.texture ? `<path d="${d}" style="fill:${tex(g.texture)}"/>` : "";
+        const label = b - t >= 15
+          ? `<text class="ex-seg" x="${cx(i)}" y="${(t + b) / 2 + 3}" text-anchor="middle">${shortYen(v)}</text>`
           : "";
-        const label = bottom - top >= 15
-          ? `<text class="ex-seg" x="${cx(i)}" y="${(top + bottom) / 2 + 3}" text-anchor="middle">${shortYen(v)}</text>`
-          : "";
-        return fill + label;
+        return wash + texture + label;
       }).join("");
       const capY = y(total(m));
       return `
         ${segs}
-        <path class="sk-ink" d="M ${x0} ${y(0)} L ${x0 + j(1)} ${capY + j(1)} L ${x1 + j(1)} ${capY + j(1)} L ${x1} ${y(0)}" filter="url(#ex-ink)"/>
+        <path class="sk-ink" d="M ${x0} ${y(0)} L ${x0 + j(1)} ${capY + j(1)} L ${x1 + j(1)} ${capY + j(1)} L ${x1} ${y(0)}" filter="url(#${id}-ink)"/>
         <text class="ex-cap" x="${cx(i)}" y="${capY - 9}" text-anchor="middle">${shortYen(total(m))}</text>
-        <text class="ex-month" x="${cx(i)}" y="${H - 4}" text-anchor="middle">${monthName(m.month)}</text>`;
+        ${monthText(i, m.month)}`;
     }).join("");
 
-    // The fitted line, carried a little past the first and last columns.
-    const idx = (x) => n - 3 + (x - cx(0)) / slotW;
-    const tx0 = PL + 6, tx1 = PR - 6;
-    const trend = `<path class="ex-trend" d="M ${tx0} ${y(fit(idx(tx0)))} L ${tx1} ${y(fit(idx(tx1)))}"/>`;
+    let extra = "";
+    if (projection) {
+      const i = rows.length, x0 = cx(i) - BAR / 2, x1 = cx(i) + BAR / 2, capY = y(projection.amount);
+      extra = `
+        <path class="ex-projection" d="M ${x0} ${y(0)} L ${x0} ${capY} L ${x1} ${capY} L ${x1} ${y(0)}"/>
+        <text class="ex-seg" x="${cx(i)}" y="${(capY + y(0)) / 2}" text-anchor="middle">${shortYen(projection.amount)}</text>
+        <text class="ex-seg" x="${cx(i)}" y="${(capY + y(0)) / 2 + 10}" text-anchor="middle">expected</text>
+        <text class="ex-question" x="${cx(i)}" y="${capY - 9}" text-anchor="middle">?</text>
+        ${monthText(i, projection.month)}`;
+    }
+    if (trendSpan) {
+      // Drawn only across the months the fit covers.
+      extra += `<path class="ex-trend" d="M ${trendSpan.x0} ${y(trendSpan.v0)} L ${trendSpan.x1} ${y(trendSpan.v1)}"/>`;
+    }
 
-    document.getElementById("expense-chart").innerHTML = `
-      <svg class="expense-svg" viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Expenses for the last three months, rising about ${Math.abs(yearlyRate * 100).toFixed(1)}% a year">
+    const svg = `
+      <div class="column-frame" role="img" aria-label="${escapeHtml(cfg.aria)}">
+      <svg class="column-axis" viewBox="0 0 ${AXIS} ${H}" aria-hidden="true">${tickLabels}</svg>
+      <div class="column-scroll"${slots > 4 ? ' tabindex="0"' : ""}>
+      <svg class="column-svg" viewBox="0 0 ${IW} ${H}" style="width:${(slots / visible) * 100}%" aria-hidden="true">
         <defs>
-          <pattern id="ex-hatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--ink);stroke-width:0.9;opacity:0.6"/>
+          <pattern id="${id}-hatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--ink);stroke-width:1;opacity:0.55"/>
           </pattern>
-          <filter id="ex-ink" x="-10%" y="-5%" width="120%" height="110%">
+          <pattern id="${id}-hatchback" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(135)">
+            <line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--ink);stroke-width:1;opacity:0.55"/>
+          </pattern>
+          <pattern id="${id}-dots" patternUnits="userSpaceOnUse" width="4.5" height="4.5">
+            <circle cx="1.2" cy="1.2" r="0.75" style="fill:var(--ink);opacity:0.6"/>
+            <circle cx="3.45" cy="3.45" r="0.75" style="fill:var(--ink);opacity:0.6"/>
+          </pattern>
+          <filter id="${id}-ink" x="-10%" y="-5%" width="120%" height="110%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="5" result="n"/>
             <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
           </filter>
-          <filter id="ex-wash" x="-8%" y="-8%" width="116%" height="116%">
+          <filter id="${id}-wash" x="-8%" y="-8%" width="116%" height="116%">
             <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="9" result="n"/>
             <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G" result="d"/>
             <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="13" result="grain"/>
@@ -610,23 +630,199 @@
         </defs>
         ${grid}
         ${columns}
-        ${trend}
+        ${extra}
       </svg>
+      </div>
+      </div>
       <div class="visually-hidden"><table>
-        <caption>Expenses by month</caption>
-        <tr><th>Month</th>${EXPENSE_GROUPS.map((g) => `<th>${g.label}</th>`).join("")}<th>Total</th></tr>
-        ${recent.map((m) => `<tr><td>${monthName(m.month, "long")}</td>${EXPENSE_GROUPS.map((g) => `<td>${yen(m[g.key] || 0)}</td>`).join("")}<td>${yen(total(m))}</td></tr>`).join("")}
+        <caption>${escapeHtml(cfg.caption)}</caption>
+        <tr><th>Month</th>${groups.map((g) => `<th>${g.label}</th>`).join("")}<th>Total</th></tr>
+        ${rows.map((m) => `<tr><td>${monthName(m.month, "long")}</td>${groups.map((g) => `<td>${yen(m[g.key] || 0)}</td>`).join("")}<td>${yen(total(m))}</td></tr>`).join("")}
+        ${projection ? `<tr><td>${monthName(projection.month, "long")} (expected)</td>${groups.map(() => "<td></td>").join("")}<td>${yen(projection.amount)}</td></tr>` : ""}
       </table></div>`;
 
-    document.getElementById("expense-legend").innerHTML = EXPENSE_GROUPS.map((g) => `
-      <span class="chart-legend-item">
-        <svg class="chart-swatch" viewBox="0 0 14 10" aria-hidden="true">
-          <rect x="0.5" y="0.5" width="13" height="9" rx="2" style="fill:${g.fill || "var(--paper)"};fill-opacity:${g.strength || 1};stroke:var(--ink);stroke-width:1"/>
-        </svg>${g.label}
-      </span>`).join("") + `
-      <span class="chart-legend-item">
-        <svg class="chart-swatch" viewBox="0 0 14 10" aria-hidden="true"><path class="ex-trend" d="M 1 5 L 13 5"/></svg>12-month trend
-      </span>`;
+    const swatch = (inner) => `<svg class="chart-swatch" viewBox="0 0 14 10" aria-hidden="true">${inner}</svg>`;
+    const rect = (style) => `<rect x="0.5" y="0.5" width="13" height="9" rx="2" style="${style}"/>`;
+    const legend = groups.map((g) => `
+      <span class="chart-legend-item">${swatch(
+        rect(`fill:${g.wash || "var(--paper)"};fill-opacity:${g.strength || 1}`) +
+        (g.texture ? rect(`fill:${tex(g.texture)}`) : "") +
+        rect("fill:none;stroke:var(--ink);stroke-width:1")
+      )}${g.label}</span>`).join("") +
+      (projection ? `<span class="chart-legend-item">${swatch('<rect class="ex-projection" x="0.5" y="0.5" width="13" height="9"/>')}Expected</span>` : "") +
+      (trend ? `<span class="chart-legend-item">${swatch('<path class="ex-trend" d="M 1 5 L 13 5"/>')}12-month trend</span>` : "");
+
+    return { svg, legend, total };
+  }
+
+  function chartStats(left, right) {
+    return [left, right].map((s, i) => `
+      <span class="chart-stat${i ? " chart-stat-end" : ""}">
+        <span class="chart-stat-value">${s.value}</span>
+        <span class="chart-stat-label">${s.label}</span>
+      </span>`).join("");
+  }
+
+  // Charts open on their newest columns; history is a swipe to the left.
+  function showLatest(el) {
+    el.querySelectorAll(".column-scroll").forEach((sc) => { sc.scrollLeft = sc.scrollWidth; });
+  }
+
+  // Income and Expenses open to their charts on tap; collapsed on load.
+  function setupChartToggles() {
+    document.querySelectorAll(".chart-toggle").forEach((btn) => {
+      const body = document.getElementById(btn.getAttribute("aria-controls"));
+      btn.addEventListener("click", () => {
+        const open = btn.getAttribute("aria-expanded") !== "true";
+        btn.setAttribute("aria-expanded", String(open));
+        body.hidden = !open;
+        if (open) showLatest(body);
+      });
+    });
+  }
+
+  // Time range for the Income and Expenses charts, like the Sankey's: the
+  // latest months (with all history a swipe away), this year, last year, or
+  // a custom span of months. Held in memory; resets on reload.
+  state.chartRanges = { income: { kind: "latest" }, expense: { kind: "latest" } };
+
+  function rangeRows(hist, range) {
+    let rows = hist;
+    if (range.kind === "year") rows = hist.filter((r) => r.month.startsWith(range.year));
+    if (range.kind === "custom") rows = hist.filter((r) => r.month >= range.from && r.month <= range.to);
+    return rows.length ? rows : hist;
+  }
+
+  function rangeLabel(first, last) {
+    const yy = (iso) => ` ’${iso.slice(2, 4)}`;
+    const thisYear = String(new Date().getFullYear());
+    const plain = first.slice(0, 4) === last.slice(0, 4) && last.slice(0, 4) === thisYear;
+    return plain
+      ? `${monthName(first)} – ${monthName(last)}`
+      : `${monthName(first)}${yy(first)} – ${monthName(last)}${yy(last)}`;
+  }
+
+  function setupChartRanges() {
+    const histories = { income: state.profile.incomeHistory || [], expense: state.profile.expenseHistory || [] };
+    const render = { income: renderIncome, expense: renderExpenses };
+    Object.keys(histories).forEach((k) => {
+      const hist = histories[k];
+      const select = document.getElementById(`${k}-range`);
+      const custom = document.getElementById(`${k}-custom`);
+      const from = document.getElementById(`${k}-from`);
+      const to = document.getElementById(`${k}-to`);
+      if (!select || !hist.length) return;
+      const year = new Date().getFullYear();
+      select.innerHTML = [["latest", "3 months"], [String(year), String(year)], [String(year - 1), String(year - 1)], ["custom", "Custom"]]
+        .map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+      from.min = to.min = hist[0].month;
+      from.max = to.max = hist[hist.length - 1].month;
+      from.value = hist[Math.max(0, hist.length - 6)].month;
+      to.value = hist[hist.length - 1].month;
+
+      const apply = () => {
+        custom.hidden = select.value !== "custom";
+        if (select.value === "custom") {
+          // A cleared or half-typed month keeps the last good range.
+          if (!from.value || !to.value) return;
+          if (from.value > to.value) [from.value, to.value] = [to.value, from.value];
+          state.chartRanges[k] = { kind: "custom", from: from.value, to: to.value };
+        } else {
+          state.chartRanges[k] = select.value === "latest" ? { kind: "latest" } : { kind: "year", year: select.value };
+        }
+        render[k](state.profile);
+      };
+      [select, from, to].forEach((el) => el.addEventListener("change", apply));
+    });
+  }
+
+  // Income card: last three complete months, then the current month as a
+  // dotted column at the expected salary — extras can't be known ahead.
+  const INCOME_GROUPS = [
+    { key: "salary", label: "Salary", wash: "var(--bloom-amber)", strength: 0.95 },
+    { key: "side", label: "Side & business", wash: "var(--bloom-amber)", strength: 0.95, texture: "hatchback" },
+    { key: "bonus", label: "Bonus", wash: "var(--bloom-amber)", strength: 0.95, texture: "dots" }
+  ];
+
+  function renderIncome(p) {
+    const card = document.querySelector(".income-card");
+    const hist = p.incomeHistory || [];
+    if (!card) return;
+    card.hidden = hist.length === 0;
+    if (card.hidden) return;
+
+    const rows = rangeRows(hist, state.chartRanges.income);
+    const latest = hist[hist.length - 1];
+    const salary = (p.incomeSources || []).find((s) => s.id === "salary");
+    const expected = { month: nextMonth(latest.month), amount: salary ? salary.amount : latest.salary };
+    // The expected column only makes sense when the range runs up to now.
+    const projection = rows[rows.length - 1] === latest ? expected : null;
+    const chart = columnChart({
+      id: "inc", rows, groups: INCOME_GROUPS, projection,
+      aria: `Income for ${rows.length} months` + (projection ? `, and ${shortYen(projection.amount)} expected this month` : ""),
+      caption: "Income by month"
+    });
+
+    const shownFrom = state.chartRanges.income.kind === "latest" ? hist[Math.max(0, hist.length - 3)] : rows[0];
+    document.getElementById("income-period").textContent =
+      rangeLabel(shownFrom.month, projection ? projection.month : rows[rows.length - 1].month);
+    document.getElementById("income-stats").innerHTML = chartStats(
+      { value: shortYen(chart.total(latest)), label: `Earned in ${monthName(latest.month, "long")}` },
+      { value: shortYen(expected.amount), label: `Expected in ${monthName(expected.month, "long")}` }
+    );
+    document.getElementById("income-chart").innerHTML = chart.svg;
+    document.getElementById("income-legend").innerHTML = chart.legend;
+    showLatest(document.getElementById("income-chart"));
+  }
+
+  // Expenses card: last three complete months, plus the trend fitted over
+  // twelve — the personal inflation rate.
+  const EXPENSE_GROUPS = [
+    { key: "taxes", label: "Taxes & insurance", texture: "hatch" },
+    { key: "housing", label: "Rent & loans", wash: "var(--bloom-rose)", strength: 0.5 },
+    { key: "card", label: "Card spending", wash: "var(--bloom-amber)", strength: 0.95 },
+    { key: "other", label: "Utilities & other" }
+  ];
+
+  function renderExpenses(p) {
+    const card = document.querySelector(".expense-card");
+    const hist = p.expenseHistory || [];
+    if (!card) return;
+    card.hidden = hist.length < 3;
+    if (card.hidden) return;
+
+    const sum = (m) => EXPENSE_GROUPS.reduce((s, g) => s + (m[g.key] || 0), 0);
+    const n = hist.length;
+    // Least-squares fit over the last twelve months only; i is a history index.
+    const lo = Math.max(0, n - 12);
+    const last12 = hist.slice(lo).map((m, k) => [lo + k, sum(m)]);
+    const meanX = last12.reduce((s, [i]) => s + i, 0) / last12.length;
+    const meanY = last12.reduce((s, [, v]) => s + v, 0) / last12.length;
+    const slope = last12.reduce((s, [i, v]) => s + (i - meanX) * (v - meanY), 0) /
+      last12.reduce((s, [i]) => s + (i - meanX) ** 2, 0);
+    const fit = (i) => meanY + slope * (i - meanX);
+    const yearlyRate = (slope * 12) / meanY;
+    const rate = `${yearlyRate >= 0 ? "+" : "−"}${Math.abs(yearlyRate * 100).toFixed(1)}%`;
+
+    const rows = rangeRows(hist, state.chartRanges.expense);
+    const latest = hist[n - 1];
+    const chart = columnChart({
+      id: "ex", rows, groups: EXPENSE_GROUPS,
+      trend: { fit, firstIndex: hist.indexOf(rows[0]), lo, hi: n - 1 },
+      aria: `Expenses for ${rows.length} months, changing about ${rate} a year`,
+      caption: "Expenses by month"
+    });
+
+    const shownFrom = state.chartRanges.expense.kind === "latest" ? hist[Math.max(0, n - 4)] : rows[0];
+    document.getElementById("expense-period").textContent =
+      rangeLabel(shownFrom.month, rows[rows.length - 1].month);
+    document.getElementById("expense-stats").innerHTML = chartStats(
+      { value: shortYen(sum(latest)), label: `Spent in ${monthName(latest.month, "long")}` },
+      { value: rate, label: "Your inflation · 12 mo" }
+    );
+    document.getElementById("expense-chart").innerHTML = chart.svg;
+    document.getElementById("expense-legend").innerHTML = chart.legend;
+    showLatest(document.getElementById("expense-chart"));
   }
 
   function renderNetWorth(p) {
@@ -665,6 +861,7 @@
     renderShareNotice();
     renderNetWorth(p);
     renderSankey(p);
+    renderIncome(p);
     renderExpenses(p);
   }
 
@@ -1061,6 +1258,8 @@
   function init() {
     document.getElementById("levelup-value").textContent = "";
     setupSankeyPeriod();
+    setupChartToggles();
+    setupChartRanges();
     renderHome();
     renderOptimize();
     renderGrow();
