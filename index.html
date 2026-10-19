@@ -53,24 +53,7 @@
   <main class="screen" data-screen="home" id="screen-home">
     <h1 class="screen-title">Hi, <span id="greeting-name">there</span></h1>
 
-    <section class="card character-card">
-      <div class="character-head">
-        <div class="character-avatar" id="character-avatar"><img class="icon-comic" src="./lokhi-assets/icons/comic/compass.svg" alt=""></div>
-        <div class="character-meta">
-          <div class="name" id="character-level">Level 1</div>
-          <div class="sub" id="character-archetype">Explorer</div>
-        </div>
-      </div>
-      <div class="xp-bar-wrap">
-        <div class="progress-track"><div class="progress-fill gold" id="xp-fill" style="width:0%"></div></div>
-        <span class="xp-label" id="xp-label">0 / 0 XP</span>
-      </div>
-      <div class="card-row">
-        <span class="card-eyebrow">Financial Health</span>
-        <div class="health-score"><span class="value" id="health-value">0</span><span class="max">/100</span></div>
-      </div>
-      <div id="power-bars"></div>
-    </section>
+    <div id="share-notice"></div>
 
     <section class="card networth-card">
       <div class="networth-top">
@@ -88,23 +71,68 @@
       </div>
     </section>
 
-    <section>
-      <div class="card-eyebrow" style="margin-bottom:8px;">Your current world</div>
-      <div class="stat-grid" id="stat-grid"></div>
+    <section class="card sankey-card" aria-labelledby="sankey-title">
+      <div class="card-row">
+        <span class="card-eyebrow" id="sankey-title">Where your money goes</span>
+        <label class="select-pill">
+          <span class="visually-hidden">Time range</span>
+          <select id="sankey-period"></select>
+        </label>
+      </div>
+      <div class="sankey-range" id="sankey-range" hidden>
+        <label class="sankey-range-field"><span>From</span><input type="date" id="sankey-from"></label>
+        <label class="sankey-range-field"><span>To</span><input type="date" id="sankey-to"></label>
+      </div>
+      <div class="sankey-wrap" id="sankey-wrap"></div>
+      <p class="sankey-caption" id="sankey-caption" hidden></p>
     </section>
 
-    <section id="insights-list" style="display:flex;flex-direction:column;gap:12px;"></section>
-
-    <div id="continue-plan-wrap"></div>
-
-    <section>
-      <div class="card-eyebrow" style="margin-bottom:8px;">Your journey</div>
-      <div class="journey-map" id="journey-map"></div>
+    <section class="card income-card" aria-labelledby="income-title">
+      <button class="chart-toggle" type="button" aria-expanded="false" aria-controls="income-body">
+        <span class="card-row">
+          <span class="card-eyebrow" id="income-title">Income</span>
+          <span class="chart-period-wrap"><span class="chart-period" id="income-period"></span><span class="chart-chevron" aria-hidden="true"></span></span>
+        </span>
+        <span class="chart-stats" id="income-stats"></span>
+      </button>
+      <div class="chart-body" id="income-body" hidden>
+        <div class="chart-controls">
+          <label class="select-pill">
+            <span class="visually-hidden">Time range</span>
+            <select id="income-range" data-chart="income"></select>
+          </label>
+        </div>
+        <div class="chart-range" id="income-custom" hidden>
+          <label class="sankey-range-field"><span>From</span><input type="month" id="income-from" data-chart="income"></label>
+          <label class="sankey-range-field"><span>To</span><input type="month" id="income-to" data-chart="income"></label>
+        </div>
+        <div class="column-chart" id="income-chart"></div>
+        <div class="chart-legend" id="income-legend"></div>
+      </div>
     </section>
 
-    <section>
-      <div class="card-eyebrow" style="margin-bottom:8px;">This week</div>
-      <div class="mission-list" id="mission-list"></div>
+    <section class="card expense-card" aria-labelledby="expense-title">
+      <button class="chart-toggle" type="button" aria-expanded="false" aria-controls="expense-body">
+        <span class="card-row">
+          <span class="card-eyebrow" id="expense-title">Expenses</span>
+          <span class="chart-period-wrap"><span class="chart-period" id="expense-period"></span><span class="chart-chevron" aria-hidden="true"></span></span>
+        </span>
+        <span class="chart-stats" id="expense-stats"></span>
+      </button>
+      <div class="chart-body" id="expense-body" hidden>
+        <div class="chart-controls">
+          <label class="select-pill">
+            <span class="visually-hidden">Time range</span>
+            <select id="expense-range" data-chart="expense"></select>
+          </label>
+        </div>
+        <div class="chart-range" id="expense-custom" hidden>
+          <label class="sankey-range-field"><span>From</span><input type="month" id="expense-from" data-chart="expense"></label>
+          <label class="sankey-range-field"><span>To</span><input type="month" id="expense-to" data-chart="expense"></label>
+        </div>
+        <div class="column-chart" id="expense-chart"></div>
+        <div class="chart-legend" id="expense-legend"></div>
+      </div>
     </section>
   </main>
 
