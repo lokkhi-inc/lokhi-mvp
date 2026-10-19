@@ -206,6 +206,15 @@
     return DL.dreams[dreamId].status || "active";
   }
 
+  // Dhan is derived from done quests, never stored, so it can't drift from
+  // what the user has actually struck off.
+  function questDhan(q) {
+    return q.dhan != null ? q.dhan : DATA.dhanPerQuest;
+  }
+  function dhanOf(dreamId) {
+    return (DL.quests[dreamId] || []).filter((q) => q.done).reduce((s, q) => s + questDhan(q), 0);
+  }
+
   function setBaseline(dreamId, value) {
     const dream = DL.dreams[dreamId];
     const hadBaseline = !!dream.baseline;
@@ -235,6 +244,11 @@
   // -----------------------------------------------------------------------
   function renderRoot() {
     const root = document.getElementById("dreamlab-root");
+    if (expeditionId && DL.dreams[expeditionId]) {
+      renderExpedition(root, expeditionId);
+      return;
+    }
+    expeditionId = null;
     root.innerHTML = `
       <h1 class="screen-title">Dream Lab</h1>
       <p class="screen-subtitle">Turn what you're dreaming about into something you can explore, then work toward.</p>
@@ -245,6 +259,7 @@
         </div>
         <button class="btn btn-primary btn-sm" id="dl-new-dream-btn">+ New Dream</button>
       </div>
+
       <div id="dl-view-body"></div>
     `;
     root.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
@@ -360,11 +375,76 @@
     container.querySelectorAll("[data-dream-node]").forEach((el) => {
       el.addEventListener("click", (e) => {
         if (dreamscapeWasGesture) { dreamscapeWasGesture = false; return; }
-        openDreamDetail(el.dataset.dreamNode);
+        zoomIntoPlanet(container, el);
       });
     });
     wireDreamscapeGestures(container.querySelector(".dreamscape-viewport"), container.querySelector(".dreamscape-canvas"));
     fitDreamscapeToViewport(container.querySelector(".dreamscape-viewport"), container.querySelector(".dreamscape-canvas"), canvasSize);
+    if (returnFromId) playGalaxyReturn(container, returnFromId);
+  }
+
+  // ---- Camera: galaxy <-> planet --------------------------------------------
+  const PLANET_ZOOM = 3.5;
+  let expeditionId = null;
+  let returnFromId = null;
+
+  function zoomTransform(x, y) {
+    return `translate(calc(-50% + ${-x * PLANET_ZOOM}px), calc(-50% + ${-y * PLANET_ZOOM}px)) scale(${PLANET_ZOOM})`;
+  }
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function zoomIntoPlanet(container, el) {
+    const id = el.dataset.dreamNode;
+    const viewport = container.querySelector(".dreamscape-viewport");
+    const canvas = container.querySelector(".dreamscape-canvas");
+    const enter = () => { expeditionId = id; renderRoot(); };
+    if (reducedMotion()) { enter(); return; }
+    viewport.classList.add("is-zooming");
+    el.classList.add("is-target");
+    canvas.style.transition = "transform 240ms var(--ease)";
+    canvas.style.transform = zoomTransform(Number(el.dataset.x), Number(el.dataset.y));
+    setTimeout(enter, 250);
+  }
+
+  function playGalaxyReturn(container, id) {
+    returnFromId = null;
+    const el = container.querySelector(`[data-dream-node="${id}"]`);
+    const canvas = container.querySelector(".dreamscape-canvas");
+    if (!el || reducedMotion()) return;
+    const settled = canvas.style.transform;
+    canvas.style.transition = "none";
+    canvas.style.transform = zoomTransform(Number(el.dataset.x), Number(el.dataset.y));
+    void canvas.offsetWidth;
+    canvas.style.transition = "transform 240ms var(--ease)";
+    canvas.style.transform = settled;
+  }
+
+  function leaveExpedition() {
+    returnFromId = expeditionId;
+    expeditionId = null;
+    DL.activeView = "dreamscape";
+    renderRoot();
+  }
+
+  // Terraforming is ink detail only: more of it as progress grows.
+  function planetSvg(progress, status) {
+    const tier = progress >= 1 ? 4 : Math.floor(progress * 4);
+    const parts = [`<circle cx="50" cy="50" r="46" class="pl-body${status === "exploring" ? " is-dashed" : ""}"/>`];
+    if (tier === 0) parts.push(`<circle cx="36" cy="40" r="6"/><circle cx="62" cy="62" r="4"/>`);
+    if (tier >= 1) parts.push(`<path d="M6 50 Q50 64 94 50"/>`);
+    if (tier >= 2) parts.push(`<ellipse cx="50" cy="50" rx="20" ry="46"/>`);
+    if (tier >= 3) {
+      let ticks = "";
+      for (let i = 0; i < 24; i++) {
+        const a = (i / 24) * 2 * Math.PI;
+        ticks += `M${(50 + 49 * Math.cos(a)).toFixed(1)} ${(50 + 49 * Math.sin(a)).toFixed(1)}L${(50 + 54 * Math.cos(a)).toFixed(1)} ${(50 + 54 * Math.sin(a)).toFixed(1)}`;
+      }
+      parts.push(`<path d="${ticks}"/>`);
+    }
+    if (tier >= 4) parts.push(`<ellipse cx="50" cy="50" rx="58" ry="14" transform="rotate(-18 50 50)"/>`);
+    return `<svg class="planet-svg" viewBox="-10 -10 120 120" aria-hidden="true">${parts.join("")}</svg>`;
   }
 
   // Sets the default zoom so the whole dreamscape actually fills the real,
@@ -415,7 +495,6 @@
     }
 
     viewport.addEventListener("pointerdown", (e) => {
-      if (viewport.setPointerCapture) viewport.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       moved = 0;
       if (pointers.size === 1) {
@@ -439,6 +518,9 @@
       } else if (pointers.size === 1 && dragStart) {
         const dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
         if (moved > 0 || Math.abs(dx) + Math.abs(dy) > 4) {
+          // Capture only once it's a real drag — capturing on pointerdown
+          // retargets the click to the viewport and swallows taps on nodes.
+          if (moved === 0 && viewport.setPointerCapture) viewport.setPointerCapture(e.pointerId);
           dreamscapePanX = dragStart.panX + dx;
           dreamscapePanY = dragStart.panY + dy;
           applyTransform();
@@ -512,8 +594,8 @@
     const ringDeg = Math.round(progress * 360);
     const style = `left:calc(50% + ${n.x}px);top:calc(50% + ${n.y}px);animation-duration:${n.floatDuration}s;animation-delay:${n.floatDelay}s;`;
     return `
-      <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" style="${style}">
-        <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${comicIcon(d.icon)}</span>
+      <button class="dreamscape-node ${sizeClass} status-${status}" data-dream-node="${d.id}" data-x="${n.x}" data-y="${n.y}" style="${style}">
+        <span class="dreamscape-node-badge" style="--ring:${ringDeg}deg;">${planetSvg(progress, status)}${comicIcon(d.icon)}</span>
         <span class="dreamscape-node-label">${escapeHtml(d.title)}</span>
         <span class="dreamscape-node-type">${TYPE_LABEL[d.type]}</span>
         <span class="dreamscape-node-meta">${pct(progress)}</span>
@@ -611,6 +693,81 @@
         </div>
         ${metaLine}
       </button>`;
+  }
+
+  // =========================================================================
+  // EXPEDITION VIEW — a dream's quests as a winding path to its planet
+  // =========================================================================
+  function renderExpedition(root, id) {
+    const dream = DL.dreams[id];
+    const progress = computeProgress(id);
+    const quests = (DL.quests[id] || []).slice().sort((a, b) => a.order - b.order);
+    const nextIdx = quests.findIndex((q) => !q.done);
+    const ROW = 96;
+    const pts = quests.map((q, i) => ({ x: 50 + Math.sin(i * 1.1) * 28, y: 40 + i * ROW }));
+    const height = Math.max(1, quests.length) * ROW;
+    const segs = pts.slice(1).map((pt, i) => {
+      const a = pts[i];
+      const my = (a.y + pt.y) / 2;
+      return `<path class="${quests[i].done ? "is-done" : ""}" d="M${a.x} ${a.y} C${a.x} ${my} ${pt.x} ${my} ${pt.x} ${pt.y}"/>`;
+    }).join("");
+    const nodes = quests.map((q, i) => {
+      const state = q.done ? "done" : i === nextIdx ? "next" : "later";
+      return `<button class="exp-node is-${state}" data-exp-quest="${q.id}" style="left:${pts[i].x}%;top:${pts[i].y}px;" aria-label="${escapeHtml(q.title)}">${i + 1}</button>
+        <span class="exp-node-label ${pts[i].x > 50 ? "is-left" : "is-right"}" style="top:${pts[i].y}px;left:${pts[i].x}%;">${escapeHtml(q.title)}</span>`;
+    }).join("");
+    const arrived = quests.length && nextIdx === -1;
+
+    root.innerHTML = `
+      <div class="dl-exp">
+        <button class="btn btn-secondary btn-sm dl-exp-return" id="dl-exp-return"><span class="icon-line icon-line-arrow-right dl-flip"></span> See overall galaxy view</button>
+        <div class="card dl-exp-head">
+          <div class="dl-exp-planet">${planetSvg(progress, statusOf(id))}${comicIcon(dream.icon, 30)}</div>
+          <div class="dl-exp-title">
+            <span class="chip chip-neutral">${TYPE_LABEL[dream.type]}</span>
+            <h2 class="dl-exp-name">${escapeHtml(dream.title)}</h2>
+            <span class="micro">${pct(progress)} there · ${activeQuestCount(id)} steps to go</span>
+          </div>
+          <div class="dl-dhan-row is-card"><span class="numeral">${dhanOf(id)}</span><span class="micro">Dhan</span></div>
+        </div>
+        <div class="dl-exp-verdict">${arrived ? "Arrived." : nextIdx === 0 ? "Ready when you are." : "Underway."}</div>
+        <div class="exp-path" style="height:${height}px;">
+          <svg viewBox="0 0 100 ${height}" preserveAspectRatio="none" aria-hidden="true">${segs}</svg>
+          ${nodes}
+        </div>
+        <div class="card dl-fairy-card dl-section">
+          <p>${escapeHtml(ENGINE.introFor(dream))}</p>
+          ${dream.why && dream.why[0] ? `<span class="micro">You said: ${escapeHtml(dream.why[0])}</span>` : ""}
+          <button class="btn btn-secondary btn-sm" id="dl-exp-fairy">Ask your Fairy Godmother</button>
+        </div>
+        <button class="btn btn-primary" id="dl-exp-detail">Plan, simulate &amp; decisions</button>
+      </div>`;
+    document.getElementById("dl-exp-return").addEventListener("click", leaveExpedition);
+    document.getElementById("dl-exp-fairy").addEventListener("click", () => openFairyConvo(id));
+    document.getElementById("dl-exp-detail").addEventListener("click", () => openDreamDetail(id));
+    root.querySelectorAll("[data-exp-quest]").forEach((b) => b.addEventListener("click", () => openQuestSheet(id, b.dataset.expQuest)));
+  }
+
+  function openQuestSheet(dreamId, questId, justEarned) {
+    const q = DL.quests[dreamId].find((x) => x.id === questId);
+    const body = document.getElementById("dl-sheet-body");
+    const dhan = questDhan(q);
+    body.innerHTML = `
+      <div class="sheet-modal-handle"></div>
+      <div class="sheet-modal-head"><span class="title">${escapeHtml(q.title)}</span><button class="close-btn" id="dl-sheet-close">${lineIcon("x")}</button></div>
+      ${justEarned ? `<div class="dl-exp-verdict">+${dhan} Dhan.</div><p class="micro">One step closer. That's real progress.</p>` : `<p class="micro">${q.done ? "Struck off. Earned " + dhan + " Dhan." : "Strike this off to earn " + dhan + " Dhan."}</p>`}
+      <div class="dl-inline-form">
+        ${justEarned ? "" : q.done ? `<button class="btn btn-secondary btn-sm" id="dl-quest-undo">Undo</button>` : `<button class="btn btn-primary btn-sm" id="dl-quest-do">Strike off</button>`}
+        <button class="btn btn-secondary btn-sm" id="dl-quest-close">Close</button>
+      </div>`;
+    const sync = () => { persist(); renderRoot(); };
+    document.getElementById("dl-sheet-close").addEventListener("click", closeSheet);
+    document.getElementById("dl-quest-close").addEventListener("click", closeSheet);
+    const doBtn = document.getElementById("dl-quest-do");
+    if (doBtn) doBtn.addEventListener("click", () => { q.done = true; sync(); openQuestSheet(dreamId, questId, true); });
+    const undo = document.getElementById("dl-quest-undo");
+    if (undo) undo.addEventListener("click", () => { q.done = false; sync(); closeSheet(); });
+    document.getElementById("dl-sheet-overlay").classList.add("is-open");
   }
 
   // =========================================================================

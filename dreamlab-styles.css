@@ -407,3 +407,58 @@
 }
 .dl-link-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+
+/* ---- Planets, Dhan, Expedition (see DESIGN.md: Planet, Expedition path, Dhan, Galaxy return) ---- */
+
+.planet-svg { position: absolute; inset: -8%; width: 116%; height: 116%; pointer-events: none; }
+.planet-svg * { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.planet-svg .pl-body { fill: var(--paper); }
+.planet-svg .pl-body.is-dashed { stroke-dasharray: 3 3; }
+.dreamscape-node-badge > .icon, .dreamscape-node-badge > svg:not(.planet-svg) { position: relative; z-index: 1; }
+
+.dreamscape-viewport.is-zooming .dreamscape-node:not(.is-target),
+.dreamscape-viewport.is-zooming .dreamscape-avatar,
+.dreamscape-viewport.is-zooming .dreamscape-orbit-track { opacity: 0; transition: opacity 160ms var(--ease); }
+
+.dl-dhan-row { display: flex; align-items: baseline; gap: var(--space-2); }
+.dl-dhan-row .numeral { font-family: var(--font-display); font-size: 44px; line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.dl-dhan-row .micro, .dl-exp .micro { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
+.dl-dhan-row.is-card { flex-direction: column; align-items: flex-end; gap: 2px; }
+
+.dl-exp { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-6); animation: dl-exp-in 220ms var(--ease); }
+@keyframes dl-exp-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.dl-exp-return { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-2); }
+.dl-flip { transform: scaleX(-1); }
+.dl-exp-head { flex-direction: row; align-items: center; gap: var(--space-3); }
+.dl-exp-planet { position: relative; width: 64px; height: 64px; flex: none; display: flex; align-items: center; justify-content: center; }
+.dl-exp-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.dl-exp-name { font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1.1; letter-spacing: 0; text-transform: none; text-wrap: balance; }
+.dl-exp-verdict { font-family: var(--font-display); font-style: italic; font-size: 36px; line-height: 1; letter-spacing: 0; text-transform: none; text-align: center; }
+
+.exp-path { position: relative; margin: 0 var(--space-4); }
+.exp-path svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.exp-path path { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; }
+.exp-path path.is-done { stroke-dasharray: none; }
+.exp-node {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--paper); color: var(--ink); border: var(--rule);
+  font-family: var(--font-mono); font-size: 13px; cursor: pointer;
+  transition: background-color 160ms var(--ease);
+}
+.exp-node:active { transform: translate(-50%, -50%) translateY(1px); }
+.exp-node.is-done { background: var(--ink); color: var(--paper); }
+.exp-node.is-next { outline: var(--rule); outline-offset: 4px; }
+.exp-node.is-later { border-style: dashed; }
+.exp-node-label {
+  position: absolute; transform: translateY(-50%); width: 38%;
+  font-size: 11px; line-height: 1.5; letter-spacing: 0.06em; text-transform: uppercase;
+  pointer-events: none; text-wrap: pretty;
+}
+.exp-node-label.is-right { margin-left: 34px; text-align: left; }
+.exp-node-label.is-left { margin-left: -34px; transform: translate(-100%, -50%); text-align: right; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-exp { animation: none; }
+  .dreamscape-canvas { transition: none !important; }
+}
