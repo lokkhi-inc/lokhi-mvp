@@ -353,6 +353,14 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 
 **Glow panel** — any other full-width Card with one corner glow, cycling rose → amber → blush. Small tiles and list rows stay plain.
 
+**Planet** — a dream on the Dreamscape. A circle with a 1px ink outline, paper fill, the dream's icon centred, title in `display-sm`-scaled serif beneath and the percentage in `micro-mono` muted. Terraforming is carried by ink detail only, never colour: 0–24% barren (outline plus two crater circles), 25–49% adds a latitude rule, 50–74% adds a meridian ellipse, 75–99% adds a tick halo like the Dial's, 100% adds a ring. Exploring dreams stay dashed. Life Goals are the larger circle, Micro Dreams the smaller.
+
+**Expedition path** — the dream's quests as a winding hairline: a 1px ink rule curving left and right, with a Node at each quest. A Node is a 44px circle, 1px border, paper fill, the step number in `numeric-inline`. Done: ink fill, paper numeral. Next: 1px outline plus a second 1px outline at 4px offset (the completed-planet vocabulary). Later: dashed. Tapping a Node opens a sheet with the quest, its Dhan, and one primary button to strike it off. Rule segments between done Nodes are solid; ahead of the next Node they are dashed.
+
+**Dhan** — the resource earned by striking off a quest. Shown as a `numeral-lg` count with `DHAN` in `micro-mono` beneath, never as a coin, glyph or colour. Always derived from done quests (10 each unless a quest says otherwise), so it cannot drift. It never ranks or compares balances — it counts consistency only.
+
+**Galaxy return** — a ghost button, top-left of the expedition view, labelled `See overall galaxy view` with the left-arrow line icon. Entering a Planet zooms the Dreamscape camera onto it (transform only, 240ms ease-out); this button zooms back out. Reduced motion: cross-fade.
+
 **Nav / tab bar** — icon over label, as in the original app: a 20px line icon above a 10px `micro-mono` uppercase label, on paper with a 1px ink rule along the top edge. No pills, no fills. Inactive: muted ink. Active: ink, with a 5px accent diamond under the label.
 
 **List row** — a single-line pill, `18px 24px`, 1px border: `diamond · flex-1 text in body-mono · muted value right`. The quiet layer at the bottom of a screen.
@@ -390,7 +398,7 @@ The system governs every pixel a user sees in this repo. Per-screen interpretati
 - **Home** (`index.html`, `data-screen="home"`) — the Visualize pillar: the net-worth card first under the greeting, then the Sankey overview, then the detailed breakdown cards — Income, then Expenses; Bank account and Growth to follow. The net-worth card is Home's Bloom card; chart cards are plain paper — the colour lives in the charts. A share-received notice appears under the greeting only when something has been shared into Lokhi.
 - **Grow** (`data-screen="grow"`) — the quest stack. `display-md` section head with a muted "N of M · skip anytime" to its right, then one Card per quest: chip + duration on the label row, `display-lg` title, `body-mono` body, a row of ghost buttons with one primary.
 - **Optimize** (`data-screen="optimize"`) — the "found so far" card is the bloom card; opportunity cards glow. Two-up figures with `micro-mono` captions.
-- **Dreamlab** (`data-screen="dreamlab"`) — the Dreamscape viewport is the bloom card, the one place it takes a full-bleed panel, because the screen is aspirational rather than factual. Still no shadow. Goals render as Meters, not as charts.
+- **Dreamlab** (`data-screen="dreamlab"`) — the Dreamscape viewport is the bloom card, the one place it takes a full-bleed panel, because the screen is aspirational rather than factual. Still no shadow. Goals render as Meters, not as charts. Each dream is a Planet; tapping one zooms into its Expedition path, with Dhan counted in the toolbar and a Galaxy return button to zoom back out. The expedition view is a plain page (no bloom card); the detail sections follow beneath the path.
 - **Profile** (`data-screen="profile"`) — hairline rules and List rows almost exclusively. Level, streak and badges as `numeral-lg` plus `micro-mono`, not as badges-with-fills. The avatar sits in a 1px circle.
 - **Onboarding** (`onboarding.html`) — full page bloom wash, one `display-xl` line per step, one ghost + one primary. No progress bar; use a Segment row.
 - **Share target** (`share-target.html`) — a single Card on the page wash. Nothing else.
