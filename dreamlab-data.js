@@ -220,6 +220,9 @@ window.DREAM_LAB_DATA = {
   },
 
   // ---- Curated quests by category ----------------------------------------
+  // Coins earned per quest struck off, unless a quest sets its own `coins`.
+  coinsPerQuest: 10,
+
   questTemplates: {
     home: [
       { id: "q_why", title: "Define why I want this home", done: true },
