@@ -101,7 +101,8 @@
       savedItems: {},
       memory: {},
       conversations: {},
-      hiddenSections: {}
+      hiddenSections: {},
+      board: {}
     };
     DATA.dreams.forEach((seed) => {
       const dream = Object.assign({}, seed, { why: seed.why.slice(), values: seed.values.slice(), concerns: seed.concerns.slice() });
@@ -123,7 +124,8 @@
   function loadState() {
     const saved = JSON.parse(localStorage.getItem(DL_KEY) || "null");
     if (saved) {
-      saved.hiddenSections = saved.hiddenSections || {}; // migrate state saved before removable sections existed
+      saved.hiddenSections = saved.hiddenSections || {};
+      saved.board = saved.board || {}; // task cards pinned on each expedition page // migrate state saved before removable sections existed
       return saved;
     }
     const initial = buildInitialState();
@@ -206,13 +208,13 @@
     return DL.dreams[dreamId].status || "active";
   }
 
-  // Dhan is derived from done quests, never stored, so it can't drift from
+  // Coins are derived from done quests, never stored, so it can't drift from
   // what the user has actually struck off.
-  function questDhan(q) {
-    return q.dhan != null ? q.dhan : DATA.dhanPerQuest;
+  function questCoins(q) {
+    return q.coins != null ? q.coins : DATA.coinsPerQuest;
   }
-  function dhanOf(dreamId) {
-    return (DL.quests[dreamId] || []).filter((q) => q.done).reduce((s, q) => s + questDhan(q), 0);
+  function coinsOf(dreamId) {
+    return (DL.quests[dreamId] || []).filter((q) => q.done).reduce((s, q) => s + questCoins(q), 0);
   }
 
   function setBaseline(dreamId, value) {
@@ -722,13 +724,12 @@
       <div class="dl-exp">
         <button class="btn btn-secondary btn-sm dl-exp-return" id="dl-exp-return"><span class="icon-line icon-line-arrow-right dl-flip"></span> See overall galaxy view</button>
         <div class="card dl-exp-head">
-          <div class="dl-exp-planet">${planetSvg(progress, statusOf(id))}${comicIcon(dream.icon, 30)}</div>
+          <div class="dl-exp-planet">${planetSvg(progress, statusOf(id))}${comicIcon(dream.icon, 22)}</div>
           <div class="dl-exp-title">
-            <span class="chip chip-neutral">${TYPE_LABEL[dream.type]}</span>
             <h2 class="dl-exp-name">${escapeHtml(dream.title)}</h2>
-            <span class="micro">${pct(progress)} there · ${activeQuestCount(id)} steps to go</span>
+            <span class="micro">${TYPE_LABEL[dream.type]} · ${pct(progress)} there · ${activeQuestCount(id)} to go</span>
           </div>
-          <div class="dl-dhan-row is-card"><span class="numeral">${dhanOf(id)}</span><span class="micro">Dhan</span></div>
+          <div class="dl-coins"><span class="numeral">${coinsOf(id)}</span><span class="micro">Coins</span></div>
         </div>
         <div class="dl-exp-verdict">${arrived ? "Arrived." : nextIdx === 0 ? "Ready when you are." : "Underway."}</div>
         <div class="exp-path" style="height:${height}px;">
@@ -740,33 +741,139 @@
           ${dream.why && dream.why[0] ? `<span class="micro">You said: ${escapeHtml(dream.why[0])}</span>` : ""}
           <button class="btn btn-secondary btn-sm" id="dl-exp-fairy">Ask your Fairy Godmother</button>
         </div>
-        <button class="btn btn-primary" id="dl-exp-detail">Plan, simulate &amp; decisions</button>
+        <div class="dl-exp-actions">
+          <button class="btn btn-secondary" id="dl-exp-board">Vision board</button>
+          <button class="btn btn-primary" id="dl-exp-detail">Plan, simulate &amp; decisions</button>
+        </div>
+        <div id="dl-card-layer"></div>
       </div>`;
     document.getElementById("dl-exp-return").addEventListener("click", leaveExpedition);
     document.getElementById("dl-exp-fairy").addEventListener("click", () => openFairyConvo(id));
     document.getElementById("dl-exp-detail").addEventListener("click", () => openDreamDetail(id));
-    root.querySelectorAll("[data-exp-quest]").forEach((b) => b.addEventListener("click", () => openQuestSheet(id, b.dataset.expQuest)));
+    document.getElementById("dl-exp-board").addEventListener("click", () => openVisionBoard(id));
+    root.querySelectorAll("[data-exp-quest]").forEach((b) => b.addEventListener("click", () => pinTaskCard(id, b.dataset.expQuest)));
+    renderTaskCards(id);
   }
 
-  function openQuestSheet(dreamId, questId, justEarned) {
-    const q = DL.quests[dreamId].find((x) => x.id === questId);
+  // ---- Task cards ---------------------------------------------------------
+  // Tapping a node pins a card on the page. Cards float with no scrim, so any
+  // number can be open at once and every node stays tappable. Position and
+  // open state persist per dream (DL.board) — that set is the Vision board.
+  const CARD_W = 290;
+
+  function whyFor(dreamId, idx) {
+    const why = (DL.memory[dreamId] && DL.memory[dreamId].why) || DL.dreams[dreamId].why || [];
+    return why.length ? why[idx % why.length] : "You decided this was worth doing.";
+  }
+  function boardOf(dreamId) {
+    return DL.board[dreamId] || (DL.board[dreamId] = {});
+  }
+
+  function pinTaskCard(dreamId, questId) {
+    const board = boardOf(dreamId);
+    if (!board[questId]) {
+      const n = Object.keys(board).length;
+      board[questId] = {
+        x: Math.max(8, (window.innerWidth - Math.min(CARD_W, window.innerWidth - 16)) / 2 + (n % 4) * 14),
+        y: 120 + (n % 4) * 28
+      };
+      persist();
+    }
+    renderTaskCards(dreamId, questId);
+  }
+
+  function clampCard(x, y, w, h) {
+    return {
+      x: Math.max(8, Math.min(window.innerWidth - w - 8, x)),
+      y: Math.max(64, Math.min(window.innerHeight - h - 72, y))
+    };
+  }
+
+  function renderTaskCards(dreamId, raiseId) {
+    const layer = document.getElementById("dl-card-layer");
+    if (!layer) return;
+    const quests = (DL.quests[dreamId] || []).slice().sort((a, b) => a.order - b.order);
+    const board = boardOf(dreamId);
+    layer.innerHTML = quests.map((q, i) => {
+      const pos = board[q.id];
+      if (!pos) return "";
+      const w = Math.min(CARD_W, window.innerWidth - 16);
+      const c = clampCard(pos.x, pos.y, w, 220);
+      return `
+        <div class="card dl-task-card ${q.id === raiseId ? "is-raised" : ""}" data-task-card="${q.id}" style="left:${c.x}px;top:${c.y}px;width:${w}px;">
+          <div class="dl-task-head" data-drag-handle>
+            <span class="dl-task-title">${i + 1}. ${escapeHtml(q.title)}</span>
+            <button class="close-btn" data-close-card="${q.id}" aria-label="Close">${lineIcon("x")}</button>
+          </div>
+          <div class="card-eyebrow">Why this matters to me</div>
+          <p class="dl-task-why">${escapeHtml(whyFor(dreamId, i))}</p>
+          <div class="dl-task-foot">
+            <span class="numeric">${q.done ? "Earned" : "Worth"} ${questCoins(q)} coins</span>
+            <button class="btn ${q.done ? "btn-secondary" : "btn-primary"} btn-sm" data-toggle-quest="${q.id}">${q.done ? "Undo" : "Strike off"}</button>
+          </div>
+        </div>`;
+    }).join("");
+
+    layer.querySelectorAll("[data-close-card]").forEach((b) => b.addEventListener("click", () => {
+      delete board[b.dataset.closeCard];
+      persist();
+      renderTaskCards(dreamId);
+    }));
+    layer.querySelectorAll("[data-toggle-quest]").forEach((b) => b.addEventListener("click", () => {
+      const q = DL.quests[dreamId].find((x) => x.id === b.dataset.toggleQuest);
+      q.done = !q.done;
+      persist();
+      renderRoot();
+    }));
+    layer.querySelectorAll("[data-task-card]").forEach((card) => wireCardDrag(card, board[card.dataset.taskCard]));
+  }
+
+  function wireCardDrag(card, pos) {
+    const handle = card.querySelector("[data-drag-handle]");
+    let start = null;
+    handle.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button")) return;
+      handle.setPointerCapture(e.pointerId);
+      start = { px: e.clientX, py: e.clientY, x: pos.x, y: pos.y };
+      card.parentNode.querySelectorAll(".is-raised").forEach((c) => c.classList.remove("is-raised"));
+      card.classList.add("is-raised", "is-dragging");
+    });
+    handle.addEventListener("pointermove", (e) => {
+      if (!start) return;
+      const c = clampCard(start.x + e.clientX - start.px, start.y + e.clientY - start.py, card.offsetWidth, card.offsetHeight);
+      pos.x = c.x; pos.y = c.y;
+      card.style.left = c.x + "px";
+      card.style.top = c.y + "px";
+    });
+    const end = () => {
+      if (!start) return;
+      start = null;
+      card.classList.remove("is-dragging");
+      persist();
+    };
+    handle.addEventListener("pointerup", end);
+    handle.addEventListener("pointercancel", end);
+  }
+
+  function openVisionBoard(dreamId) {
+    const quests = (DL.quests[dreamId] || []).slice().sort((a, b) => a.order - b.order);
+    const pinned = quests.map((q, i) => ({ q, i })).filter((x) => boardOf(dreamId)[x.q.id]);
+    const total = pinned.reduce((s, x) => s + questCoins(x.q), 0);
     const body = document.getElementById("dl-sheet-body");
-    const dhan = questDhan(q);
     body.innerHTML = `
       <div class="sheet-modal-handle"></div>
-      <div class="sheet-modal-head"><span class="title">${escapeHtml(q.title)}</span><button class="close-btn" id="dl-sheet-close">${lineIcon("x")}</button></div>
-      ${justEarned ? `<div class="dl-exp-verdict">+${dhan} Dhan.</div><p class="micro">One step closer. That's real progress.</p>` : `<p class="micro">${q.done ? "Struck off. Earned " + dhan + " Dhan." : "Strike this off to earn " + dhan + " Dhan."}</p>`}
-      <div class="dl-inline-form">
-        ${justEarned ? "" : q.done ? `<button class="btn btn-secondary btn-sm" id="dl-quest-undo">Undo</button>` : `<button class="btn btn-primary btn-sm" id="dl-quest-do">Strike off</button>`}
-        <button class="btn btn-secondary btn-sm" id="dl-quest-close">Close</button>
-      </div>`;
-    const sync = () => { persist(); renderRoot(); };
+      <div class="sheet-modal-head"><span class="title">Vision board</span><button class="close-btn" id="dl-sheet-close">${lineIcon("x")}</button></div>
+      ${pinned.length ? `
+        <div class="dl-board-total"><span class="numeral">${total}</span><span class="micro">Coins in play · ${pinned.length} card${pinned.length === 1 ? "" : "s"}</span></div>
+        <div class="dl-board-grid">
+          ${pinned.map((x) => `
+            <div class="card dl-board-item ${x.q.done ? "is-done" : ""}">
+              <span class="micro">Step ${x.i + 1} · ${questCoins(x.q)} coins${x.q.done ? " · done" : ""}</span>
+              <span class="dl-task-title">${escapeHtml(x.q.title)}</span>
+              <p class="dl-task-why">${escapeHtml(whyFor(dreamId, x.i))}</p>
+            </div>`).join("")}
+        </div>` : `<p class="micro">Tap any step on the path to pin it here. Each card carries its own coins.</p>`}`;
     document.getElementById("dl-sheet-close").addEventListener("click", closeSheet);
-    document.getElementById("dl-quest-close").addEventListener("click", closeSheet);
-    const doBtn = document.getElementById("dl-quest-do");
-    if (doBtn) doBtn.addEventListener("click", () => { q.done = true; sync(); openQuestSheet(dreamId, questId, true); });
-    const undo = document.getElementById("dl-quest-undo");
-    if (undo) undo.addEventListener("click", () => { q.done = false; sync(); closeSheet(); });
     document.getElementById("dl-sheet-overlay").classList.add("is-open");
   }
 
