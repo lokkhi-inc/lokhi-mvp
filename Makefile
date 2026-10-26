@@ -169,8 +169,8 @@ open: _setup ## Open the running app in your browser
 # deploy
 # ---------------------------------------------------------------------------
 
-deploy: _setup ## Deploy this branch as a preview to YOUR Vercel account
-	@ALLOW_MAIN='$(ALLOW_MAIN)' GITLESS='$(GITLESS)' ./scripts/deploy.sh
+deploy: _setup ## Deploy this branch as a preview to YOUR Vercel account (DEV=1 on dev: lokkhi-dev.vercel.app)
+	@ALLOW_MAIN='$(ALLOW_MAIN)' GITLESS='$(GITLESS)' DEV='$(DEV)' ./scripts/deploy.sh
 
 prune: _setup ## List previews whose branch is gone; DELETE=1 to remove them
 	@./scripts/prune-previews.sh $(if $(DELETE),--delete,)

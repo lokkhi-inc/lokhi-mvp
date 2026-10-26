@@ -1,0 +1,68 @@
+name: Deploy dev
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+# Its own group, so a dev deploy never cancels a production one. A newer push
+# to dev supersedes an in-flight one.
+concurrency:
+  group: dev-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same reason as deploy-main: Vercel blocks builds whose commit author
+      # lacks permission on the project, so upload without git metadata.
+      - name: Drop git metadata
+        run: rm -rf .git
+
+      # Hobby has no custom environments, so dev is a preview deployment with a
+      # shared alias — the same mechanism as `make deploy`, and as
+      # `make deploy DEV=1` from a laptop.
+      - name: Deploy dev preview and move lokkhi-dev.vercel.app
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_ST8eSlTp9dGP1XhlGaq183Tp
+          VERCEL_PROJECT_ID: prj_JjwPc6FDVCJKhr7TcgkD2Nvy2g9v
+          ALIAS: lokkhi-dev.vercel.app
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN secret is not set."
+            exit 1
+          fi
+          vc() { npx --yes "vercel@$(awk '$1=="vercel"{print $2}' .tool-versions)" "$@" --token="$VERCEL_TOKEN"; }
+
+          out=$(vc deploy --yes --json --meta branch=dev --meta sha="${GITHUB_SHA:0:7}")
+          url=$(printf '%s' "$out" | jq -r '.deployment.url // .url // empty' 2>/dev/null || true)
+          if [ -z "$url" ]; then
+            url=$(printf '%s' "$out" | grep -oE 'https://[a-z0-9.-]+\.vercel\.app' | tail -1 || true)
+          fi
+          if [ -z "$url" ]; then
+            printf 'No deployment URL in CLI output:\n%s\n' "$out" >&2
+            exit 1
+          fi
+
+          # What the alias points at now, so it can be reaped once it moves.
+          prev=$(vc api "/v4/aliases/$ALIAS" 2>/dev/null \
+            | jq -r '(.deployment.url // "")' 2>/dev/null || true)
+
+          vc alias set "${url#https://}" "$ALIAS"
+          echo "Deployed $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Live at https://$ALIAS" >> "$GITHUB_STEP_SUMMARY"
+
+          # Same rule as scripts/deploy.sh: only a healthy superseded deployment
+          # is removed; failed ones are kept for inspection.
+          if [ -n "$prev" ] && [ "$prev" != "${url#https://}" ]; then
+            state=$(vc api "/v13/deployments/$prev" 2>/dev/null | jq -r '.readyState // ""' 2>/dev/null || true)
+            if [ "$state" = READY ]; then
+              vc remove "$prev" --yes >/dev/null 2>&1 && echo "Reaped $prev" >> "$GITHUB_STEP_SUMMARY" || true
+            fi
+          fi

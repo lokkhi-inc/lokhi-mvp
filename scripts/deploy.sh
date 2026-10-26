@@ -16,6 +16,8 @@ SHA=$(git rev-parse --short HEAD 2>/dev/null || echo nogit)
 AUTHOR=$(git log -1 --format=%ae 2>/dev/null || echo "")
 GITLESS=${GITLESS:-}
 ALLOW_MAIN=${ALLOW_MAIN:-}
+DEV=${DEV:-}
+DEV_ALIAS=lokkhi-dev.vercel.app
 
 command -v vercel >/dev/null 2>&1 || {
   printf '\n  vercel CLI is missing. Run: make check\n\n'; exit 1; }
@@ -41,6 +43,24 @@ if [ "$BRANCH" = main ] && [ -z "$ALLOW_MAIN" ]; then
   exit 1
 fi
 
+# DEV=1 updates the shared dev URL that CI also deploys on every push to dev.
+# Everyone sees it, so it must be exactly origin/dev — never local edits.
+if [ -n "$DEV" ]; then
+  if [ "$BRANCH" != dev ]; then
+    printf '\n  DEV=1 deploys the dev branch only (you are on %s).\n\n' "$BRANCH"
+    exit 1
+  fi
+  if [ -n "$(git status --porcelain 2>/dev/null | head -1)" ]; then
+    printf '\n  Refusing: uncommitted changes would go out on the shared %s.\n\n' "$DEV_ALIAS"
+    exit 1
+  fi
+  git fetch --quiet origin dev 2>/dev/null || true
+  if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/dev 2>/dev/null)" ]; then
+    printf '\n  Refusing: local dev is not in sync with origin/dev. Pull or push first.\n\n'
+    exit 1
+  fi
+fi
+
 VMAIL=$(vercel whoami --json 2>/dev/null \
   | python3 -c 'import sys,json;print(json.load(sys.stdin).get("email",""))' 2>/dev/null || echo "")
 
@@ -64,13 +84,14 @@ while [ ${#ALIAS} -gt 63 ] && [ -n "$SLUG" ]; do
 done
 ALIAS="$ALIAS.vercel.app"
 
-# Never let a branch alias collide with a production domain.
+# Never let a personal branch alias collide with a shared domain.
 case "$ALIAS" in
-  lokkhi-mvp.vercel.app|lokkhi-mvp-lokkhi.vercel.app|lokkhi-.vercel.app)
+  lokkhi-mvp.vercel.app|lokkhi-mvp-lokkhi.vercel.app|lokkhi-.vercel.app|"$DEV_ALIAS")
     printf '\n  Refusing: branch %s derives alias %s, which collides with a\n' "$BRANCH" "$ALIAS"
     printf '  production domain. Rename the branch.\n\n'
     exit 1 ;;
 esac
+[ -n "$DEV" ] && ALIAS=$DEV_ALIAS
 
 mode=git
 if [ "$AUTHOR" != "$VMAIL" ]; then

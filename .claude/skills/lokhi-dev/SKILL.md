@@ -78,6 +78,20 @@ URL per person — say whose it is when you report one.
 - Deploys count against a shared **100/day** Vercel Hobby cap. Don't deploy to
   check something you could check with `make run` locally.
 
+## The shared dev URL
+
+Feature branches merge freely into `dev`; `dev` is reviewed against `main` weekly.
+`dev` lives at **https://lokkhi-dev.vercel.app** — a preview deployment with a
+shared alias, because Hobby has no custom environments (`--target=dev` is Pro-only).
+
+- **CI** (`.github/workflows/deploy-dev.yml`) redeploys it on every push to `dev`
+  and reaps the deployment the alias moved off, if that one was READY.
+- **`make deploy DEV=1`** does the same from a laptop. It refuses unless you're on
+  `dev`, the tree is clean, and HEAD equals `origin/dev` — the URL is shared, so it
+  must show the branch, never local edits. Prefer letting CI do it; this is the
+  manual redeploy.
+- Like every preview, it sits behind Vercel's deployment protection (login wall).
+
 ## Cleaning up after a merge
 
 When a PR merges its branch is deleted, which strands that branch's preview
