@@ -408,7 +408,7 @@
 .dl-link-form input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 
-/* ---- Planets, Dhan, Expedition (see DESIGN.md: Planet, Expedition path, Dhan, Galaxy return) ---- */
+/* ---- Planets, Coins, Expedition (see DESIGN.md: Planet, Expedition path, Coins, Task card, Galaxy return) ---- */
 
 .planet-svg { position: absolute; inset: -8%; width: 116%; height: 116%; pointer-events: none; }
 .planet-svg * { fill: none; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
@@ -420,19 +420,19 @@
 .dreamscape-viewport.is-zooming .dreamscape-avatar,
 .dreamscape-viewport.is-zooming .dreamscape-orbit-track { opacity: 0; transition: opacity 160ms var(--ease); }
 
-.dl-dhan-row { display: flex; align-items: baseline; gap: var(--space-2); }
-.dl-dhan-row .numeral { font-family: var(--font-display); font-size: 44px; line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums; }
-.dl-dhan-row .micro, .dl-exp .micro { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
-.dl-dhan-row.is-card { flex-direction: column; align-items: flex-end; gap: 2px; }
+/* Coins sit top-right of the expedition head so the head stays short. */
+.dl-coins { position: absolute; top: var(--space-3); right: var(--space-4); display: flex; align-items: baseline; gap: 6px; }
+.dl-coins .numeral { font-family: var(--font-display); font-size: 28px; line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.dl-coins .micro, .dl-exp .micro { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted); }
 
 .dl-exp { display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: var(--space-6); animation: dl-exp-in 220ms var(--ease); }
 @keyframes dl-exp-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 .dl-exp-return { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-2); }
 .dl-flip { transform: scaleX(-1); }
-.dl-exp-head { flex-direction: row; align-items: center; gap: var(--space-3); }
-.dl-exp-planet { position: relative; width: 64px; height: 64px; flex: none; display: flex; align-items: center; justify-content: center; }
-.dl-exp-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-.dl-exp-name { font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1.1; letter-spacing: 0; text-transform: none; text-wrap: balance; }
+.dl-exp-head { position: relative; flex-direction: row; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+.dl-exp-planet { position: relative; width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; }
+.dl-exp-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding-top: var(--space-4); }
+.dl-exp-name { font-family: var(--font-display); font-weight: 400; font-size: 22px; line-height: 1.15; letter-spacing: 0; text-transform: none; text-wrap: balance; }
 .dl-exp-verdict { font-family: var(--font-display); font-style: italic; font-size: 36px; line-height: 1; letter-spacing: 0; text-transform: none; text-align: center; }
 
 .exp-path { position: relative; margin: 0 var(--space-4); }
@@ -462,3 +462,25 @@
   .dl-exp { animation: none; }
   .dreamscape-canvas { transition: none !important; }
 }
+
+.dl-exp-actions { display: flex; gap: var(--space-2); }
+.dl-exp-actions .btn-primary { flex: 1; }
+
+/* ---- Task cards: floating, draggable, no scrim ---- */
+.dl-task-card {
+  position: fixed; z-index: 100; padding: 18px; gap: var(--space-2);
+  background: var(--glow-amber); touch-action: none;
+}
+.dl-task-card.is-raised { z-index: 101; }
+.dl-task-head { display: flex; align-items: flex-start; gap: var(--space-2); cursor: grab; touch-action: none; }
+.dl-task-card.is-dragging .dl-task-head { cursor: grabbing; }
+.dl-task-title { flex: 1; font-family: var(--font-display); font-size: 22px; line-height: 1.2; letter-spacing: 0; text-transform: none; text-wrap: balance; }
+.dl-task-why { font-size: 12px; line-height: 1.7; letter-spacing: 0.06em; text-transform: uppercase; max-width: 46ch; text-wrap: pretty; }
+.dl-task-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.dl-task-foot .numeric { font-size: 13px; letter-spacing: 0.02em; }
+
+.dl-board-total { display: flex; align-items: baseline; gap: var(--space-2); }
+.dl-board-total .numeral { font-family: var(--font-display); font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.dl-board-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: var(--space-3); }
+.dl-board-item { padding: 16px; gap: var(--space-2); }
+.dl-board-item.is-done { border-style: dashed; }

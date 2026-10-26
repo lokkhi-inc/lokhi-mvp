@@ -220,8 +220,8 @@ window.DREAM_LAB_DATA = {
   },
 
   // ---- Curated quests by category ----------------------------------------
-  // Dhan earned per quest struck off, unless a quest sets its own `dhan`.
-  dhanPerQuest: 10,
+  // Coins earned per quest struck off, unless a quest sets its own `coins`.
+  coinsPerQuest: 10,
 
   questTemplates: {
     home: [
