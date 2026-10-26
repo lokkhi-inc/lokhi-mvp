@@ -17,7 +17,7 @@ AUTHOR=$(git log -1 --format=%ae 2>/dev/null || echo "")
 GITLESS=${GITLESS:-}
 ALLOW_MAIN=${ALLOW_MAIN:-}
 DEV=${DEV:-}
-DEV_ALIAS=lokkhi-dev.vercel.app
+DEV_ALIAS=lokhi-dev.vercel.app
 
 command -v vercel >/dev/null 2>&1 || {
   printf '\n  vercel CLI is missing. Run: make check\n\n'; exit 1; }
@@ -65,7 +65,7 @@ VMAIL=$(vercel whoami --json 2>/dev/null \
   | python3 -c 'import sys,json;print(json.load(sys.stdin).get("email",""))' 2>/dev/null || echo "")
 
 # One stable URL per branch PER PERSON. *.vercel.app is a global namespace, so
-# an alias of just lokkhi-<branch> collides when two people deploy the same
+# an alias of just lokhi-<branch> collides when two people deploy the same
 # branch from different Vercel accounts — first claim wins, everyone else
 # silently loses their stable URL. Scoping by account makes that impossible.
 # Deployments are immutable, so the alias is what moves; the deployment it used
@@ -76,17 +76,17 @@ slugify() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
 SLUG=$(slugify "$BRANCH")
 WHO=$(slugify "${VMAIL%%@*}")
 [ -n "$WHO" ] || WHO=$(slugify "$USER")
-ALIAS="lokkhi-$SLUG-$WHO"
+ALIAS="lokhi-$SLUG-$WHO"
 # A DNS label caps at 63 chars; trim the branch half, never the identity half.
 while [ ${#ALIAS} -gt 63 ] && [ -n "$SLUG" ]; do
   SLUG=${SLUG%?}
-  ALIAS="lokkhi-${SLUG%-}-$WHO"
+  ALIAS="lokhi-${SLUG%-}-$WHO"
 done
 ALIAS="$ALIAS.vercel.app"
 
 # Never let a personal branch alias collide with a shared domain.
 case "$ALIAS" in
-  lokkhi-mvp.vercel.app|lokkhi-mvp-lokkhi.vercel.app|lokkhi-.vercel.app|"$DEV_ALIAS")
+  lokhi-mvp.vercel.app|lokhi-.vercel.app|"$DEV_ALIAS")
     printf '\n  Refusing: branch %s derives alias %s, which collides with a\n' "$BRANCH" "$ALIAS"
     printf '  production domain. Rename the branch.\n\n'
     exit 1 ;;

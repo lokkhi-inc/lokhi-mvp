@@ -26,12 +26,12 @@ jobs:
       # Hobby has no custom environments, so dev is a preview deployment with a
       # shared alias — the same mechanism as `make deploy`, and as
       # `make deploy DEV=1` from a laptop.
-      - name: Deploy dev preview and move lokkhi-dev.vercel.app
+      - name: Deploy dev preview and move lokhi-dev.vercel.app
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_ST8eSlTp9dGP1XhlGaq183Tp
           VERCEL_PROJECT_ID: prj_JjwPc6FDVCJKhr7TcgkD2Nvy2g9v
-          ALIAS: lokkhi-dev.vercel.app
+          ALIAS: lokhi-dev.vercel.app
         run: |
           set -euo pipefail
           if [ -z "${VERCEL_TOKEN:-}" ]; then

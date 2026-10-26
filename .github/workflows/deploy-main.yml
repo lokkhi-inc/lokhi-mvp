@@ -35,8 +35,8 @@ jobs:
           set -euo pipefail
           if [ -z "${VERCEL_TOKEN:-}" ]; then
             echo "::error::VERCEL_TOKEN secret is not set. Create one with"\
-                 "'vercel tokens add lokkhi-ci', then"\
-                 "'gh secret set VERCEL_TOKEN --repo lokkhi-inc/lokkhi-mvp'."
+                 "'vercel tokens add lokhi-ci', then"\
+                 "'gh secret set VERCEL_TOKEN --repo lokkhi-inc/lokhi-mvp'."
             exit 1
           fi
           # Major pin only. Exact pinning drifts from the unpinned CLI everyone
@@ -57,4 +57,4 @@ jobs:
             exit 1
           fi
           echo "Deployed $url" >> "$GITHUB_STEP_SUMMARY"
-          echo "Live at https://lokkhi-mvp.vercel.app" >> "$GITHUB_STEP_SUMMARY"
+          echo "Live at https://lokhi-mvp.vercel.app" >> "$GITHUB_STEP_SUMMARY"

@@ -21,8 +21,8 @@ _setup:
 	@# This repo is a fork, so gh targets the upstream parent unless told otherwise.
 	@[ "$$(git config --get remote.origin.gh-resolved 2>/dev/null)" = 'base' ] \
 	  || { command -v gh >/dev/null 2>&1 \
-	       && gh repo set-default lokkhi-inc/lokkhi-mvp >/dev/null 2>&1 \
-	       && printf '  Pointed gh at lokkhi-inc/lokkhi-mvp (not the upstream fork parent).\n'; } \
+	       && gh repo set-default lokkhi-inc/lokhi-mvp >/dev/null 2>&1 \
+	       && printf '  Pointed gh at lokkhi-inc/lokhi-mvp (not the upstream fork parent).\n'; } \
 	  || true
 
 help: _setup ## Show this help
@@ -169,7 +169,7 @@ open: _setup ## Open the running app in your browser
 # deploy
 # ---------------------------------------------------------------------------
 
-deploy: _setup ## Deploy this branch as a preview to YOUR Vercel account (DEV=1 on dev: lokkhi-dev.vercel.app)
+deploy: _setup ## Deploy this branch as a preview to YOUR Vercel account (DEV=1 on dev: lokhi-dev.vercel.app)
 	@ALLOW_MAIN='$(ALLOW_MAIN)' GITLESS='$(GITLESS)' DEV='$(DEV)' ./scripts/deploy.sh
 
 prune: _setup ## List previews whose branch is gone; DELETE=1 to remove them
