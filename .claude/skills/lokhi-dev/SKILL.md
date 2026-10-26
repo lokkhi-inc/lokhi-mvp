@@ -48,7 +48,7 @@ To test a first-run experience, clear site data via `evaluate_script` running
 are logged into locally**.
 
 Vercel deployments are immutable, so each deploy is a new artifact with its own
-URL. The script points a stable alias — `lokkhi-<branch>-<vercel-account>.vercel.app`
+URL. The script points a stable alias — `lokhi-<branch>-<vercel-account>.vercel.app`
 — at the newest one, then deletes the deployment that alias previously pointed
 at, but only when that one was READY. BLOCKED and ERROR builds are kept so they
 can be inspected. **Share the alias, not the per-deploy URL**; the alias is what
@@ -77,6 +77,20 @@ URL per person — say whose it is when you report one.
   so nobody is surprised that a preview contains unpushed work.
 - Deploys count against a shared **100/day** Vercel Hobby cap. Don't deploy to
   check something you could check with `make run` locally.
+
+## The shared dev URL
+
+Feature branches merge freely into `dev`; `dev` is reviewed against `main` weekly.
+`dev` lives at **https://lokhi-dev.vercel.app** — a preview deployment with a
+shared alias, because Hobby has no custom environments (`--target=dev` is Pro-only).
+
+- **CI** (`.github/workflows/deploy-dev.yml`) redeploys it on every push to `dev`
+  and reaps the deployment the alias moved off, if that one was READY.
+- **`make deploy DEV=1`** does the same from a laptop. It refuses unless you're on
+  `dev`, the tree is clean, and HEAD equals `origin/dev` — the URL is shared, so it
+  must show the branch, never local edits. Prefer letting CI do it; this is the
+  manual redeploy.
+- Like every preview, it sits behind Vercel's deployment protection (login wall).
 
 ## Cleaning up after a merge
 
