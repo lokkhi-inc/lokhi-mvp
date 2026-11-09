@@ -82,6 +82,17 @@ window.APP_DATA = {
       { month: "2026-08", taxes: 142000, housing: 178000, card: 113000, other: 49000 },
       { month: "2026-09", taxes: 142000, housing: 178000, card: 101000, other: 49000 }
     ],
+    // per year of investing, oldest first: what went in that year and what that
+    // money has grown since (10% a year); the current year carries its plan.
+    // 2021 has no data, so it shows as an empty slot.
+    investHistory: [
+      { year: 2021 },
+      { year: 2022, invested: 1200000, growth: 556920 },
+      { year: 2023, invested: 1200000, growth: 397200 },
+      { year: 2024, invested: 1200000, growth: 252000 },
+      { year: 2025, invested: 1200000, growth: 120000 },
+      { year: 2026, invested: 800000, growth: 24000, planned: 1200000 }
+    ],
 
     savings: 8000000,
     investments: 3200000,
@@ -102,7 +113,7 @@ window.APP_DATA = {
     streakWeeks: 26,
     financialHealth: 72,
 
-    powers: { savings: 81, investing: 64, optimization: 73, goalReadiness: 58, freedom: 41 },
+    powers: { savings: 94, investing: 91, optimization: 73, goalReadiness: 92, freedom: 41 },
     financialPower: { total: 78, savings: 84, investing: 68, optimization: 76, protection: 72, goalReadiness: 81 },
 
     // Golden Path — dashed target vs solid actual net worth, by age.

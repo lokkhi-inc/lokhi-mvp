@@ -55,20 +55,26 @@
 
     <div id="share-notice"></div>
 
-    <section class="card networth-card">
-      <div class="networth-top">
-        <div class="owl-figure" id="owl-figure"><img id="owl-img" src="./lokhi-assets/owl-ontrack.svg" alt=""></div>
-        <div class="networth-value">
-          <div class="label">Net worth</div>
-          <div class="hero-number" id="networth-value">¥0</div>
-          <div class="owl-status-line" id="owl-status-line"></div>
-        </div>
-      </div>
-      <div id="golden-path-wrap"></div>
-      <div class="golden-path-legend">
-        <span><span class="dot actual"></span>Actual</span>
-        <span><span class="dot target"></span>Golden Path (scenario)</span>
-      </div>
+    <section class="card health-card" aria-labelledby="health-title">
+      <button class="chart-toggle" type="button" aria-expanded="false" aria-controls="health-body">
+        <span class="card-row">
+          <span class="card-eyebrow health-eyebrow" id="health-title"><span class="icon-line icon-line-heart" aria-hidden="true"></span>Financial health</span>
+          <span class="chart-chevron" aria-hidden="true"></span>
+        </span>
+        <span class="health-summary">
+          <span class="health-line">You're building something steady.</span>
+          <span class="health-score">
+            <span class="value">XX</span>
+            <span class="max">score</span>
+          </span>
+        </span>
+      </button>
+      <div class="chart-body" id="health-body" hidden></div>
+    </section>
+
+    <section class="card dream-strip-card" aria-labelledby="dream-strip-title">
+      <span class="card-eyebrow" id="dream-strip-title">On your way</span>
+      <div class="dream-strip" id="dream-strip"></div>
     </section>
 
     <section class="card sankey-card" aria-labelledby="sankey-title">
@@ -132,6 +138,20 @@
         </div>
         <div class="column-chart" id="expense-chart"></div>
         <div class="chart-legend" id="expense-legend"></div>
+      </div>
+    </section>
+
+    <section class="card growth-card" aria-labelledby="growth-title">
+      <button class="chart-toggle" type="button" aria-expanded="false" aria-controls="growth-body">
+        <span class="card-row">
+          <span class="card-eyebrow" id="growth-title">Growth</span>
+          <span class="chart-period-wrap"><span class="chart-period" id="growth-period"></span><span class="chart-chevron" aria-hidden="true"></span></span>
+        </span>
+        <span class="chart-stats" id="growth-stats"></span>
+      </button>
+      <div class="chart-body" id="growth-body" hidden>
+        <div class="column-chart" id="growth-chart"></div>
+        <div class="chart-legend" id="growth-legend"></div>
       </div>
     </section>
   </main>
