@@ -116,7 +116,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
 
 /* Display face: names, titles, numbers, verdicts. Everything else is mono. */
 .screen-title, .brand-mark span, .card-title,
-.character-meta .name, .health-score .value, .networth-value .hero-number,
+.character-meta .name, .health-score .value,
 .stat-tile .stat-value, .journey-card .title, .mission-title,
 .quest-card .title, .hero-intel-card .hero-number, .opportunity-head .title,
 .opportunity-lifetime strong, .plant-tile .plant-name, .explorer-item .name,
@@ -142,7 +142,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
   vertical-align: -0.15em;
   flex-shrink: 0;
 }
-.icon-comic, .avatar-img, .owl-figure img, .brand-mark img, .fairy-fab img,
+.icon-comic, .avatar-img, .brand-mark img, .fairy-fab img,
 .fairy-popover-head img, .plant-emoji,
 .journey-overlay-head img, .coming-soon .icon, .icon {
   filter: grayscale(1) contrast(1.15);
@@ -172,6 +172,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
 .icon-line-arrow-right { -webkit-mask-image: url('./lokhi-assets/icons/line/arrow-right.svg'); mask-image: url('./lokhi-assets/icons/line/arrow-right.svg'); }
 .icon-line-lock { -webkit-mask-image: url('./lokhi-assets/icons/line/lock.svg'); mask-image: url('./lokhi-assets/icons/line/lock.svg'); }
 .icon-line-file-text { -webkit-mask-image: url('./lokhi-assets/icons/line/file-text.svg'); mask-image: url('./lokhi-assets/icons/line/file-text.svg'); }
+.icon-line-heart { -webkit-mask-image: url('./lokhi-assets/icons/line/heart.svg'); mask-image: url('./lokhi-assets/icons/line/heart.svg'); }
 
 /* Profile avatar — DiceBear SVG, sized by whichever circular/rounded
    container it's placed in (character card, profile header, Dream Lab's
@@ -337,8 +338,17 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
 .card, .insight-banner { background: var(--glow-rose); }
 :is(.card, .insight-banner):nth-child(3n+2) { background: var(--glow-amber); }
 :is(.card, .insight-banner):nth-child(3n) { background: var(--glow-blush); }
-.card.networth-card, .card.hero-intel-card { background: var(--bloom-card); }
-.card.journey-card, .card.later-prompt-card, .card.sankey-card, .card.income-card, .card.expense-card,
+.card.hero-intel-card { background: var(--bloom-card); }
+.card.health-card {
+  background:
+    radial-gradient(80% 70% at 10% 100%, var(--health-tone) 0%, transparent 70%),
+    radial-gradient(70% 70% at 100% 100%, var(--health-tone) 0%, transparent 70%),
+    var(--paper);
+}
+.health-card[data-band="sprout"] { --health-tone: var(--sprout); }
+.health-card[data-band="attention"] { --health-tone: var(--state-attention); }
+.health-card[data-band="over"] { --health-tone: var(--state-over); }
+.card.journey-card, .card.later-prompt-card, .card.dream-strip-card, .card.sankey-card, .card.income-card, .card.expense-card, .card.growth-card,
 .stat-tile, .plant-tile, .compare-tile, .quest-card { background: var(--paper); }
 
 .card-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
@@ -480,8 +490,8 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
    Income & Expenses cards (Home) — shared column chart
    ========================================================================== */
 
-.income-card, .expense-card { display: flex; flex-direction: column; gap: var(--space-4); }
-.income-card[hidden], .expense-card[hidden] { display: none; }
+.income-card, .expense-card, .growth-card { display: flex; flex-direction: column; gap: var(--space-4); }
+.income-card[hidden], .expense-card[hidden], .growth-card[hidden] { display: none; }
 .chart-period { font-size: 11px; letter-spacing: 0.12em; color: var(--ink-muted); white-space: nowrap; }
 .chart-toggle {
   display: flex; flex-direction: column; gap: var(--space-4);
@@ -533,6 +543,7 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
 .ex-trend { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 0.1 4; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .ex-tick { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.06em; text-transform: none; fill: var(--ink-muted); }
 .ex-month { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--ink); }
+.ex-empty { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--ink-muted); }
 .ex-cap { font-family: var(--font-display); font-size: 14px; letter-spacing: 0; text-transform: none; fill: var(--ink); }
 .ex-seg {
   font-family: var(--font-mono); font-size: 7.5px; letter-spacing: 0.04em; fill: var(--ink);
@@ -567,37 +578,48 @@ input::placeholder, textarea::placeholder { color: var(--ink-muted); }
 .health-score .max { font-size: 11px; letter-spacing: 0.12em; color: var(--ink-muted); }
 
 /* ==========================================================================
-   Net worth / Golden Path card
+   Health card + Dream strip (Home)
    ========================================================================== */
 
-.networth-card { display: flex; flex-direction: column; gap: var(--space-3); padding: 22px; }
-.networth-top { display: flex; align-items: center; gap: var(--space-4); }
-.owl-figure {
-  position: relative;
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  border: var(--rule);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-/* Halo carries the owl's state as a second ring; the status line under the
-   number says it in words. */
-.owl-figure::before {
-  content: "";
-  position: absolute; inset: -5px;
-  border-radius: 50%;
-  border: var(--stroke) solid var(--halo-color, var(--state-on-track));
-}
-.owl-figure img { width: 34px; height: 34px; }
-.networth-value .label { font-size: 11px; letter-spacing: 0.14em; color: var(--ink); }
-.networth-value .hero-number { font-size: 44px; line-height: 1; margin-top: 2px; }
-.owl-status-line { font-size: 11px; letter-spacing: 0.08em; line-height: 1.5; color: var(--ink); margin-top: 4px; }
+.health-card { display: flex; flex-direction: column; gap: var(--space-5); }
+.health-eyebrow { display: flex; align-items: center; gap: var(--space-2); }
+.health-eyebrow .icon-line { width: 18px; height: 18px; }
+.health-summary { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
+.health-line { font-size: 12px; line-height: 1.7; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+.health-score { flex-shrink: 0; }
+.health-meter { display: flex; flex-direction: column; gap: var(--space-2); }
+.health-meter-label { font-family: var(--font-display); font-size: 22px; line-height: 1.15; letter-spacing: 0; text-transform: none; }
+.health-meter-value { font-size: 13px; letter-spacing: 0.02em; }
 
-.golden-path-chart { width: 100%; height: 64px; display: block; }
-.golden-path-legend { display: flex; gap: var(--space-4); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-muted); }
-.golden-path-legend .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; border: var(--rule); }
-.golden-path-legend .dot.actual { background: var(--ink); }
-.golden-path-legend .dot.target { background: var(--paper); border-style: dashed; }
+.dream-strip-card { padding: 24px 28px; }
+.dream-strip {
+  display: flex; justify-content: space-between; gap: var(--space-3);
+  overflow-x: auto; scrollbar-width: none;
+  margin: 0 -28px; padding: 4px 28px;
+}
+.dream-strip::-webkit-scrollbar { display: none; }
+/* isolation keeps the ring's z-index:-1 above the card's own background. */
+.dream-strip-item {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  flex-shrink: 0; isolation: isolate;
+  background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer;
+}
+.dream-strip-item:active { transform: translateY(1px); }
+.dream-strip-badge {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--paper);
+  border: var(--rule);
+  position: relative;
+}
+.dream-strip-badge::before {
+  content: "";
+  position: absolute; inset: -4px; border-radius: inherit;
+  background: conic-gradient(var(--ink) var(--ring, 0deg), var(--wash) 0);
+  z-index: -1;
+}
+.dream-strip-badge .icon-comic { width: 20px; height: 20px; }
+.dream-strip-pct { font-size: 11px; letter-spacing: 0.12em; color: var(--ink); }
 
 /* ==========================================================================
    Stat grid (Home "Your Current World")

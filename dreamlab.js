@@ -1715,7 +1715,17 @@
     if (e.target.id === "fairy-convo-overlay") closeFairyConvo();
   });
 
-  window.DreamLabUI = { render: renderRoot, init };
+  // Home's Dream strip: active, unfinished dreams in Dream Lab order, super goals excluded.
+  function stripDreams(limit) {
+    if (!DL) DL = loadState();
+    return DL.order
+      .map((id) => DL.dreams[id])
+      .filter((d) => d && d.type !== "super_goal" && statusOf(d.id) === "active")
+      .slice(0, limit)
+      .map((d) => ({ id: d.id, title: d.title, icon: d.icon, progress: computeProgress(d.id) }));
+  }
+
+  window.DreamLabUI = { render: renderRoot, init, stripDreams };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

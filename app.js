@@ -134,17 +134,6 @@
   }
 
   // ---------------------------------------------------------------------
-  // Derived numbers
-  // ---------------------------------------------------------------------
-  function computeDerived(p) {
-    const surplus = p.income - p.monthlyExpenses;
-    const debtPayments = (p.debtDetails || []).reduce((s, d) => s + d.monthlyPayment, 0);
-    const netWorth = p.savings + p.investments - p.debt;
-    const investableCapacity = Math.max(0, surplus - debtPayments);
-    return { surplus, netWorth, investableCapacity, debtPayments };
-  }
-
-  // ---------------------------------------------------------------------
   // XP / leveling
   // ---------------------------------------------------------------------
   function awardXp(amount, opts) {
@@ -186,6 +175,7 @@
     state.activeTab = tab;
     document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("is-active", s.dataset.screen === tab));
     document.querySelectorAll(".tab-bar-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tab));
+    if (tab === "home") renderDreamStrip();
     renderFairyNudge(tab);
     window.scrollTo(0, 0);
   }
@@ -231,41 +221,6 @@
   // ---------------------------------------------------------------------
   // HOME
   // ---------------------------------------------------------------------
-  function owlState(p) {
-    const path = p.netWorthPath;
-    const current = path.points.find((pt) => pt.age === path.currentAge);
-    if (!current || current.actual == null) return "ontrack";
-    if (current.actual >= current.target * 1.05) return "crowned";
-    if (current.actual >= current.target * 0.9) return "ontrack";
-    return "dormant";
-  }
-  const OWL_META = {
-    dormant: { src: "./lokhi-assets/owl-dormant.svg", label: "Behind pace — still early days.", halo: "var(--state-over)" },
-    ontrack: { src: "./lokhi-assets/owl-ontrack.svg", label: "On track for your Golden Path.", halo: "var(--state-on-track)" },
-    crowned: { src: "./lokhi-assets/owl-crowned.svg", label: "Ahead of your Golden Path.", halo: "var(--ink)" }
-  };
-
-  function renderGoldenPathSvg(points, currentAge) {
-    const w = 300, h = 64, pad = 6;
-    const ages = points.map((p) => p.age);
-    const vals = points.flatMap((p) => [p.target, p.actual].filter((v) => v != null));
-    const minAge = Math.min(...ages), maxAge = Math.max(...ages);
-    const minVal = 0, maxVal = Math.max(...vals) * 1.05;
-    const x = (age) => pad + ((age - minAge) / (maxAge - minAge)) * (w - pad * 2);
-    const y = (val) => h - pad - (val / maxVal) * (h - pad * 2);
-
-    const targetPts = points.map((p) => `${x(p.age)},${y(p.target)}`).join(" ");
-    const actualPts = points.filter((p) => p.actual != null).map((p) => `${x(p.age)},${y(p.actual)}`).join(" ");
-    const current = points.find((p) => p.age === currentAge);
-    const dot = current ? `<circle cx="${x(current.age)}" cy="${y(current.actual != null ? current.actual : current.target)}" r="3.5" fill="var(--ink)" />` : "";
-
-    return `<svg class="golden-path-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-      <polyline points="${targetPts}" fill="none" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" />
-      <polyline points="${actualPts}" fill="none" stroke="var(--ink)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
-      ${dot}
-    </svg>`;
-  }
-
   // ---------------------------------------------------------------------
   // Money-flow Sankey (Home). Hand-drawn on purpose: seeded jitter keeps the
   // wobble stable between renders, SVG filters give ink and watercolour edges.
@@ -515,6 +470,7 @@
   function columnChart(cfg) {
     const { id, rows, groups, projection, trend } = cfg;
     const total = (m) => groups.reduce((s, g) => s + (m[g.key] || 0), 0);
+    const height = (m) => total(m) + (m.pending || 0);
     const tex = (name) => `url(#${id}-${name})`;
     const rand = seededRandom(total(rows[rows.length - 1]));
     const j = (v) => (rand() - 0.5) * 2 * v;
@@ -529,11 +485,13 @@
     const IW = slots * slotW;
     const BAR = Math.min(46, slotW * 0.7);
     const cx = (i) => slotW * (i + 0.5);
-    const lastMonth = projection ? projection.month : rows[rows.length - 1].month;
-    const multiYear = rows[0].month.slice(0, 4) !== lastMonth.slice(0, 4);
-    // Years only where they change (each January) and on the first column.
-    const monthLabel = (i, iso) => monthName(iso) + (multiYear && (i === 0 || iso.endsWith("-01")) ? ` ’${iso.slice(2, 4)}` : "");
-    const monthText = (i, iso) => `<text class="ex-month" x="${cx(i)}" y="${H - 4}" text-anchor="middle">${monthLabel(i, iso)}</text>`;
+    const xLabel = cfg.xLabel || (() => {
+      const lastMonth = projection ? projection.month : rows[rows.length - 1].month;
+      const multiYear = rows[0].month.slice(0, 4) !== lastMonth.slice(0, 4);
+      // Years only where they change (each January) and on the first column.
+      return (i, m) => monthName(m.month) + (multiYear && (i === 0 || m.month.endsWith("-01")) ? ` ’${m.month.slice(2, 4)}` : "");
+    })();
+    const monthText = (i, m) => `<text class="ex-month" x="${cx(i)}" y="${H - 4}" text-anchor="middle">${xLabel(i, m)}</text>`;
 
     let trendSpan = null;
     if (trend) {
@@ -545,7 +503,7 @@
         trendSpan = { x0, x1, v0: trend.fit(idx(x0)), v1: trend.fit(idx(x1)) };
       }
     }
-    const peaks = rows.map(total).concat(projection ? [projection.amount] : [], trendSpan ? [trendSpan.v0, trendSpan.v1] : []);
+    const peaks = rows.map(height).concat(projection ? [projection.amount] : [], trendSpan ? [trendSpan.v0, trendSpan.v1] : []);
     const top = Math.max(...peaks);
     const step = niceStep(top / 3);
     const yMax = Math.ceil((top * 1.12) / step) * step;
@@ -562,6 +520,12 @@
 
     const columns = rows.map((m, i) => {
       const x0 = cx(i) - BAR / 2, x1 = cx(i) + BAR / 2;
+      if (!total(m)) {
+        return `
+        <path class="ex-projection" d="M ${x0} ${y(0) - 2} L ${x1} ${y(0) - 2}"/>
+        <text class="ex-empty" x="${cx(i)}" y="${y(0) - 10}" text-anchor="middle">No data</text>
+        ${monthText(i, m)}`;
+      }
       let base = 0;
       const segs = groups.map((g, gi) => {
         const v = m[g.key] || 0;
@@ -573,16 +537,24 @@
         const wash = g.wash ? `<path d="${d}" style="fill:${g.wash};fill-opacity:${g.strength || 1}" filter="url(#${id}-wash)"/>` : "";
         const texture = g.texture ? `<path d="${d}" style="fill:${tex(g.texture)}"/>` : "";
         const label = b - t >= 15
-          ? `<text class="ex-seg" x="${cx(i)}" y="${(t + b) / 2 + 3}" text-anchor="middle">${shortYen(v)}</text>`
+          ? `<text class="ex-seg" x="${cx(i)}" y="${(t + b) / 2 + 3}" text-anchor="middle">${g.prefix || ""}${shortYen(v)}</text>`
           : "";
         return wash + texture + label;
       }).join("");
       const capY = y(total(m));
+      // Still to come this period: a dotted outline on top, with a "?" for its cap.
+      const pendY = y(height(m));
+      const cap = m.pending
+        ? `<path class="ex-projection" d="M ${x0} ${capY} L ${x0} ${pendY} L ${x1} ${pendY} L ${x1} ${capY}"/>
+        <text class="ex-seg" x="${cx(i)}" y="${(capY + pendY) / 2}" text-anchor="middle">${shortYen(m.pending)}</text>
+        <text class="ex-seg" x="${cx(i)}" y="${(capY + pendY) / 2 + 10}" text-anchor="middle">${cfg.pendingLabel}</text>
+        <text class="ex-question" x="${cx(i)}" y="${pendY - 9}" text-anchor="middle">?</text>`
+        : `<text class="ex-cap" x="${cx(i)}" y="${capY - 9}" text-anchor="middle">${cfg.capLabel ? cfg.capLabel(m) : shortYen(total(m))}</text>`;
       return `
         ${segs}
         <path class="sk-ink" d="M ${x0} ${y(0)} L ${x0 + j(1)} ${capY + j(1)} L ${x1 + j(1)} ${capY + j(1)} L ${x1} ${y(0)}" filter="url(#${id}-ink)"/>
-        <text class="ex-cap" x="${cx(i)}" y="${capY - 9}" text-anchor="middle">${shortYen(total(m))}</text>
-        ${monthText(i, m.month)}`;
+        ${cap}
+        ${monthText(i, m)}`;
     }).join("");
 
     let extra = "";
@@ -593,7 +565,7 @@
         <text class="ex-seg" x="${cx(i)}" y="${(capY + y(0)) / 2}" text-anchor="middle">${shortYen(projection.amount)}</text>
         <text class="ex-seg" x="${cx(i)}" y="${(capY + y(0)) / 2 + 10}" text-anchor="middle">expected</text>
         <text class="ex-question" x="${cx(i)}" y="${capY - 9}" text-anchor="middle">?</text>
-        ${monthText(i, projection.month)}`;
+        ${monthText(i, projection)}`;
     }
     if (trendSpan) {
       // Drawn only across the months the fit covers.
@@ -603,7 +575,7 @@
     const svg = `
       <div class="column-frame" role="img" aria-label="${escapeHtml(cfg.aria)}">
       <svg class="column-axis" viewBox="0 0 ${AXIS} ${H}" aria-hidden="true">${tickLabels}</svg>
-      <div class="column-scroll"${slots > 4 ? ' tabindex="0"' : ""}>
+      <div class="column-scroll"${slots > 4 ? ' tabindex="0"' : ""}${cfg.openAtStart ? ' data-open="start"' : ""}>
       <svg class="column-svg" viewBox="0 0 ${IW} ${H}" style="width:${(slots / visible) * 100}%" aria-hidden="true">
         <defs>
           <pattern id="${id}-hatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
@@ -636,8 +608,10 @@
       </div>
       <div class="visually-hidden"><table>
         <caption>${escapeHtml(cfg.caption)}</caption>
-        <tr><th>Month</th>${groups.map((g) => `<th>${g.label}</th>`).join("")}<th>Total</th></tr>
-        ${rows.map((m) => `<tr><td>${monthName(m.month, "long")}</td>${groups.map((g) => `<td>${yen(m[g.key] || 0)}</td>`).join("")}<td>${yen(total(m))}</td></tr>`).join("")}
+        <tr><th>${cfg.rowHead || "Month"}</th>${groups.map((g) => `<th>${g.label}</th>`).join("")}<th>Total</th></tr>
+        ${rows.map((m) => `<tr><td>${cfg.rowName ? cfg.rowName(m) : monthName(m.month, "long")}</td>${total(m)
+          ? groups.map((g) => `<td>${yen(m[g.key] || 0)}</td>`).join("") + `<td>${yen(total(m))}</td>`
+          : `<td colspan="${groups.length + 1}">No data</td>`}</tr>`).join("")}
         ${projection ? `<tr><td>${monthName(projection.month, "long")} (expected)</td>${groups.map(() => "<td></td>").join("")}<td>${yen(projection.amount)}</td></tr>` : ""}
       </table></div>`;
 
@@ -650,6 +624,7 @@
         rect("fill:none;stroke:var(--ink);stroke-width:1")
       )}${g.label}</span>`).join("") +
       (projection ? `<span class="chart-legend-item">${swatch('<rect class="ex-projection" x="0.5" y="0.5" width="13" height="9"/>')}Expected</span>` : "") +
+      (rows.some((m) => m.pending) ? `<span class="chart-legend-item">${swatch('<rect class="ex-projection" x="0.5" y="0.5" width="13" height="9"/>')}To invest</span>` : "") +
       (trend ? `<span class="chart-legend-item">${swatch('<path class="ex-trend" d="M 1 5 L 13 5"/>')}12-month trend</span>` : "");
 
     return { svg, legend, total };
@@ -663,12 +638,13 @@
       </span>`).join("");
   }
 
-  // Charts open on their newest columns; history is a swipe to the left.
+  // Charts open on their newest columns: at the right end, or at the left
+  // for charts drawn newest first.
   function showLatest(el) {
-    el.querySelectorAll(".column-scroll").forEach((sc) => { sc.scrollLeft = sc.scrollWidth; });
+    el.querySelectorAll(".column-scroll").forEach((sc) => { sc.scrollLeft = sc.dataset.open === "start" ? 0 : sc.scrollWidth; });
   }
 
-  // Income and Expenses open to their charts on tap; collapsed on load.
+  // Chart cards and the Health card open on tap; collapsed on load.
   function setupChartToggles() {
     document.querySelectorAll(".chart-toggle").forEach((btn) => {
       const body = document.getElementById(btn.getAttribute("aria-controls"));
@@ -825,14 +801,79 @@
     showLatest(document.getElementById("expense-chart"));
   }
 
-  function renderNetWorth(p) {
-    const root = document.getElementById("screen-home");
-    const meta = OWL_META[owlState(p)];
-    root.querySelector("#owl-img").src = meta.src;
-    root.querySelector("#owl-figure").style.setProperty("--halo-color", meta.halo);
-    root.querySelector("#owl-status-line").textContent = meta.label;
-    root.querySelector("#networth-value").textContent = yen(computeDerived(p).netWorth);
-    root.querySelector("#golden-path-wrap").innerHTML = renderGoldenPathSvg(p.netWorthPath.points, p.netWorthPath.currentAge);
+  // Growth card: one column per year of investing, newest first. Each holds
+  // only that year's money and what it has grown to, never a running total,
+  // so the older columns show what staying invested did.
+  const GROWTH_GROUPS = [
+    { key: "invested", label: "Invested", wash: "var(--sprout)", texture: "hatch" },
+    { key: "growth", label: "Growth", wash: "var(--sprout)", prefix: "+" }
+  ];
+
+  function renderGrowth(p) {
+    const card = document.querySelector(".growth-card");
+    const hist = p.investHistory || [];
+    if (!card) return;
+    card.hidden = !hist.some((r) => r.invested);
+    if (card.hidden) return;
+
+    const rows = hist.slice().reverse().map((r) => ({ ...r, pending: r.planned ? Math.max(0, r.planned - r.invested) : 0 }));
+    const current = rows[0];
+    const oldest = rows.slice(0, 5).filter((r) => r.invested).pop();
+    const pct = (r) => `+${Math.round((r.growth / r.invested) * 100)}%`;
+    const chart = columnChart({
+      id: "gr", rows, groups: GROWTH_GROUPS, openAtStart: true,
+      xLabel: (i, r) => String(r.year),
+      capLabel: pct,
+      pendingLabel: "to invest",
+      rowHead: "Year",
+      rowName: (r) => String(r.year) + (r.pending ? ` (${shortYen(r.pending)} still to invest)` : ""),
+      aria: `Invested and grown, by year from ${current.year} back to ${oldest.year}; ${oldest.year}'s money is up ${pct(oldest).slice(1)}`,
+      caption: "Invested and grown, by year"
+    });
+
+    document.getElementById("growth-period").textContent = `${oldest.year} – ${current.year}`;
+    document.getElementById("growth-stats").innerHTML = chartStats(
+      { value: shortYen(current.invested || 0), label: `Invested in ${current.year}` },
+      { value: pct(oldest), label: `On ${oldest.year}'s money` }
+    );
+    document.getElementById("growth-chart").innerHTML = chart.svg;
+    document.getElementById("growth-legend").innerHTML = chart.legend;
+    showLatest(document.getElementById("growth-chart"));
+  }
+
+  const HEALTH_FACTORS = [
+    { key: "savings", label: "Savings" },
+    { key: "investing", label: "Investing" },
+    { key: "goalReadiness", label: "Goals" }
+  ];
+
+  // Bloom bands for the Health card; the meters' average stands in until the score is defined.
+  function healthBand(score) {
+    if (score >= 90) return "sprout";
+    if (score >= 60) return "attention";
+    return "over";
+  }
+
+  function renderHealth(p) {
+    const powers = p.powers || {};
+    const avg = HEALTH_FACTORS.reduce((s, f) => s + (powers[f.key] || 0), 0) / HEALTH_FACTORS.length;
+    document.querySelector(".health-card").dataset.band = healthBand(avg);
+    document.getElementById("health-body").innerHTML = HEALTH_FACTORS.map((f) => `
+      <div class="health-meter">
+        <div class="card-row"><span class="health-meter-label">${f.label}</span><span class="health-meter-value">${powers[f.key]}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${powers[f.key]}%"></div></div>
+      </div>`).join("");
+  }
+
+  function renderDreamStrip() {
+    const dreams = window.DreamLabUI ? window.DreamLabUI.stripDreams(5) : [];
+    const strip = document.getElementById("dream-strip");
+    strip.innerHTML = dreams.map((d) => `
+      <button class="dream-strip-item" type="button" data-dream-strip="${d.id}" aria-label="${escapeHtml(d.title)}, ${Math.round(d.progress * 100)}%">
+        <span class="dream-strip-badge" style="--ring:${Math.round(d.progress * 360)}deg;">${comicIcon(d.icon)}</span>
+        <span class="dream-strip-pct">${Math.round(d.progress * 100)}%</span>
+      </button>`).join("");
+    strip.querySelectorAll("[data-dream-strip]").forEach((btn) => btn.addEventListener("click", () => showTab("dreamlab")));
   }
 
   // Shown only when something has been shared into Lokhi from another app.
@@ -859,10 +900,12 @@
     document.getElementById("header-streak").textContent = p.streakWeeks + "w";
 
     renderShareNotice();
-    renderNetWorth(p);
+    renderHealth(p);
+    renderDreamStrip();
     renderSankey(p);
     renderIncome(p);
     renderExpenses(p);
+    renderGrowth(p);
   }
 
 
