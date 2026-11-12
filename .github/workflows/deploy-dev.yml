@@ -38,7 +38,10 @@ jobs:
             echo "::error::VERCEL_TOKEN secret is not set."
             exit 1
           fi
-          vc() { npx --yes "vercel@$(awk '$1=="vercel"{print $2}' .tool-versions)" "$@" --token="$VERCEL_TOKEN"; }
+          # Only `deploy` reads VERCEL_ORG_ID. `alias` and `api` fall back to the
+          # token's own account, which a team token doesn't have ("User not
+          # found"), so every call names the team explicitly.
+          vc() { npx --yes "vercel@$(awk '$1=="vercel"{print $2}' .tool-versions)" "$@" --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID"; }
 
           out=$(vc deploy --yes --json --meta branch=dev --meta sha="${GITHUB_SHA:0:7}")
           url=$(printf '%s' "$out" | jq -r '.deployment.url // .url // empty' 2>/dev/null || true)

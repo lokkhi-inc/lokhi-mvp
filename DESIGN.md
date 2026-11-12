@@ -11,6 +11,7 @@ colors:
   bloom-rose: "#FF78B4"
   bloom-blush: "#FFB3C8"
   bloom-amber: "#FFE1A1"
+  sprout: "#B5DDA4"
   state-on-track: "#EFC22B"
   state-attention: "#F1BF88"
   state-over: "#EC97A8"
@@ -165,7 +166,7 @@ The palette is two layers that never mix jobs.
 
 **Structure is achromatic.** Every border, rule, tick, fill, glyph and icon is ink, muted ink, or paper. If a thing conveys information, it is black on white.
 
-**Colour is atmosphere.** The blooms are decoration, and there is a dash of them on every screen at three strengths: the page wash at the bottom edge, one bloom card per screen, and a soft corner glow on most panels. They rise from a bottom edge, never tint a border or a glyph, and never mean anything.
+**Colour is atmosphere.** The blooms are decoration, and there is a dash of them on every screen at three strengths: the page wash at the bottom edge, one bloom card per screen, and a soft corner glow on most panels. They rise from a bottom edge, never tint a border or a glyph, and never mean anything — except the Health card's bloom, which takes its colour from the score.
 
 - **Ink** (#111111) — All text, all 1px strokes, all filled progress. The only text colour.
 - **Ink Muted** (#666666) — Secondary metadata only: counts, timestamps, "of 100", "26 days left". Never a full sentence.
@@ -186,7 +187,7 @@ Rules for semantic colour, in order:
 
 1. **State is carried by ink first.** A filled bar, a crossed rule, a count, an italic word. Colour is the second signal, never the only one. Nothing in this app should be unreadable in greyscale.
 2. **Semantic colour appears as a 2px underline, a dot, or a bar fill — never a background panel, never text colour.**
-3. **No red. No green.** Red reads as failure and green as permission; Lokhi does neither. Over-budget is rose, not alarm.
+3. **No red.** Red reads as failure; Lokhi doesn't sound alarms. Over-budget is rose, not alarm. Green is Sprout, in two places: the Grow stream in the Sankey, and the Health card's top score band.
 
 Bloom recipes. The first two are verbatim from the reference; the corner glow is ours.
 
@@ -313,6 +314,15 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 - Ticks at or below the value: `opacity 1`. Above it: `opacity 0.2`. That contrast *is* the gauge — there is no coloured arc.
 - Centred inside: the value in `numeral-xl`, the unit in `micro-mono` muted beneath.
 
+**Sankey (money flow)** — the one hand-drawn element in the system, and the first thing on Home: where this month's income goes. Sources on the left, packed close together. A source band thick enough to hold its own label runs out to the card edge and carries the label inside (as the sketch does); thinner ones are labelled outside, in a column sized to their widest label. Amounts on both sides use short notation — ¥820k, ¥1.2M — with full figures in the hidden table. They converge into a single pinch line, then split right into Expenses, Grow (set to be invested) and Idle (cash with no job), each ending in a small chevron and labelled with name, amount and share of income.
+
+- **Hand-drawn, not precise.** Band edges are 1px ink drawn per band (shared edges double up, like a pen going over a line twice), with control points jittered a couple of pixels from a seeded random so the drawing is stable between renders. An SVG turbulence displacement gives the ink a slight wobble, and a stronger one gives the fills a watercolour edge. Only the hand-drawn charts (this and the Expense bars) get these filters.
+- **Washes, not fills.** Income bands are Bloom Amber. Expenses are Bloom Rose, Grow is Sprout (#B5DDA4), a pale sage — the one green in the system, as in the sketch, and Idle is unpainted paper with only its ink edges, because idle money has no job yet. Every band is directly labelled; colour is never the only identity.
+- **Palette check.** The data-viz validator fails Amber and Sprout on lightness and chroma — they are washes, too pale to read as marks on their own — and passes colour-blind separation. That is accepted on purpose: the ink outline on every band, the direct labels and the table view are the required relief. Don't remove any of the three.
+- **Time range.** The card's top-right holds a Select: the current month, short (Oct), this year to date, last year, Custom. Custom reveals a From / To pair of Inputs under the header row. Amounts cover the chosen range; the split is the same shape at any range.
+- **Static.** No tap or hover states — the labels already say everything. A visually hidden table carries the same numbers for screen readers.
+- The card around it is plain paper — the colour lives in the diagram.
+
 **Meter** — a 6px-tall pill, 1px #111 border, filled from the left with solid #111 to the percentage. Label above in `display-sm`, amount right in `numeric-inline`. For an over-budget meter, fill past 100% in `state-over` and keep the ink fill up to the line.
 
 **Segment row** — N equal pills in a flex row, `height: 14px`, 1px border, `gap: 6px`. Done segments fill #111, pending stay paper. Used for countable progress (tag 8 of 12). Preferable to a percentage whenever the number is small and real.
@@ -322,6 +332,36 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 **Button, primary** — pill, `11px 26px`, ink fill, paper text, `micro-mono` uppercase. Hover `#333`. One per card, bottom-right, usually `margin-left: auto`.
 
 **Button, ghost** — pill, `11px 16px`, 1px border, paper fill, ink text. Hover `#f4f4f4`. Dismissals and alternatives sit as a row of these to the left of the primary.
+
+**Income bars** — the Income card, between the Sankey and Expenses. The same hand-drawn stacked columns as the Expense bars below (one shared drawing), for the last three complete months, followed by a fourth, empty column for the current month: a dotted 1px ink outline at the expected salary, with a serif italic "?" on its cap because side income and bonuses can't be known ahead.
+
+- **Three groups, bottom to top, all on the Sankey's income amber so income reads as one colour across Home:** Salary is plain Bloom Amber; Side & business (freelance, rental) adds 1px ink hatching at 135° — the opposite angle to Expenses' taxes, so the two cards never share a texture; Bonus adds ink stippling. Wash / lines / dots stay distinct in greyscale. A legend, including the dotted "Expected" key, is always shown.
+- Headline numbers: last month's total on the left, the current month's expected salary on the right.
+
+**Expense bars** — the second hand-drawn chart, in the Expenses card under the Income card. Stacked columns for the last three complete months, with a thin dotted line showing the trend fitted over the last twelve — the user's personal inflation rate, also stated as a number above the chart.
+
+- **Four groups, bottom to top:** Taxes & insurance (income, residence and capital-gains tax; social, health and home insurance — deductions under one roof), Rent & loans, Card spending, Utilities & other.
+- **Identity by texture and wash, because green belongs to Grow:** Taxes & insurance is ink hatching at 45°, Rent & loans is Bloom Rose, Card spending is Bloom Amber, Utilities & other is plain paper. The four stay distinct in greyscale. A legend is always shown; segment amounts appear inside a segment only when they fit, totals sit on each column's cap, and a visually hidden table carries every number.
+- **Drawn like the Sankey:** one wobbly 1px ink outline around each whole column and a 2px paper gap between its segments; columns are wider than the data-viz default (≤24px) because three thin columns on a phone read as empty. Gridlines are solid hairlines in muted ink. The trend line is 1px dotted ink — never a colour.
+- **Four columns at a time.** The chart always fits four columns to the card; older months sit to the left and are a horizontal swipe away (the y-axis stays pinned while the columns scroll). The chart opens on its newest columns. When there is more to the left, a sliver of the next column peeks in at the edge as the scroll cue — no fade, which would be a gradient. Every column is full size with its amounts, at any range.
+- **Time range** (Income and Expenses alike), a Select at the top of the opened card, matching the Sankey's: 3 months (default — the latest months, with all history a swipe away), the current year, last year, Custom — Custom reveals a From / To pair of month Inputs. A year or custom range limits what can be scrolled to. Headline numbers always describe the latest month; the header's period follows the range. Expenses' trend line is always the twelve-month fit and is drawn only across the columns inside those twelve months. Income's dotted expected column appears only when the range ends at the latest month.
+- **Collapsed by default** (Income and Expenses alike). The card shows its header row and the two headline numbers, and the whole summary is one button with a chevron beside the period. Tapping it reveals the chart and legend with the standard entry motion (fade + 12px rise, 220ms — opacity and transform only, never height) and turns the chevron up; tapping again hides them. The button carries `aria-expanded`; the state resets on reload. Charts themselves stay static. The card is plain paper.
+
+**Growth bars** — the Growth card, under Expenses. The same hand-drawn columns as Income and Expenses, but one column per *year of investing* rather than per month, and in **reverse chronology**: this year on the left, older years to the right. Each column is that year's money only — what was put in that year, and what that money has grown to since — never a running total, because a cumulative line hides how much the oldest money did on its own. Read left to right, the growth caps get taller: that staircase is the point of the chart, staying in the market longer.
+
+- **Two groups, bottom to top, both on Sprout, because this is the Grow stream from the Sankey:** Invested is Sprout with 1px ink hatching at 45° (the darker one); Growth is plain Sprout. Growth's amount sits inside its segment with a "+" ("+¥557k"); the cap shows the growth as a percentage of what was put in ("+46%"), so years compare at a glance. A legend is always shown, and a visually hidden table carries every number.
+- **This year** is the first column: invested so far, its growth so far, and on top a dotted 1px ink outline up to the year's planned amount, labelled with what's still to invest and "to invest", with the serif italic "?" on its cap.
+- **Years without data** keep their slot, as a dotted baseline with "No data" in `micro-mono` muted, so a gap never looks like a bad year.
+- **Five years at a time**: four fit the card and the fifth peeks in at the right edge; older years are a swipe right. The chart opens on this year, at the left. No time-range select.
+- **Collapsed by default**, exactly like Income and Expenses. Headline numbers: left, "Invested in <this year>" so far; right, the oldest shown year's growth ("+46% on 2022's money"). The card is plain paper.
+
+**Health card** — Home's Bloom card, collapsed by default like the Income and Expenses cards. The summary is one button: a `micro-mono` eyebrow "Financial health" with the 18px line heart before it, in ink, and the chevron on the right; under it, an encouraging line on the left in `body-mono`, ink ("You're building something steady.") and the score on the right — the value in `numeral-xl`, "score" in `micro-mono` muted beside it on the baseline. Until the score is defined the value is the literal placeholder "XX". Tapping reveals three Meters that explain the score — Savings, Investing, Goals — with the same entry motion, `aria-expanded` and reset-on-reload as the chart cards. The heart is never filled and never coloured.
+
+The card's bloom is the one bloom that means something: it is the Bloom card recipe painted in a single colour picked by the score — Sprout at 90 and above, Attention from 60 to 89, Over below 60. Until the score is defined, the average of the three Meters picks the band. The band is also said in words by the Meters' numbers, so the card still reads in greyscale.
+
+**Dream strip** — the card under the Health card, titled "On your way" in `label-mono`. One row of up to five Dream Lab dreams that are active and not yet complete (super goals excluded, Dream Lab order). Each is the Dreamscape micro badge — 52px circle, 1px ink, comic icon, the progress ring around it — over its percentage in `micro-mono`. The row spaces its badges evenly; when it doesn't fit the card it scrolls horizontally with the same no-fade peek as the charts. Tapping a badge opens Dream Lab. Wide short padding, plain paper, no glow.
+
+**Select** — a native `<select>` dressed as a Chip: pill, 1px ink, `micro-mono` uppercase, `5px 26px 5px 11px`, tracking 0.08em, with a 6px chevron drawn from two 1px ink borders on the right. Native so phones get their own picker. Focus is the standard accent ring.
 
 **Input** — 1px border, radius 14px, `12px 16px`, paper fill, `numeric-inline`, placeholder in muted ink with an ellipsis ("A note for future you…"). Label above in `label-mono`. Focus: 2px `accent` ring at 2px offset. No floating labels.
 
@@ -341,7 +381,7 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 - No `font-weight` above 400. Both faces, every size.
 - No stroke weight other than 1px, except dial major ticks at 1.6px.
 - No square corners. Minimum radius in the system is 14px.
-- No red or green. Over-budget is rose; on-track is ink plus yolk.
+- No red for state. Over-budget is rose; on-track is ink plus yolk. Sprout green is the Grow stream and the Health card's top score band.
 - No colour as the sole carrier of state — the screen must survive greyscale.
 - No bloom centred in a box, no glow behind a semantic dot or underline, no more than one bloom card per screen, no glow on list rows or inverted elements.
 - No gradient on a border, a button, or a glyph.
@@ -361,7 +401,7 @@ One stroke weight — 1px #111 — on every border, rule, tick, divider and outl
 
 The system governs every pixel a user sees in this repo. Per-screen interpretation:
 
-- **Home** (`index.html`, `data-screen="home"`) — closest to the reference. Greeting in `display-xl` between diamond-terminated rules; the Dial as the one big thing; Meters for pots; the net-worth card is the Bloom card; the character card and insight panels glow; the stat tiles stay paper; journey and mission rows beneath stay plain.
+- **Home** (`index.html`, `data-screen="home"`) — the Visualize pillar: the Health card first under the greeting, then the Dream strip, then the Sankey overview, then the detailed breakdown cards — Income, then Expenses, then Growth; Bank account to follow. The Health card is Home's Bloom card; the Dream strip and chart cards are plain paper — the colour lives in the charts. A share-received notice appears under the greeting only when something has been shared into Lokhi.
 - **Grow** (`data-screen="grow"`) — the quest stack. `display-md` section head with a muted "N of M · skip anytime" to its right, then one Card per quest: chip + duration on the label row, `display-lg` title, `body-mono` body, a row of ghost buttons with one primary.
 - **Optimize** (`data-screen="optimize"`) — the "found so far" card is the bloom card; opportunity cards glow. Two-up figures with `micro-mono` captions.
 - **Dreamlab** (`data-screen="dreamlab"`) — the Dreamscape viewport is the bloom card, the one place it takes a full-bleed panel, because the screen is aspirational rather than factual. Still no shadow. Goals render as Meters, not as charts.
@@ -400,4 +440,4 @@ Design decisions live here first and in code second. The order is not bureaucrac
 
 **Step 5 is the test.** If the change cannot be made by editing custom properties alone, one of two things is true: component CSS has hardcoded values that should be tokenised first, or the change is structural rather than surface — see the two-layer split in `design/migration.md` — and needs a conversation, not a find-and-replace.
 
-**Some changes are not token edits at all.** Reintroducing shadows, adding a font weight above 400, adding a second display family, using red or green for state, or putting a glow behind a semantic mark each break a rule the rest of the system is built on. Those are rewrites of Hairline Almanac, not adjustments to it. Say so out loud rather than landing them as a diff.
+**Some changes are not token edits at all.** Reintroducing shadows, adding a font weight above 400, adding a second display family, using red for state, or putting a glow behind a semantic mark each break a rule the rest of the system is built on. Those are rewrites of Hairline Almanac, not adjustments to it. Say so out loud rather than landing them as a diff.

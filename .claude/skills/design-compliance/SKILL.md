@@ -61,7 +61,7 @@ Run from the repo root. Each maps to a rule in `DESIGN.md § Do's and Don'ts` �
 | Two families only | `grep -nE 'font-family' *.css *.html` — Cormorant Garamond and IBM Plex Mono only |
 | 1px stroke | `grep -nE 'border(-\w+)?: *(0\|[2-9]px\|1\.[1-9])' *.css` — 1.6px on dial major ticks only |
 | Minimum radius 14px | `grep -nE 'border-radius: *([0-9]\|1[0-3])px'` — `50%` on a true circle is fine |
-| No red/green state | any hex or token with hue 0–40° or 90–160° used for state |
+| No red/green state | any hex or token with hue 0–40° or 90–160° used for state — `--sprout` on the Sankey's Grow stream is the one allowed green |
 | `100dvh` not `100vh` | `grep -n '100vh' *.css *.html` |
 | No gradient on border/button/glyph | `grep -n 'gradient' *.css` — only the page wash, bloom card and corner glow recipes are legal |
 | Motion budget | durations outside 160–240ms; anything animating a property other than `transform`/`opacity` |
